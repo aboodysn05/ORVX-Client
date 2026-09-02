@@ -37,7 +37,7 @@ export function RegisterForm() {
         payload.organization = club
       }
       await register(payload)
-      navigate('/')
+      navigate('/dashboard')
     } catch (err) {
       setError(
         err.response?.data?.message ||
