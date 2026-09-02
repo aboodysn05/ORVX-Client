@@ -3,28 +3,6 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { PasswordField } from './PasswordField'
 
-// Quick-fill accounts shown under the sign-in form (from the design canvas).
-const DEMO_ACCOUNTS = [
-  {
-    initials: 'MK',
-    name: 'Coach Marcus · Apex Academy FC',
-    email: 'marcus@apexacademy.fc',
-    password: 'apex2026',
-  },
-  {
-    initials: 'JA',
-    name: 'J. Adeyemi · Registered Player',
-    email: 'jordan@ovrx.app',
-    password: 'ovrx2026',
-  },
-  {
-    initials: 'NP',
-    name: 'New Player · Not Assessed',
-    email: 'new@ovrx.app',
-    password: 'ovrx2026',
-  },
-]
-
 export function LoginForm() {
   const { login } = useAuth()
   const navigate = useNavigate()
@@ -49,12 +27,6 @@ export function LoginForm() {
     } finally {
       setSubmitting(false)
     }
-  }
-
-  function fillDemo(account) {
-    setEmail(account.email)
-    setPassword(account.password)
-    setError('')
   }
 
   return (
@@ -142,27 +114,6 @@ export function LoginForm() {
           <path d="M4 12h15M13 6l6 6-6 6" />
         </svg>
       </button>
-
-      <div className="auth__demos">
-        <span className="auth__demos-title">Demo accounts</span>
-        {DEMO_ACCOUNTS.map((account) => (
-          <button
-            key={account.email}
-            type="button"
-            className="auth__demo"
-            onClick={() => fillDemo(account)}
-          >
-            <span className="auth__demo-avatar">{account.initials}</span>
-            <span className="auth__demo-body">
-              <span className="auth__demo-name">{account.name}</span>
-              <span className="auth__demo-creds">
-                {account.email} · {account.password}
-              </span>
-            </span>
-            <span className="auth__demo-use">Use</span>
-          </button>
-        ))}
-      </div>
     </form>
   )
 }
