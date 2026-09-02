@@ -38,14 +38,14 @@ export function AuthPage({ mode = 'login' }) {
             <button
               type="button"
               className={`auth__tab ${isLogin ? 'is-active' : ''}`}
-              onClick={() => navigate('/login')}
+              onClick={() => navigate('/login')} //Redirect While Rendering
             >
               Sign In
             </button>
             <button
               type="button"
               className={`auth__tab ${!isLogin ? 'is-active' : ''}`}
-              onClick={() => navigate('/register')}
+              onClick={() => navigate('/register')} //Redirect While Rendering
             >
               Create Account
             </button>
