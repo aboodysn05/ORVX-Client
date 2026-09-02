@@ -1,19 +1,21 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './components/auth/RequireAuth'
+import { HeroPage } from './pages/HeroPage'
 import { AuthPage } from './pages/AuthPage'
-import { Home } from './pages/Home'
+import { Dashboard } from './pages/Dashboard'
 
 // All route definitions live here.
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<HeroPage />} />
       <Route path="/login" element={<AuthPage mode="login" />} />
       <Route path="/register" element={<AuthPage mode="register" />} />
       <Route
-        path="/"
+        path="/dashboard"
         element={
           <RequireAuth>
-            <Home />
+            <Dashboard />
           </RequireAuth>
         }
       />
