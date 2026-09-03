@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { NavBar } from '../components/layout/NavBar'
+import { DailyQuote } from '../components/DailyQuote'
 import heroShot from '../assets/hero.jpg'
 import '../styles/home.css'
 
@@ -98,10 +99,7 @@ export function HeroPage() {
             Next-Gen Football Development Platform
           </span>
 
-          <h1 className="hero__title">
-            Turn Real Sweat<br />
-            <span className="hero__title-accent">Into Real Stats.</span>
-          </h1>
+          <DailyQuote />
 
           <p className="hero__lead">
             Train with coach-verified drills, track your FIFA-style attributes,
