@@ -37,7 +37,8 @@ export function RegisterForm() {
         payload.organization = club
       }
       await register(payload)
-      navigate('/dashboard')
+      // Players run the onboarding assessment first; coaches go straight in.
+      navigate(role === 'player' ? '/assessment' : '/dashboard')
     } catch (err) {
       setError(
         err.response?.data?.message ||
