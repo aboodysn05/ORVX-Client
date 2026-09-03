@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { NavBar } from '../components/layout/NavBar'
+import { SiteNav } from '../components/layout/SiteNav'
 import { SiteFooter } from '../components/layout/SiteFooter'
 import { DailyQuote } from '../components/DailyQuote'
 import heroShot from '../assets/hero.jpg'
@@ -86,7 +86,7 @@ export function HeroPage() {
       <div className="home__glow-b" />
       <div className="home__dots" />
 
-      <NavBar />
+      <SiteNav />
 
       <main className="home__main">
       {/* Hero */}
