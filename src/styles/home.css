@@ -207,6 +207,47 @@ body {
   color: #ff2e63;
 }
 
+/* Daily quote — reuses .hero__title so it keeps the same weight, tracking,
+   colour and uppercase treatment as the original headline. It fades in over
+   the static headline once the fetch succeeds. */
+.hero__quote {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: hero-quote-in 0.5s ease both;
+}
+
+.hero__title--quote {
+  font-size: clamp(32px, 4.2vw, 58px);
+  line-height: 1.08;
+}
+
+.hero__quote-author {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #ff2e63;
+}
+
+@keyframes hero-quote-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero__quote {
+    animation: none;
+  }
+}
+
 .hero__lead {
   margin: 0;
   max-width: 520px;
