@@ -1,0 +1,155 @@
+/* Shared shell + primitives for the Drills / Leagues / About pages.
+   Page-specific layout lives in drills.css / leagues.css / about.css. */
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #090d16;
+}
+
+.page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #090d16;
+  font-family: Archivo, sans-serif;
+  color: #e8ecf5;
+}
+
+.page *,
+.page *::before,
+.page *::after {
+  box-sizing: border-box;
+}
+
+.page ::selection {
+  background: rgba(255, 46, 99, 0.3);
+}
+
+.page a {
+  color: #c7d0e0;
+  text-decoration: none;
+}
+
+.page a:hover {
+  color: #ff2e63;
+}
+
+.page :focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
+
+.page__main {
+  position: relative;
+  /* Fill the leftover vertical space so the footer sits at the bottom
+     of the viewport on short pages, without clipping tall ones. */
+  flex: 1 0 auto;
+}
+
+/* --- background decoration --- */
+
+.page__grid,
+.page__glow-a,
+.page__glow-b,
+.page__dots {
+  position: absolute;
+  pointer-events: none;
+}
+
+.page__grid {
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px),
+    repeating-linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px);
+  mask-image: radial-gradient(ellipse 80% 55% at 50% 15%, #000 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 15%, #000 0%, transparent 80%);
+}
+
+.page__glow-a {
+  top: -170px;
+  right: -140px;
+  width: 800px;
+  height: 600px;
+  background: radial-gradient(ellipse at center, rgba(255, 46, 99, 0.16) 0%, transparent 68%);
+  filter: blur(26px);
+}
+
+.page__glow-b {
+  top: 20px;
+  left: -150px;
+  width: 760px;
+  height: 600px;
+  background: radial-gradient(ellipse at center, rgba(79, 70, 229, 0.18) 0%, transparent 68%);
+  filter: blur(26px);
+}
+
+.page__dots {
+  inset: 0;
+  background-image: radial-gradient(rgba(148, 163, 184, 0.1) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.5;
+}
+
+/* --- shared primitives --- */
+
+.pg-eyebrow {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #ff2e63;
+}
+
+.pg-title {
+  margin: 16px 0 0;
+  font-size: clamp(32px, 4.4vw, 60px);
+  font-weight: 900;
+  line-height: 0.98;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.pg-lead {
+  margin: 16px 0 0;
+  max-width: 660px;
+  font-size: 16px;
+  line-height: 1.65;
+  color: #9faac0;
+  text-wrap: pretty;
+}
+
+.pg-card {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.pg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  background: #ff2e63;
+  border: none;
+  cursor: pointer;
+  font-family: Archivo, sans-serif;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  box-shadow: 0 0 24px rgba(255, 46, 99, 0.38);
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+.pg-btn:hover {
+  background: #ff4776;
+  box-shadow: 0 0 36px rgba(255, 46, 99, 0.55);
+}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { NavBar } from '../components/layout/NavBar'
+import { SiteFooter } from '../components/layout/SiteFooter'
 import { DailyQuote } from '../components/DailyQuote'
 import heroShot from '../assets/hero.jpg'
 import '../styles/home.css'
@@ -69,8 +70,6 @@ const STANDINGS = [
   { club: 'Southbank Rovers', p: 6, w: 1, gd: '-12', pts: 4 },
 ]
 
-const FOOTER_LINKS = ['Home', 'Drills', 'Leagues', 'About']
-
 function ArrowIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -89,6 +88,7 @@ export function HeroPage() {
 
       <NavBar />
 
+      <main className="home__main">
       {/* Hero */}
       <section className="hero">
         <div className="hero__copy">
@@ -371,34 +371,9 @@ export function HeroPage() {
           <ArrowIcon />
         </Link>
       </section>
+      </main>
 
-      {/* Footer */}
-      <footer className="site-footer">
-        <div className="site-footer__top">
-          <div className="site-footer__brand">
-            <svg width="22" height="22" viewBox="0 0 46 46" fill="none">
-              <path d="M6 4 L18 23 L6 42" stroke="#FF2E63" strokeWidth="6" strokeLinecap="square" />
-              <path d="M23 4 L35 23 L23 42" stroke="#FF2E63" strokeWidth="6" strokeLinecap="square" opacity="0.5" />
-            </svg>
-            <span className="site-footer__brand-name">OVRX</span>
-            <span className="site-footer__brand-tag">Real Sweat. Real Stats.</span>
-          </div>
-          <div className="site-footer__links">
-            {FOOTER_LINKS.map((label) => (
-              <a key={label} href="#">
-                {label}
-              </a>
-            ))}
-          </div>
-        </div>
-        <div className="site-footer__legal">
-          <span>© 2026 OVRX. All rights reserved.</span>
-          <span className="site-footer__legal-links">
-            <a href="#">Terms</a>
-            <a href="#">Privacy</a>
-          </span>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   )
 }
