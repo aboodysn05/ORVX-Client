@@ -7,6 +7,8 @@ import { DrillsPage } from './pages/DrillsPage'
 import { LeaguesPage } from './pages/LeaguesPage'
 import { AboutPage } from './pages/AboutPage'
 import { PlayerAssessmentPage } from './pages/PlayerAssessmentPage'
+import { TrainPage } from './pages/TrainPage'
+import { WorkoutPage } from './pages/WorkoutPage'
 
 // All route definitions live here.
 function App() {
@@ -23,6 +25,22 @@ function App() {
         element={
           <RequireAuth>
             <PlayerAssessmentPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/train"
+        element={
+          <RequireAuth>
+            <TrainPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/workout"
+        element={
+          <RequireAuth>
+            <WorkoutPage />
           </RequireAuth>
         }
       />

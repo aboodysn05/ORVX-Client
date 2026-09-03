@@ -125,7 +125,7 @@ export function AttributesPanel({
             </div>
           ))}
 
-          <Link to="/assessment" className="dash-attrs__cta">
+          <Link to="/train" className="dash-attrs__cta">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
               <path d="M13 2L4 14h6l-1 8 9-12h-6z" />
             </svg>

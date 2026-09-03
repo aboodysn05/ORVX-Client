@@ -66,7 +66,7 @@ export function DashboardOverview({
             Locked at registration. Only your club&apos;s head coach can change it — unavailable while
             you are a free agent.
           </span>
-          <Link to="/assessment" className="dash-identity__cta">
+          <Link to="/train" className="dash-identity__cta">
             <BoltIcon />
             Create Training Session
           </Link>
