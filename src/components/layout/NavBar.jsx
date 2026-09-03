@@ -6,9 +6,9 @@ import '../../styles/nav.css'
 // and a user chip + Log out for signed-in users.
 const LINKS = [
   { label: 'Home', to: '/' },
-  { label: 'Drills', to: '#' },
-  { label: 'Leagues', to: '#' },
-  { label: 'About', to: '#' },
+  { label: 'Drills', to: '/drills' },
+  { label: 'Leagues', to: '/leagues' },
+  { label: 'About', to: '/about' },
 ]
 
 function initialsOf(name) {
@@ -44,22 +44,16 @@ export function NavBar() {
       </Link>
 
       <div className="nav__links">
-        {LINKS.map((link, index) =>
-          link.to === '#' ? (
-            <a key={index} href="#" className="nav__link">
-              {link.label}
-            </a>
-          ) : (
-            <NavLink
-              key={index}
-              to={link.to}
-              end
-              className={({ isActive }) => `nav__link ${isActive ? 'is-active' : ''}`}
-            >
-              {link.label}
-            </NavLink>
-          ),
-        )}
+        {LINKS.map((link) => (
+          <NavLink
+            key={link.to}
+            to={link.to}
+            end={link.to === '/'}
+            className={({ isActive }) => `nav__link ${isActive ? 'is-active' : ''}`}
+          >
+            {link.label}
+          </NavLink>
+        ))}
       </div>
 
       <div className="nav__actions">
