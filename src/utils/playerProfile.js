@@ -38,3 +38,28 @@ export function readPlayerProfile(email) {
 export function hasCompletedAssessment(email) {
   return Boolean(readPlayerProfile(email))
 }
+
+// Number of coach-approved baseline sessions (0–3). This is a front-end-only
+// preview value for now — the dashboard's "Preview state" control writes it —
+// and becomes a read from the submissions API once the backend exists.
+const APPROVED_KEY = 'orvx_approved_sessions'
+
+export function readApprovedSessions(email) {
+  try {
+    const store = JSON.parse(localStorage.getItem(APPROVED_KEY) || '{}')
+    const value = Number(store[keyFor(email)])
+    return Number.isFinite(value) ? Math.max(0, Math.min(3, value)) : 0
+  } catch {
+    return 0
+  }
+}
+
+export function writeApprovedSessions(email, count) {
+  try {
+    const store = JSON.parse(localStorage.getItem(APPROVED_KEY) || '{}')
+    store[keyFor(email)] = Math.max(0, Math.min(3, Number(count) || 0))
+    localStorage.setItem(APPROVED_KEY, JSON.stringify(store))
+  } catch {
+    // storage unavailable — preview toggle just won't persist across reloads
+  }
+}

@@ -35,7 +35,7 @@ function makeToken() {
 }
 
 function withoutPassword(record) {
-  const { password, ...user } = record
+  const { password: _password, ...user } = record
   return user
 }
 

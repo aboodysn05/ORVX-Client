@@ -2,20 +2,13 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { usePlayerAssessment } from '../hooks/usePlayerAssessment'
 import { savePlayerProfile } from '../utils/playerProfile'
+import { cardName } from '../utils/playerCard'
 import { AssessmentStepper } from '../components/assessment/AssessmentStepper'
 import { PositionFootStep } from '../components/assessment/PositionFootStep'
 import { SliderStep } from '../components/assessment/SliderStep'
 import { CardInitStep } from '../components/assessment/CardInitStep'
 import { PlayerCardPreview } from '../components/assessment/PlayerCardPreview'
 import '../styles/assessment.css'
-
-// "J. Adeyemi" -> "J. ADEYEMI", single name -> "RONALDO", nothing -> "YOUR NAME".
-function toCardName(fullName) {
-  if (!fullName) return 'Your Name'
-  const parts = fullName.trim().split(/\s+/)
-  if (parts.length === 1) return parts[0].toUpperCase()
-  return `${parts[0].charAt(0)}. ${parts.slice(1).join(' ')}`.toUpperCase()
-}
 
 // Player onboarding: a four-step self-assessment that initializes the starting
 // player card. All state is local (see usePlayerAssessment); on completion the
@@ -145,7 +138,7 @@ export function PlayerAssessmentPage() {
 
         <aside className="asm__preview">
           <PlayerCardPreview
-            playerName={toCardName(user?.name)}
+            playerName={cardName(user?.name)}
             overall={overall}
             tier={tier}
             positionCode={positionCode}

@@ -1,4 +1,4 @@
-import { NavBar } from './NavBar'
+import { SiteNav } from './SiteNav'
 import { SiteFooter } from './SiteFooter'
 import '../../styles/page.css'
 
@@ -11,7 +11,7 @@ export function PageShell({ children }) {
       <div className="page__glow-a" />
       <div className="page__glow-b" />
       <div className="page__dots" />
-      <NavBar />
+      <SiteNav />
       <main className="page__main">{children}</main>
       <SiteFooter />
     </div>

@@ -1,13 +1,20 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
+import { useAuth } from '../hooks/useAuth'
 import { LoginForm } from '../components/auth/LoginForm'
 import { RegisterForm } from '../components/auth/RegisterForm'
 import '../styles/auth.css'
 
 // OVRX sign-in / create-account screen. Rendered at both /login and
-// /register; the `mode` prop decides which tab is active.
+// /register; the `mode` prop decides which tab is active. A visitor who is
+// already signed in is sent on to their dashboard rather than shown the form.
 export function AuthPage({ mode = 'login' }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const isLogin = mode !== 'register'
+
+  if (user) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   return (
     <div className="auth">
