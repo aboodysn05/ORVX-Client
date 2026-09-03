@@ -1,4 +1,4 @@
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { readPlayerProfile } from '../../utils/playerProfile'
 import { cardName, initials } from '../../utils/playerCard'
@@ -6,6 +6,7 @@ import '../../styles/player-nav.css'
 
 const LINKS = [
   { label: 'Dashboard', to: '/dashboard' },
+  { label: 'Train', to: '/train', alsoActive: ['/workout'] },
   { label: 'Drills', to: '/drills' },
   { label: 'Leagues', to: '/leagues' },
 ]
@@ -17,6 +18,7 @@ const LINKS = [
 export function PlayerNav() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
   const profile = readPlayerProfile(user?.email)
 
   function handleSignOut() {
@@ -44,14 +46,13 @@ export function PlayerNav() {
             key={link.to}
             to={link.to}
             end={link.to === '/dashboard'}
-            className={({ isActive }) => `dash-nav__link ${isActive ? 'is-active' : ''}`}
+            className={({ isActive }) =>
+              `dash-nav__link ${isActive || link.alsoActive?.includes(pathname) ? 'is-active' : ''}`
+            }
           >
             {link.label}
           </NavLink>
         ))}
-        <span className="dash-nav__link is-soon" aria-disabled="true" title="Session Builder — coming soon">
-          Train
-        </span>
       </div>
 
       <div className="dash-nav__account">
