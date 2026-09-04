@@ -1,6 +1,6 @@
-// Target-reviewer panel. While the player's 3-session baseline is unverified
-// the reviewer is locked to Platform Coach #9; once verified the field opens
-// to the eight Club Head Coaches.
+// Target-reviewer panel. Until the player's baseline session is approved the
+// reviewer is locked to Platform Coach #9; once it clears, the field opens to
+// the eight Club Head Coaches.
 export function ReviewerRouting({
   baselineDone,
   lockLabel,
@@ -61,8 +61,8 @@ export function ReviewerRouting({
 
       {tipOpen && (
         <span className="sp-reviewer__tip">
-          First 3 baseline sessions are evaluated by Platform Coach #9. Once 3 sessions are
-          approved, this field opens up and you pick a Club Head Coach.
+          Your baseline session is evaluated by Platform Coach #9. Once it’s approved, this field
+          opens up and you pick a Club Head Coach.
         </span>
       )}
     </div>

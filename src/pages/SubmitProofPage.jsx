@@ -56,7 +56,17 @@ export function SubmitProofPage() {
 
       <section className="sp-body">
         <div className="sp-main">
-          <VideoProofPanel sessionLine={sp.sessionLine} />
+          <VideoProofPanel
+            sessionLine={sp.sessionLine}
+            hasClip={sp.hasClip}
+            clipUrl={sp.clipUrl}
+            clipName={sp.clipName}
+            clipDurationLabel={sp.clipDurationLabel}
+            clipError={sp.clipError}
+            acceptTypes={sp.acceptTypes}
+            onPickFile={sp.onPickFile}
+            clearClip={sp.clearClip}
+          />
 
           <ReviewerRouting
             baselineDone={sp.baselineDone}
@@ -84,7 +94,12 @@ export function SubmitProofPage() {
           </div>
 
           <div className="sp-submit">
-            <button type="button" className="sp-submit__btn" onClick={sp.submit}>
+            <button
+              type="button"
+              className="sp-submit__btn"
+              onClick={sp.submit}
+              disabled={!sp.canSubmit}
+            >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M13 2L4 14h6l-1 8 9-12h-6z" />
               </svg>
