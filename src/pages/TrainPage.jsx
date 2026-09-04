@@ -1,5 +1,8 @@
 import { useNavigate } from 'react-router-dom'
 import { useSessionBuilder } from '../hooks/useSessionBuilder'
+import { useActiveSessionStatus } from '../hooks/useActiveSessionStatus'
+import { useAuth } from '../hooks/useAuth'
+import { startSession } from '../utils/trainingSession'
 import { PlayerNav } from '../components/layout/PlayerNav'
 import { SiteFooter } from '../components/layout/SiteFooter'
 import '../styles/train.css'
@@ -111,14 +114,20 @@ function CatalogCard({ drill }) {
 // useSessionBuilder); "Start & Record" stashes the session draft.
 export function TrainPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const sb = useSessionBuilder()
+  const active = useActiveSessionStatus()
+
+  // Only one session can be in flight at a time. While an unfinished one exists
+  // the builder is read-only for starting — the player resumes, submits, or
+  // discards it from the banner first.
+  const blocked = active.hasUnfinished
+  const activeName = active.session?.name || 'Your session'
+  const completed = active.status === 'completed'
 
   function handleStart() {
-    try {
-      localStorage.setItem('orvx_session', JSON.stringify(sb.buildHandoff()))
-    } catch {
-      // storage unavailable — the draft just isn't kept
-    }
+    if (blocked) return
+    startSession(user?.email, sb.buildHandoff())
     navigate('/workout')
   }
 
@@ -129,6 +138,37 @@ export function TrainPage() {
       <div className="sb__glow-b" />
 
       <PlayerNav />
+
+      {blocked && (
+        <div className={`sb-active ${completed ? 'is-completed' : ''}`}>
+          <div className="sb-active__text">
+            <span className="sb-active__label">
+              {completed ? 'Session finished' : 'Session in progress'}
+            </span>
+            <span className="sb-active__name">
+              “{activeName}” {completed
+                ? 'is done and waiting for your video proof.'
+                : 'is still running — finish it before starting another.'}
+            </span>
+          </div>
+          <div className="sb-active__actions">
+            <button
+              type="button"
+              className="sb-active__go"
+              onClick={() => navigate(completed ? '/submit-proof' : '/workout')}
+            >
+              {completed ? 'Submit proof' : 'Resume workout'}
+            </button>
+            <button
+              type="button"
+              className="sb-active__discard"
+              onClick={active.discard}
+            >
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
 
       <section className="sb-head">
         <span className="sb-head__badge">
@@ -304,9 +344,9 @@ export function TrainPage() {
             type="button"
             className="sb-bar__start"
             onClick={handleStart}
-            disabled={sb.isEmpty}
+            disabled={sb.isEmpty || blocked}
           >
-            Start &amp; Record Session
+            {blocked ? 'Finish Your Current Session' : 'Start & Record Session'}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M7 4l13 8-13 8z" />
             </svg>

@@ -1,30 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-
-// Used when the player opens /workout without a session stashed by the
-// Session Builder — the same demo session the design ships with.
-const FALLBACK_SESSION = {
-  name: 'Tuesday High-Intensity Speed & Dribbling',
-  rewards: ['+3 PAC', '+2 DRI'],
-  drills: [
-    { name: 'Cone Slalom Agility Weave', boost: '+2 PAC', sets: 3, reps: 15, unit: 'Reps' },
-    { name: 'Tight-Space 1v1 Dribbling', boost: '+2 DRI', sets: 3, reps: 20, unit: 'Secs' },
-    { name: 'Box-to-Box Sprint Drills', boost: '+1 PHY', sets: 4, reps: 15, unit: 'Secs' },
-  ],
-}
-
-function loadSession() {
-  try {
-    const raw = localStorage.getItem('orvx_session')
-    if (!raw) return FALLBACK_SESSION
-    const parsed = JSON.parse(raw)
-    if (!parsed || !Array.isArray(parsed.drills) || parsed.drills.length === 0) {
-      return FALLBACK_SESSION
-    }
-    return parsed
-  } catch {
-    return FALLBACK_SESSION
-  }
-}
+import { useAuth } from './useAuth'
+import {
+  completeSession,
+  discardActiveSession,
+  readActiveSession,
+  saveSessionProgress,
+  timeAgo,
+} from '../utils/trainingSession'
 
 function clock(totalSeconds) {
   const safe = Math.max(0, totalSeconds)
@@ -33,20 +15,62 @@ function clock(totalSeconds) {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
-// Active Workout HUD logic: a running stopwatch plus a per-set checklist.
-// The session is read once on mount; ticking each set drives every derived
-// figure below.
+function blankMatrix(drills) {
+  return drills.map((drill) => Array(Math.max(1, drill.sets || 1)).fill(false))
+}
+
+// Reconcile a stored progress matrix against the session's drills so a shape
+// change (or corruption) can't crash the checklist.
+function hydrateMatrix(drills, stored) {
+  const base = blankMatrix(drills)
+  if (!Array.isArray(stored)) return base
+  return base.map((row, di) =>
+    row.map((_, si) => Boolean(Array.isArray(stored[di]) ? stored[di][si] : false)),
+  )
+}
+
+// Active Workout HUD logic. The session comes from the lifecycle store, not a
+// loose draft: if there is none the page redirects to the builder, and once the
+// session is `completed` the checklist is locked — the only way forward is to
+// submit proof (or discard and rebuild).
 export function useActiveWorkout() {
-  const session = useMemo(() => loadSession(), [])
+  const { user } = useAuth()
+  const email = user?.email
+
+  const session = useMemo(() => readActiveSession(email), [email])
+  const locked = session?.status === 'completed'
+
   const [done, setDone] = useState(() =>
-    session.drills.map((drill) => Array(Math.max(1, drill.sets || 1)).fill(false)),
+    session ? hydrateMatrix(session.drills, session.progress) : [],
   )
   const [elapsed, setElapsed] = useState(0)
 
   useEffect(() => {
+    if (!session || locked) return undefined
     const id = setInterval(() => setElapsed((value) => value + 1), 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [session, locked])
+
+  // Persist the checklist so a reload mid-workout keeps progress.
+  useEffect(() => {
+    if (!session || locked) return
+    saveSessionProgress(email, done)
+  }, [done, session, locked, email])
+
+  if (!session) {
+    return { missing: true }
+  }
+
+  if (locked) {
+    return {
+      locked: true,
+      sessionTitle: session.name,
+      completedAgo: timeAgo(session.completedAt),
+      drillTotal: session.drills.length,
+      rewards: session.rewards?.length ? session.rewards : ['No XP targeted'],
+      discard: () => discardActiveSession(email),
+    }
+  }
 
   function toggleSet(drillIndex, setIndex) {
     setDone((prev) =>
@@ -61,7 +85,7 @@ export function useActiveWorkout() {
   const setsTotal = done.reduce((sum, row) => sum + row.length, 0)
   const setsDone = done.reduce((sum, row) => sum + row.filter(Boolean).length, 0)
   const allDone = setsTotal > 0 && setsDone === setsTotal
-  const activeIndex = drillComplete.indexOf(false) // first unfinished drill, or -1
+  const activeIndex = drillComplete.indexOf(false)
   const pct = setsTotal ? Math.round((setsDone / setsTotal) * 100) : 0
   const remaining = setsTotal - setsDone
 
@@ -89,8 +113,8 @@ export function useActiveWorkout() {
 
   return {
     elapsed: clock(elapsed),
-    sessionTitle: session.name || FALLBACK_SESSION.name,
-    rewards: session.rewards && session.rewards.length ? session.rewards : ['No XP targeted'],
+    sessionTitle: session.name,
+    rewards: session.rewards?.length ? session.rewards : ['No XP targeted'],
     drillsDone,
     drillTotal: session.drills.length,
     setsDone,
@@ -100,5 +124,8 @@ export function useActiveWorkout() {
     allDone,
     finishLockedLabel: `Finish Workout (Locked – ${remaining} set${remaining === 1 ? '' : 's'} left)`,
     drills,
+    // Lock the session, then the page routes on to proof submission.
+    finish: () => completeSession(email),
+    cancel: () => discardActiveSession(email),
   }
 }

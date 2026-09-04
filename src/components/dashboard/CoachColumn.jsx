@@ -30,16 +30,27 @@ export function CoachColumn({ submissions }) {
         </div>
       </div>
 
-      <h2 className="dash-subs__heading">Recent Drill Submissions</h2>
-      {submissions.map((submission) => (
-        <div key={submission.name} className="dash-sub">
+      <h2 className="dash-subs__heading">Sessions Submitted for Review</h2>
+      {submissions.length === 0 ? (
+        <div className="dash-sub dash-sub--empty">
           <div className="dash-sub__body">
-            <span className="dash-sub__name">{submission.name}</span>
-            <span className="dash-sub__meta">{submission.meta}</span>
+            <span className="dash-sub__name">No sessions submitted yet</span>
+            <span className="dash-sub__meta">
+              Finish a training session and submit your proof to see it here
+            </span>
           </div>
-          <span className={`dash-sub__status is-${submission.state}`}>{submission.status}</span>
         </div>
-      ))}
+      ) : (
+        submissions.map((submission, i) => (
+          <div key={`${submission.name}-${i}`} className="dash-sub">
+            <div className="dash-sub__body">
+              <span className="dash-sub__name">{submission.name}</span>
+              <span className="dash-sub__meta">{submission.meta}</span>
+            </div>
+            <span className={`dash-sub__status is-${submission.state}`}>{submission.status}</span>
+          </div>
+        ))
+      )}
     </div>
   )
 }

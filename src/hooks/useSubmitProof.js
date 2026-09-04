@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useAuth } from './useAuth'
-import { readApprovedSessions, writeApprovedSessions } from '../utils/playerProfile'
+import { readApprovedSessions } from '../utils/playerProfile'
+import { readActiveSession, submitActiveSession } from '../utils/trainingSession'
 
 // The eight Club Head Coaches a verified player can route a submission to.
 // Static demo data — becomes GET /coaches once the backend exists.
@@ -22,24 +23,6 @@ const BASELINE_TARGET = 1
 // Accepted upload types and the hard length cap from the drill rules.
 const VIDEO_TYPES = ['video/mp4', 'video/quicktime']
 const MAX_CLIP_SECONDS = 90
-
-// Demo session used when the player reaches this page without one stashed by
-// the Session Builder — mirrors useActiveWorkout's fallback.
-const FALLBACK_SESSION = {
-  name: 'Tuesday High-Intensity Speed & Dribbling',
-  rewards: ['+3 PAC', '+2 DRI'],
-  drills: [{ name: 'Cone Slalom Agility Weave', boost: '+2 PAC', sets: 3, reps: 15, unit: 'Reps' }],
-}
-
-function loadSession() {
-  try {
-    const parsed = JSON.parse(localStorage.getItem('orvx_session') || 'null')
-    if (parsed && Array.isArray(parsed.drills) && parsed.drills.length) return parsed
-  } catch {
-    // fall through to the demo session
-  }
-  return FALLBACK_SESSION
-}
 
 function clock(totalSeconds) {
   const safe = Math.max(0, Math.round(totalSeconds))
@@ -77,16 +60,24 @@ function readDuration(file) {
   })
 }
 
-// All state and derived copy for the Submit Training Proof page. Reviewer
-// routing (locked Platform Evaluator vs. open Club Coach picker) and every
-// summary line follow whether the player's baseline session is approved.
+function drillLineOf(session) {
+  return (session.drills || [])
+    .map((d) => `${d.sets}×${d.reps}${d.unit === 'Secs' ? 's' : ''}`)
+    .join(' · ')
+}
+
+// All state and derived copy for the Submit Training Proof page. The session
+// under review is the completed workout from the lifecycle store — if there
+// isn't one, the page redirects. On submit the session is archived into the
+// dashboard's finished list.
 export function useSubmitProof() {
   const { user } = useAuth()
-  const session = useMemo(() => loadSession(), [])
+  const email = user?.email
 
-  const [approved, setApprovedState] = useState(() =>
-    Math.min(BASELINE_TARGET, readApprovedSessions(user?.email)),
-  )
+  // Captured once so submitting (which clears the in-flight slot) doesn't
+  // bounce the page out from under the success modal.
+  const [session] = useState(() => readActiveSession(email))
+
   const [coach, setCoach] = useState(CLUB_COACHES[0])
   const [notes, setNotes] = useState('')
   const [tipOpen, setTipOpen] = useState(false)
@@ -102,30 +93,31 @@ export function useSubmitProof() {
     return () => URL.revokeObjectURL(clip.url)
   }, [clip])
 
+  // Redirect targets when there is nothing valid to submit.
+  const redirectTo = !session ? '/train' : session.status !== 'completed' ? '/workout' : null
+  if (redirectTo) {
+    return { redirectTo }
+  }
+
+  const approved = Math.min(BASELINE_TARGET, readApprovedSessions(email))
   const baselineDone = approved >= BASELINE_TARGET
   const reviewerName = baselineDone ? coach.split(' · ')[0] : 'Coach #9'
   const hasClip = Boolean(clip)
   const clipDurationLabel = clip && Number.isFinite(clip.duration) ? clock(clip.duration) : ''
 
-  const drillLine = session.drills
-    .map((d) => `${d.sets}×${d.reps}${d.unit === 'Secs' ? 's' : ''}`)
-    .join(' · ')
-
-  function setApproved(n) {
-    const clamped = Math.max(0, Math.min(BASELINE_TARGET, n))
-    writeApprovedSessions(user?.email, clamped)
-    setApprovedState(clamped)
+  function setClipRejected(message) {
+    setClipError(message)
   }
 
   async function onPickFile(file) {
     if (!file) return
     if (!VIDEO_TYPES.includes(file.type) && !file.type.startsWith('video/')) {
-      setClipError('That file isn’t a video. Upload an MP4 or MOV.')
+      setClipRejected('That file isn’t a video. Upload an MP4 or MOV.')
       return
     }
     const duration = await readDuration(file)
     if (Number.isFinite(duration) && duration > MAX_CLIP_SECONDS + 2) {
-      setClipError(`Clip runs ${clock(duration)} — trim it to ${MAX_CLIP_SECONDS} seconds or less.`)
+      setClipRejected(`Clip runs ${clock(duration)} — trim it to ${MAX_CLIP_SECONDS} seconds or less.`)
       return
     }
     setClipError('')
@@ -139,12 +131,9 @@ export function useSubmitProof() {
 
   return {
     baselineDone,
-    approvedSteps: Array.from({ length: BASELINE_TARGET + 1 }, (_, n) => ({
-      value: n,
-      label: `${n} / ${BASELINE_TARGET}`,
-      active: n === approved,
-      select: () => setApproved(n),
-    })),
+    baselineLabel: baselineDone
+      ? 'Baseline verified'
+      : `Baseline ${approved} / ${BASELINE_TARGET} approved`,
 
     headerNote: baselineDone
       ? 'Baseline verified. Pick the Club Head Coach who should review this session.'
@@ -185,6 +174,12 @@ export function useSubmitProof() {
         setClipError('Attach a training clip before submitting.')
         return
       }
+      submitActiveSession(email, {
+        reviewer: reviewerName,
+        notes,
+        clipName: clip.name,
+        clipDurationLabel,
+      })
       setSuccessOpen(true)
     },
     submitNote: !hasClip
@@ -196,7 +191,7 @@ export function useSubmitProof() {
     // side column
     summary: [
       { k: 'Session', v: session.name, color: '#fff' },
-      { k: 'Drills', v: drillLine, color: '#fff' },
+      { k: 'Drills', v: drillLineOf(session), color: '#fff' },
       {
         k: 'Clip',
         v: hasClip
@@ -210,7 +205,11 @@ export function useSubmitProof() {
         color: notes ? '#fff' : '#5A6784',
       },
       { k: 'Reviewer', v: reviewerName, color: baselineDone ? '#22E07E' : '#F59E0B' },
-      { k: 'Projected XP', v: (session.rewards || []).join(' · ') || '+4 XP', color: '#F59E0B' },
+      {
+        k: 'Projected XP',
+        v: (session.rewards || []).join(' · ') || '+4 XP',
+        color: '#F59E0B',
+      },
     ],
     routingNote: baselineDone
       ? 'Your baseline session is approved, so the reviewer field is open. Club coaches see your verified attributes alongside each clip.'
