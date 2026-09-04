@@ -331,43 +331,11 @@
   color: #22c55e;
 }
 
-/* --- cta --- */
-
-.lg-cta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin: 20px 40px 80px;
-  padding: 34px 32px;
-}
-
-.lg-cta__title {
-  margin: 0 0 8px;
-  font-size: clamp(22px, 2.4vw, 30px);
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: #fff;
-}
-
-.lg-cta .pg-lead {
-  margin: 0;
-  max-width: 520px;
-}
-
 @media (max-width: 720px) {
   .lg-head,
-  .lg-block,
-  .lg-cta {
+  .lg-block {
     padding-left: 20px;
     padding-right: 20px;
-  }
-
-  .lg-cta {
-    margin-left: 20px;
-    margin-right: 20px;
   }
 
   .lg-table__hide {
