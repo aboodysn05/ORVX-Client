@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { PageShell } from '../components/layout/PageShell'
-import { ArrowIcon } from '../components/ui/ArrowIcon'
 import '../styles/leagues.css'
 
 const TABS = [
@@ -202,20 +201,6 @@ export function LeaguesPage() {
           </div>
         </section>
       )}
-
-      <section className="lg-cta pg-card">
-        <div>
-          <h2 className="lg-cta__title">Run your own competition</h2>
-          <p className="pg-lead">
-            Coaches and admins can spin up a league or knockout, invite clubs, and let ORVX handle
-            the fixtures and maths.
-          </p>
-        </div>
-        <a className="pg-btn" href="/register">
-          Request Organizer Access
-          <ArrowIcon size={16} />
-        </a>
-      </section>
     </PageShell>
   )
 }
