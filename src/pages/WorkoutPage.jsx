@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useActiveWorkout } from '../hooks/useActiveWorkout'
 import { PlayerNav } from '../components/layout/PlayerNav'
 import '../styles/workout.css'
@@ -42,11 +42,85 @@ function DrillCard({ drill }) {
   )
 }
 
+// Shown once every set is ticked: the workout is locked and can't be
+// re-entered — the player either submits proof or discards and rebuilds.
+function CompletedCard({ aw, navigate }) {
+  return (
+    <div className="aw">
+      <div className="aw__grid" />
+      <div className="aw__glow-a" />
+      <div className="aw__glow-b" />
+
+      <PlayerNav />
+
+      <section className="aw-done">
+        <span className="aw-done__check">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#22E07E" strokeWidth="2.6">
+            <path d="M4 12l5 5L20 6" />
+          </svg>
+        </span>
+        <span className="aw-done__eyebrow">Session Complete</span>
+        <h1 className="aw-done__title">{aw.sessionTitle}</h1>
+        <p className="aw-done__note">
+          All {aw.drillTotal} drills logged · finished {aw.completedAgo}. This session is locked —
+          submit your video proof to send it for review.
+        </p>
+
+        <div className="aw-done__rewards">
+          {aw.rewards.map((reward) => (
+            <span key={reward} className="aw-reward">
+              {reward}
+            </span>
+          ))}
+        </div>
+
+        <div className="aw-done__actions">
+          <button
+            type="button"
+            className="aw-done__submit"
+            onClick={() => navigate('/submit-proof')}
+          >
+            Submit Video Proof
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+              <path d="M4 12h14M13 6l6 6-6 6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="aw-done__discard"
+            onClick={() => {
+              aw.discard()
+              navigate('/train')
+            }}
+          >
+            Discard &amp; build new
+          </button>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 // Active Workout HUD — the live view for a running training session. Stopwatch,
 // completion progress, and a checklist where every set is a toggle button.
 export function WorkoutPage() {
   const navigate = useNavigate()
   const aw = useActiveWorkout()
+
+  // No session in flight — nothing to run.
+  if (aw.missing) {
+    return <Navigate to="/train" replace />
+  }
+
+  // Finished and locked.
+  if (aw.locked) {
+    return <CompletedCard aw={aw} navigate={navigate} />
+  }
+
+  function finishWorkout() {
+    aw.finish()
+    navigate('/submit-proof')
+  }
 
   return (
     <div className="aw">
@@ -139,11 +213,18 @@ export function WorkoutPage() {
         </div>
 
         <div className="aw-bar__actions">
-          <Link to="/train" className="aw-bar__cancel">
+          <button
+            type="button"
+            className="aw-bar__cancel"
+            onClick={() => {
+              aw.cancel()
+              navigate('/train')
+            }}
+          >
             Cancel Workout
-          </Link>
+          </button>
           {aw.allDone ? (
-            <button type="button" className="aw-bar__finish" onClick={() => navigate('/submit-proof')}>
+            <button type="button" className="aw-bar__finish" onClick={finishWorkout}>
               Finish Workout &amp; Submit Video Proof
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
                 <path d="M4 12h14M13 6l6 6-6 6" />

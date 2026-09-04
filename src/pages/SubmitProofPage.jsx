@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import { useSubmitProof } from '../hooks/useSubmitProof'
 import { PlayerNav } from '../components/layout/PlayerNav'
 import { SiteFooter } from '../components/layout/SiteFooter'
@@ -13,6 +13,11 @@ import '../styles/submit-proof.css'
 // every set is ticked.
 export function SubmitProofPage() {
   const sp = useSubmitProof()
+
+  // No completed session to submit — send the player back to build or finish one.
+  if (sp.redirectTo) {
+    return <Navigate to={sp.redirectTo} replace />
+  }
 
   return (
     <div className="sp">
@@ -36,21 +41,19 @@ export function SubmitProofPage() {
             <p className="sp-head__note">{sp.headerNote}</p>
           </div>
 
-          <div className="sp-toggle">
-            <span className="sp-toggle__label">Approved sessions</span>
-            <div className="sp-toggle__group">
-              {sp.approvedSteps.map((step) => (
-                <button
-                  key={step.value}
-                  type="button"
-                  className={`sp-toggle__btn ${step.active ? 'is-active' : ''}`}
-                  onClick={step.select}
-                >
-                  {step.label}
-                </button>
-              ))}
-            </div>
-          </div>
+          <span className={`sp-baseline ${sp.baselineDone ? 'is-done' : ''}`}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
+              {sp.baselineDone ? (
+                <path d="M4 12l5 5L20 6" />
+              ) : (
+                <>
+                  <rect x="4" y="11" width="16" height="10" />
+                  <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+                </>
+              )}
+            </svg>
+            {sp.baselineLabel}
+          </span>
         </div>
       </section>
 

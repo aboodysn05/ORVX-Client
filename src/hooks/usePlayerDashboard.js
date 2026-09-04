@@ -10,6 +10,13 @@ import {
   xpPairsFor,
 } from '../utils/attributes'
 import { readApprovedSessions, writeApprovedSessions } from '../utils/playerProfile'
+import { readFinishedSessions, timeAgo } from '../utils/trainingSession'
+
+const REVIEW_STATE = {
+  approved: { state: 'approved', label: 'Approved' },
+  returned: { state: 'returned', label: 'Returned' },
+  pending: { state: 'pending', label: 'Pending Review' },
+}
 
 // The eight platform clubs a verified player can apply to. Static demo data —
 // becomes GET /clubs once the backend exists.
@@ -110,21 +117,20 @@ export function usePlayerDashboard(profile, email) {
     }
   })
 
-  const firstCode = attrDefs[0].code
-  const submissions = [
-    {
-      name: 'Cone Slalom Agility',
-      meta: 'Approved 2 days ago · Coach #9',
-      status: `Approved +2 ${firstCode}`,
-      state: 'approved',
-    },
-    {
-      name: gk ? 'Reaction Save Wall' : 'Target Shooting Drill',
-      meta: 'Submitted 6 hours ago · Coach #9',
-      status: 'Pending Review',
-      state: 'pending',
-    },
-  ]
+  // Training sessions the player has finished and submitted for review, newest
+  // first. Written by the Submit Proof flow (utils/trainingSession).
+  const finished = readFinishedSessions(email)
+  const submissions = finished.slice(0, 5).map((session) => {
+    const review = REVIEW_STATE[session.reviewStatus] || REVIEW_STATE.pending
+    return {
+      name: session.name,
+      meta: `Submitted ${timeAgo(session.submittedAt)} · ${session.reviewer}`,
+      status: review.label,
+      state: review.state,
+    }
+  })
+  const sessionsSubmitted = finished.length
+  const drillsLogged = finished.reduce((sum, session) => sum + (session.drills?.length || 0), 0)
 
   const chosen = CLUBS[selectedClub ?? 0]
 
@@ -162,7 +168,8 @@ export function usePlayerDashboard(profile, email) {
     setApproved,
 
     // stat tiles
-    drillsDone: approved * 4 + 2,
+    drillsDone: drillsLogged,
+    sessionsSubmitted,
     applicationsNote: unlocked
       ? 'Ready to send'
       : `Locked until ${TOTAL_SESSIONS}/${TOTAL_SESSIONS}`,
