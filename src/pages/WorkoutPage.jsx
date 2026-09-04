@@ -143,7 +143,7 @@ export function WorkoutPage() {
             Cancel Workout
           </Link>
           {aw.allDone ? (
-            <button type="button" className="aw-bar__finish" onClick={() => navigate('/drills')}>
+            <button type="button" className="aw-bar__finish" onClick={() => navigate('/submit-proof')}>
               Finish Workout &amp; Submit Video Proof
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
                 <path d="M4 12h14M13 6l6 6-6 6" />
