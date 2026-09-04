@@ -9,6 +9,7 @@ import { AboutPage } from './pages/AboutPage'
 import { PlayerAssessmentPage } from './pages/PlayerAssessmentPage'
 import { TrainPage } from './pages/TrainPage'
 import { WorkoutPage } from './pages/WorkoutPage'
+import { SubmitProofPage } from './pages/SubmitProofPage'
 
 // All route definitions live here.
 function App() {
@@ -41,6 +42,14 @@ function App() {
         element={
           <RequireAuth>
             <WorkoutPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/submit-proof"
+        element={
+          <RequireAuth>
+            <SubmitProofPage />
           </RequireAuth>
         }
       />
