@@ -267,6 +267,81 @@ body {
   height: 320px;
   background: #060911;
   border: 1px solid rgba(79, 70, 229, 0.3);
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.sp-drop__zone.is-dragging {
+  border-color: rgba(255, 46, 99, 0.7);
+  background: #0a0f1a;
+}
+
+.sp-drop__input {
+  display: none;
+}
+
+.sp-drop__video {
+  position: absolute;
+  inset: 16px;
+  width: calc(100% - 32px);
+  height: calc(100% - 32px);
+  object-fit: contain;
+  background: #000;
+}
+
+.sp-drop__corner {
+  z-index: 2;
+}
+
+.sp-drop__replace,
+.sp-drop__remove {
+  position: absolute;
+  z-index: 3;
+  background: rgba(9, 13, 22, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  cursor: pointer;
+  font-family: Archivo, sans-serif;
+  color: #c7d0e0;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.sp-drop__replace:hover,
+.sp-drop__remove:hover {
+  border-color: rgba(255, 46, 99, 0.6);
+  color: #ff2e63;
+}
+
+.sp-drop__replace {
+  top: 28px;
+  left: 28px;
+  padding: 8px 12px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.sp-drop__remove {
+  top: 28px;
+  right: 28px;
+  width: 30px;
+  height: 30px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.sp-drop__file {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #c7d0e0;
+  word-break: break-all;
+}
+
+.sp-drop__error {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #ff6b8a;
 }
 
 .sp-drop__dashed {
@@ -607,6 +682,13 @@ body {
 
 .sp-submit__btn:active {
   background: #e01c4f;
+}
+
+.sp-submit__btn:disabled {
+  background: rgba(255, 46, 99, 0.22);
+  box-shadow: none;
+  cursor: not-allowed;
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .sp-submit__note {
