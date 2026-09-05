@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { usePlayerAssessment } from '../hooks/usePlayerAssessment'
-import { savePlayerProfile } from '../utils/playerProfile'
+import { submitAssessment } from '../api/players'
 import { cardName } from '../utils/playerCard'
 import { AssessmentStepper } from '../components/assessment/AssessmentStepper'
 import { PositionFootStep } from '../components/assessment/PositionFootStep'
@@ -18,6 +19,8 @@ export function PlayerAssessmentPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const assessment = usePlayerAssessment()
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const {
     step,
     steps,
@@ -45,9 +48,19 @@ export function PlayerAssessmentPage() {
     buildPayload,
   } = assessment
 
-  function handleLockIn() {
-    savePlayerProfile(user?.email, buildPayload())
-    navigate('/dashboard')
+  async function handleLockIn() {
+    setSubmitError('')
+    setSubmitting(true)
+    try {
+      await submitAssessment(buildPayload())
+      navigate('/dashboard')
+    } catch (err) {
+      setSubmitError(
+        err.response?.data?.message || 'Unable to save your assessment. Please try again.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -126,14 +139,25 @@ export function PlayerAssessmentPage() {
             )}
 
             {isLastStep && (
-              <button type="button" className="asm__btn asm__btn--lock" onClick={handleLockIn}>
-                Lock In My OVR &amp; Join Platform
+              <button
+                type="button"
+                className="asm__btn asm__btn--lock"
+                onClick={handleLockIn}
+                disabled={submitting}
+              >
+                {submitting ? 'Saving…' : 'Lock In My OVR & Join Platform'}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M4 12h15M13 6l6 6-6 6" />
                 </svg>
               </button>
             )}
           </div>
+
+          {submitError && (
+            <span style={{ color: '#FF2E63', fontSize: '0.85rem', display: 'block', marginTop: '0.75rem' }}>
+              {submitError}
+            </span>
+          )}
         </section>
 
         <aside className="asm__preview">

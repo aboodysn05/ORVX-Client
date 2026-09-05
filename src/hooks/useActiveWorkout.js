@@ -1,12 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-import { useAuth } from './useAuth'
-import {
-  completeSession,
-  discardActiveSession,
-  readActiveSession,
-  saveSessionProgress,
-  timeAgo,
-} from '../utils/trainingSession'
+import { useEffect, useState } from 'react'
+import { completeSession, discardSession, getActiveSession, saveProgress } from '../api/sessions'
+import { timeAgo } from '../utils/trainingSession'
 
 function clock(totalSeconds) {
   const safe = Math.max(0, totalSeconds)
@@ -15,35 +9,43 @@ function clock(totalSeconds) {
   return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
-function blankMatrix(drills) {
-  return drills.map((drill) => Array(Math.max(1, drill.sets || 1)).fill(false))
+// The backend stores each drill's per-set checklist on its own
+// session_drills row (drill.progress), rather than one matrix on the
+// session. Reconcile each row against its own `sets` count so a shape drift
+// (or a drill added mid-flight some other way) can't crash the checklist —
+// same defensive intent the old single-matrix version had.
+function hydrateMatrix(drills) {
+  return drills.map((drill) => {
+    const size = Math.max(1, drill.sets || 1)
+    return Array.from({ length: size }, (_, si) => Boolean(drill.progress?.[si]))
+  })
 }
 
-// Reconcile a stored progress matrix against the session's drills so a shape
-// change (or corruption) can't crash the checklist.
-function hydrateMatrix(drills, stored) {
-  const base = blankMatrix(drills)
-  if (!Array.isArray(stored)) return base
-  return base.map((row, di) =>
-    row.map((_, si) => Boolean(Array.isArray(stored[di]) ? stored[di][si] : false)),
-  )
-}
-
-// Active Workout HUD logic. The session comes from the lifecycle store, not a
-// loose draft: if there is none the page redirects to the builder, and once the
-// session is `completed` the checklist is locked — the only way forward is to
-// submit proof (or discard and rebuild).
+// Active Workout HUD logic. The session comes from the backend (one player
+// has at most one in-flight session — see the partial unique index on
+// training_sessions): if there is none the page redirects, and once the
+// session is `completed` the checklist is locked — the only way forward is
+// to submit proof (or discard and rebuild).
 export function useActiveWorkout() {
-  const { user } = useAuth()
-  const email = user?.email
-
-  const session = useMemo(() => readActiveSession(email), [email])
-  const locked = session?.status === 'completed'
-
-  const [done, setDone] = useState(() =>
-    session ? hydrateMatrix(session.drills, session.progress) : [],
-  )
+  const [session, setSession] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [done, setDone] = useState([])
   const [elapsed, setElapsed] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    getActiveSession().then((data) => {
+      if (cancelled) return
+      setSession(data)
+      setDone(data ? hydrateMatrix(data.drills) : [])
+      setLoading(false)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const locked = session?.status === 'completed'
 
   useEffect(() => {
     if (!session || locked) return undefined
@@ -51,11 +53,23 @@ export function useActiveWorkout() {
     return () => clearInterval(id)
   }, [session, locked])
 
-  // Persist the checklist so a reload mid-workout keeps progress.
+  // Persist the checklist so a reload mid-workout keeps progress — same
+  // intent as before, now a PATCH instead of a localStorage write. Skips the
+  // very first render (done is only just-hydrated from the session then).
+  const [hydrated, setHydrated] = useState(false)
   useEffect(() => {
     if (!session || locked) return
-    saveSessionProgress(email, done)
-  }, [done, session, locked, email])
+    if (!hydrated) {
+      setHydrated(true)
+      return
+    }
+    saveProgress(session.id, done).catch(() => {})
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire on `done` changes only
+  }, [done])
+
+  if (loading) {
+    return { loading: true }
+  }
 
   if (!session) {
     return { missing: true }
@@ -68,7 +82,7 @@ export function useActiveWorkout() {
       completedAgo: timeAgo(session.completedAt),
       drillTotal: session.drills.length,
       rewards: session.rewards?.length ? session.rewards : ['No XP targeted'],
-      discard: () => discardActiveSession(email),
+      discard: () => discardSession(session.id),
     }
   }
 
@@ -124,8 +138,10 @@ export function useActiveWorkout() {
     allDone,
     finishLockedLabel: `Finish Workout (Locked – ${remaining} set${remaining === 1 ? '' : 's'} left)`,
     drills,
-    // Lock the session, then the page routes on to proof submission.
-    finish: () => completeSession(email),
-    cancel: () => discardActiveSession(email),
+    // The backend re-verifies every set is actually ticked before allowing
+    // completion (409 SESSION_INCOMPLETE otherwise) — it's the real gate,
+    // this `allDone` check is just what disables the button in the UI.
+    finish: () => completeSession(session.id),
+    cancel: () => discardSession(session.id),
   }
 }

@@ -15,4 +15,21 @@ client.interceptors.request.use((config) => {
   return config
 })
 
+// The real backend's centralized error handler responds with
+// { error: { message, code } } (see backend/src/middleware/error.js), but
+// every form in this app was written against authMock.js's flatter
+// { message } shape. Rather than touch every err.response.data.message read
+// site, normalize here so that field always exists regardless of which
+// shape actually came back.
+client.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    const data = err.response?.data
+    if (data && data.message === undefined && data.error?.message) {
+      data.message = data.error.message
+    }
+    return Promise.reject(err)
+  },
+)
+
 export default client

@@ -14,6 +14,10 @@ import '../styles/submit-proof.css'
 export function SubmitProofPage() {
   const sp = useSubmitProof()
 
+  if (sp.loading) {
+    return <div className="sp">Loading…</div>
+  }
+
   // No completed session to submit — send the player back to build or finish one.
   if (sp.redirectTo) {
     return <Navigate to={sp.redirectTo} replace />
@@ -109,6 +113,11 @@ export function SubmitProofPage() {
               Submit Session for Review
             </button>
             <span className="sp-submit__note">{sp.submitNote}</span>
+            {sp.submitError && (
+              <span style={{ color: '#FF2E63', fontSize: '0.85rem', display: 'block', marginTop: '0.5rem' }}>
+                {sp.submitError}
+              </span>
+            )}
           </div>
         </div>
 

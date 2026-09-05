@@ -1,7 +1,8 @@
+import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { usePlayerDashboard } from '../hooks/usePlayerDashboard'
-import { readPlayerProfile } from '../utils/playerProfile'
+import { getMyProfile } from '../api/players'
 import { cardName, initials, playerId } from '../utils/playerCard'
 import { PlayerNav } from '../components/layout/PlayerNav'
 import { PlayerIdentityCard } from '../components/dashboard/PlayerIdentityCard'
@@ -17,11 +18,45 @@ import '../styles/dashboard.css'
 // a player who has not completed the assessment is sent there first.
 export function PlayerDashboardPage() {
   const { user } = useAuth()
-  const profile = readPlayerProfile(user?.email)
+  const [profile, setProfile] = useState(null)
+  // 'loading' | 'ready' | 'missing' (no assessment yet, 404) | 'error' (network/server)
+  const [status, setStatus] = useState('loading')
+
+  useEffect(() => {
+    let cancelled = false
+    getMyProfile()
+      .then((data) => {
+        if (cancelled) return
+        setProfile(data)
+        setStatus('ready')
+      })
+      .catch((err) => {
+        if (cancelled) return
+        setStatus(err.response?.status === 404 ? 'missing' : 'error')
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const dash = usePlayerDashboard(profile, user?.email)
 
-  if (!profile) {
+  if (status === 'loading') {
+    return <div className="dash">Loading your dashboard…</div>
+  }
+  if (status === 'missing') {
     return <Navigate to="/assessment" replace />
+  }
+  if (status === 'error') {
+    return (
+      <div className="dash">
+        Couldn't load your profile — check your connection and{' '}
+        <button type="button" onClick={() => window.location.reload()}>
+          try again
+        </button>
+        .
+      </div>
+    )
   }
 
   const name = cardName(user?.name)

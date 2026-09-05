@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './useAuth'
 import { readApprovedSessions } from '../utils/playerProfile'
-import { readActiveSession, submitActiveSession } from '../utils/trainingSession'
+import { getActiveSession, submitSession } from '../api/sessions'
+
+// There's no real video upload/storage backend yet (see
+// backend/src/services/sessions.service.js's submitSession — it stores
+// whatever URL string it's given). The drag-and-drop clip below is kept
+// purely for the in-page preview/UX; this fixed placeholder is what actually
+// gets sent as videoUrl so POST /sessions/:id/submit can be exercised
+// end-to-end. Swap this for a real upload once file storage exists.
+const PLACEHOLDER_VIDEO_URL = 'https://example.com/placeholder-clip.mp4'
 
 // The eight Club Head Coaches a verified player can route a submission to.
 // Static demo data — becomes GET /coaches once the backend exists.
@@ -74,14 +82,31 @@ export function useSubmitProof() {
   const { user } = useAuth()
   const email = user?.email
 
-  // Captured once so submitting (which clears the in-flight slot) doesn't
-  // bounce the page out from under the success modal.
-  const [session] = useState(() => readActiveSession(email))
+  // Captured once on mount so submitting (which moves the session out of
+  // "in flight" on the backend) doesn't bounce the page out from under the
+  // success modal.
+  const [session, setSession] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    getActiveSession().then((data) => {
+      if (!cancelled) {
+        setSession(data)
+        setLoading(false)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const [coach, setCoach] = useState(CLUB_COACHES[0])
   const [notes, setNotes] = useState('')
   const [tipOpen, setTipOpen] = useState(false)
   const [successOpen, setSuccessOpen] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   // Attached clip: { name, size, url, duration }. The object URL feeds the
   // in-page <video> preview and is revoked whenever the clip changes / unmounts.
@@ -92,6 +117,10 @@ export function useSubmitProof() {
     if (!clip?.url) return undefined
     return () => URL.revokeObjectURL(clip.url)
   }, [clip])
+
+  if (loading) {
+    return { loading: true }
+  }
 
   // Redirect targets when there is nothing valid to submit.
   const redirectTo = !session ? '/train' : session.status !== 'completed' ? '/workout' : null
@@ -168,19 +197,28 @@ export function useSubmitProof() {
     onNotesChange: (event) => setNotes(event.target.value),
 
     // submit
-    canSubmit: hasClip,
-    submit: () => {
+    canSubmit: hasClip && !submitting,
+    submitError,
+    submit: async () => {
       if (!hasClip) {
         setClipError('Attach a training clip before submitting.')
         return
       }
-      submitActiveSession(email, {
-        reviewer: reviewerName,
-        notes,
-        clipName: clip.name,
-        clipDurationLabel,
-      })
-      setSuccessOpen(true)
+      setSubmitError('')
+      setSubmitting(true)
+      try {
+        // Real file upload doesn't exist yet — see PLACEHOLDER_VIDEO_URL above.
+        await submitSession(session.id, {
+          videoUrl: PLACEHOLDER_VIDEO_URL,
+          notes,
+          reviewerName,
+        })
+        setSuccessOpen(true)
+      } catch (err) {
+        setSubmitError(err.response?.data?.message || 'Unable to submit this session. Please try again.')
+      } finally {
+        setSubmitting(false)
+      }
     },
     submitNote: !hasClip
       ? 'Attach a training clip to submit.'

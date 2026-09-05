@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useActiveWorkout } from '../hooks/useActiveWorkout'
 import { PlayerNav } from '../components/layout/PlayerNav'
@@ -44,7 +45,7 @@ function DrillCard({ drill }) {
 
 // Shown once every set is ticked: the workout is locked and can't be
 // re-entered — the player either submits proof or discards and rebuilds.
-function CompletedCard({ aw, navigate }) {
+function CompletedCard({ aw, navigate, onDiscard }) {
   return (
     <div className="aw">
       <div className="aw__grid" />
@@ -85,14 +86,7 @@ function CompletedCard({ aw, navigate }) {
               <path d="M4 12h14M13 6l6 6-6 6" />
             </svg>
           </button>
-          <button
-            type="button"
-            className="aw-done__discard"
-            onClick={() => {
-              aw.discard()
-              navigate('/train')
-            }}
-          >
+          <button type="button" className="aw-done__discard" onClick={onDiscard}>
             Discard &amp; build new
           </button>
         </div>
@@ -106,6 +100,12 @@ function CompletedCard({ aw, navigate }) {
 export function WorkoutPage() {
   const navigate = useNavigate()
   const aw = useActiveWorkout()
+  const [actionError, setActionError] = useState('')
+
+  // Still fetching the in-flight session from the backend.
+  if (aw.loading) {
+    return <div className="aw">Loading your workout…</div>
+  }
 
   // No session in flight — nothing to run.
   if (aw.missing) {
@@ -114,12 +114,38 @@ export function WorkoutPage() {
 
   // Finished and locked.
   if (aw.locked) {
-    return <CompletedCard aw={aw} navigate={navigate} />
+    return (
+      <CompletedCard
+        aw={aw}
+        navigate={navigate}
+        onDiscard={async () => {
+          try {
+            await aw.discard()
+            navigate('/train')
+          } catch {
+            setActionError('Unable to discard the session. Please try again.')
+          }
+        }}
+      />
+    )
   }
 
-  function finishWorkout() {
-    aw.finish()
-    navigate('/submit-proof')
+  async function finishWorkout() {
+    try {
+      await aw.finish()
+      navigate('/submit-proof')
+    } catch (err) {
+      setActionError(err.response?.data?.message || 'Unable to finish the session. Please try again.')
+    }
+  }
+
+  async function cancelWorkout() {
+    try {
+      await aw.cancel()
+      navigate('/train')
+    } catch {
+      setActionError('Unable to cancel the session. Please try again.')
+    }
   }
 
   return (
@@ -213,14 +239,7 @@ export function WorkoutPage() {
         </div>
 
         <div className="aw-bar__actions">
-          <button
-            type="button"
-            className="aw-bar__cancel"
-            onClick={() => {
-              aw.cancel()
-              navigate('/train')
-            }}
-          >
+          <button type="button" className="aw-bar__cancel" onClick={cancelWorkout}>
             Cancel Workout
           </button>
           {aw.allDone ? (
@@ -240,6 +259,11 @@ export function WorkoutPage() {
             </button>
           )}
         </div>
+        {actionError && (
+          <span style={{ color: '#FF2E63', fontSize: '0.85rem', display: 'block', marginTop: '0.5rem' }}>
+            {actionError}
+          </span>
+        )}
       </div>
     </div>
   )

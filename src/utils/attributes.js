@@ -72,3 +72,16 @@ export function xpPairsFor(position) {
 export function demoValuesFor(position) {
   return isGoalkeeper(position) ? { ...DEMO_GK } : { ...DEMO_OUTFIELD }
 }
+
+// The backend keys attribute values by the lowercase `key` (pace,
+// dribbling, ...) — see backend/src/db/migrations/002_create_players_and_attributes.sql.
+// Anything that needs the short display code for a value coming back from
+// the API goes through this, so there is exactly one key -> code map in the
+// whole app (used by api/drills.js and api/sessions.js).
+const CODE_BY_KEY = Object.fromEntries(
+  [...OUTFIELD_ATTRS, ...GK_ATTRS].map((attr) => [attr.key, attr.code]),
+)
+
+export function codeForKey(key) {
+  return CODE_BY_KEY[key] || key.toUpperCase()
+}
