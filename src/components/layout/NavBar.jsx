@@ -1,10 +1,10 @@
 import { Link, NavLink } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { readCoachApplication } from '../../utils/coachApplication'
 import '../../styles/nav.css'
 
-// Reusable site navigation. Shows a Sign In / Register button for guests
-// and a user chip + Log out for signed-in users.
+// Public marketing navigation. SiteNav routes players to PlayerNav and
+// coaches to CoachNav, so in practice this renders for signed-out visitors;
+// the signed-in branch is a defensive fallback for any other role.
 const LINKS = [
   { label: 'Home', to: '/' },
   { label: 'Drills', to: '/drills' },
@@ -23,7 +23,6 @@ function initialsOf(name) {
 
 export function NavBar() {
   const { user, logout } = useAuth()
-  const coachPending = user?.role === 'coach' && Boolean(readCoachApplication(user.email))
 
   return (
     <nav className="nav">
@@ -59,26 +58,7 @@ export function NavBar() {
       </div>
 
       <div className="nav__actions">
-        {!user && (
-          <Link to="/login" className="nav__cta">
-            Sign In / Register
-          </Link>
-        )}
-        {user && coachPending && (
-          <>
-            <Link to="/coach/gateway" className="nav__pending">
-              <span className="nav__pending-dot" />
-              <span className="nav__pending-text">
-                <span className="nav__pending-title">Application Pending</span>
-                <span className="nav__pending-sub">Awaiting admin approval</span>
-              </span>
-            </Link>
-            <button type="button" className="nav__logout" onClick={logout}>
-              Log out
-            </button>
-          </>
-        )}
-        {user && !coachPending && (
+        {user ? (
           <>
             <span className="nav__chip">
               <span className="nav__chip-avatar">{initialsOf(user.name)}</span>
@@ -91,6 +71,10 @@ export function NavBar() {
               Log out
             </button>
           </>
+        ) : (
+          <Link to="/login" className="nav__cta">
+            Sign In / Register
+          </Link>
         )}
       </div>
     </nav>

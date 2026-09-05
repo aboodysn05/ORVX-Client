@@ -52,9 +52,14 @@ export function usePlayerDashboard(profile, email) {
 
   useEffect(() => {
     let cancelled = false
-    listSessions('submitted').then((data) => {
-      if (!cancelled) setFinished(data)
-    })
+    listSessions('submitted')
+      .then((data) => {
+        if (!cancelled) setFinished(data)
+      })
+      .catch(() => {
+        // No player profile yet (404) or a transient failure — leave the
+        // submitted-sessions list empty rather than throwing.
+      })
     return () => {
       cancelled = true
     }

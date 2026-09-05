@@ -1,5 +1,6 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { destForRole } from '../utils/authRedirect'
 import { LoginForm } from '../components/auth/LoginForm'
 import { RegisterForm } from '../components/auth/RegisterForm'
 import '../styles/auth.css'
@@ -13,9 +14,10 @@ export function AuthPage({ mode = 'login' }) {
   const isLogin = mode !== 'register'
 
   // A visitor who is already signed in is sent on rather than shown the
-  // form. Coaches have no dashboard yet — their home is the gateway request.
+  // form. Coaches have no dashboard yet — their home is the gateway request;
+  // admins land on the console.
   if (user) {
-    return <Navigate to={user.role === 'coach' ? '/coach/gateway' : '/dashboard'} replace />
+    return <Navigate to={destForRole(user.role)} replace />
   }
 
   return (

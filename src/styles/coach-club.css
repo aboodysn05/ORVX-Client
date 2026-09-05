@@ -1,0 +1,545 @@
+/* Coach Club Profile — translated from OVRX Club Profile.dc.html.
+   Scope: .ccp-* . Sits inside PageShell (.page backdrop + CoachNav + footer). */
+
+.ccp-section,
+.ccp-body {
+  position: relative;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px 40px 0;
+}
+
+.ccp-body {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 26px;
+  padding-top: 26px;
+  align-items: flex-start;
+}
+
+/* --- header --- */
+
+.ccp-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 1px;
+  background: rgba(79, 70, 229, 0.28);
+  border: 1px solid rgba(79, 70, 229, 0.4);
+}
+
+.ccp-header__main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px;
+  flex: 3 1 520px;
+  min-width: 0;
+  padding: 30px 32px;
+  background: linear-gradient(
+    118deg,
+    rgba(255, 46, 99, 0.16) 0%,
+    rgba(15, 23, 42, 0.94) 52%,
+    rgba(79, 70, 229, 0.16) 100%
+  );
+}
+
+.ccp-crest {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 96px;
+  width: 96px;
+  height: 96px;
+  background: rgba(9, 13, 22, 0.72);
+  border: 1px solid rgba(255, 46, 99, 0.55);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  color: #ff2e63;
+  text-shadow: 0 0 24px rgba(255, 46, 99, 0.5);
+}
+
+.ccp-header__id {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.ccp-kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #f59e0b;
+}
+
+.ccp-kicker::before {
+  content: '';
+  display: block;
+  width: 22px;
+  height: 1px;
+  background: #f59e0b;
+}
+
+.ccp-title {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.ccp-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.ccp-badge {
+  padding: 6px 11px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ccp-badge--indigo {
+  background: rgba(79, 70, 229, 0.16);
+  border: 1px solid rgba(79, 70, 229, 0.5);
+  color: #a5b0ff;
+}
+
+.ccp-badge--green {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.5);
+  color: #10b981;
+}
+
+.ccp-badge--amber {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  color: #f59e0b;
+}
+
+.ccp-header__pos {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  flex: 1 1 220px;
+  min-width: 0;
+  padding: 30px 32px;
+  background: rgba(9, 13, 22, 0.72);
+}
+
+.ccp-pos-label {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7c89a2;
+}
+
+.ccp-pos-value {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 58px;
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.02em;
+  color: #f59e0b;
+  text-shadow: 0 0 28px rgba(245, 158, 11, 0.5);
+}
+
+.ccp-pos-suffix {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.ccp-pos-note {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a6784;
+}
+
+/* --- stats --- */
+
+.ccp-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1px;
+  margin-top: 1px;
+}
+
+.ccp-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  padding: 20px 22px;
+  background: rgba(15, 23, 42, 0.84);
+  outline: 1px solid rgba(79, 70, 229, 0.3);
+}
+
+.ccp-stat__k {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7c89a2;
+}
+
+.ccp-stat__v {
+  font-size: 27px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+}
+
+.ccp-stat__v.is-amber {
+  color: #f59e0b;
+}
+
+.ccp-stat__v.is-green {
+  color: #10b981;
+}
+
+.ccp-stat__note {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #5a6784;
+}
+
+/* --- body columns --- */
+
+.ccp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
+.ccp-col--main {
+  flex: 3 1 540px;
+}
+
+.ccp-col--side {
+  flex: 2 1 330px;
+}
+
+.ccp-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 26px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(79, 70, 229, 0.28);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ccp-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.ccp-card__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #e8ecf5;
+}
+
+.ccp-card__hint {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5a6784;
+}
+
+.ccp-card__link {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ff2e63;
+}
+
+/* --- season form --- */
+
+.ccp-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.ccp-form__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 90px;
+  padding: 14px 10px;
+}
+
+.ccp-form__cell.is-w {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.45);
+}
+
+.ccp-form__cell.is-d {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.ccp-form__cell.is-l {
+  background: rgba(255, 46, 99, 0.08);
+  border: 1px solid rgba(255, 46, 99, 0.45);
+}
+
+.ccp-form__result {
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.ccp-form__cell.is-w .ccp-form__result {
+  color: #10b981;
+}
+
+.ccp-form__cell.is-d .ccp-form__result {
+  color: #f59e0b;
+}
+
+.ccp-form__cell.is-l .ccp-form__result {
+  color: #ff2e63;
+}
+
+.ccp-form__score {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: #c7d0e0;
+}
+
+.ccp-form__opp {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5a6784;
+}
+
+.ccp-nextfix {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: rgba(9, 13, 22, 0.68);
+  border-left: 2px solid #4f46e5;
+}
+
+.ccp-nextfix__label {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #a5b0ff;
+}
+
+.ccp-nextfix__opp {
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.ccp-nextfix__meta {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8b97af;
+}
+
+.ccp-nextfix__link {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #ff2e63;
+}
+
+/* --- squad composition --- */
+
+.ccp-comp {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.ccp-comp__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ccp-comp__label {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ccp-comp__label.is-pink {
+  color: #ff2e63;
+}
+
+.ccp-comp__label.is-indigo {
+  color: #4f46e5;
+}
+
+.ccp-comp__label.is-amber {
+  color: #f59e0b;
+}
+
+.ccp-comp__nums {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ccp-comp__avg {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a6784;
+}
+
+.ccp-comp__count {
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+}
+
+.ccp-comp__bar {
+  position: relative;
+  display: block;
+  height: 9px;
+  background: rgba(9, 13, 22, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.ccp-comp__fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  height: 100%;
+}
+
+.ccp-comp__fill.is-pink {
+  background: #ff2e63;
+  box-shadow: 0 0 14px rgba(255, 46, 99, 0.5);
+}
+
+.ccp-comp__fill.is-indigo {
+  background: #4f46e5;
+  box-shadow: 0 0 14px rgba(79, 70, 229, 0.55);
+}
+
+.ccp-comp__fill.is-amber {
+  background: #f59e0b;
+  box-shadow: 0 0 14px rgba(245, 158, 11, 0.5);
+}
+
+/* --- club details --- */
+
+.ccp-detail {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 13px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.ccp-detail__k {
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #7c89a2;
+}
+
+.ccp-detail__v {
+  font-size: 13px;
+  font-weight: 800;
+  text-align: right;
+  color: #fff;
+}
+
+/* --- club management actions --- */
+
+.ccp-action {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: rgba(9, 13, 22, 0.7);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.ccp-action:hover {
+  border-color: rgba(255, 46, 99, 0.6);
+}
+
+.ccp-action__text {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.ccp-action__title {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.ccp-action__note {
+  font-size: 11.5px;
+  font-weight: 700;
+  line-height: 1.45;
+  color: #7c89a2;
+  text-wrap: pretty;
+}
+
+.ccp-action svg {
+  margin-left: auto;
+  flex: 0 0 16px;
+}

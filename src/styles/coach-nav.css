@@ -1,39 +1,40 @@
-/* Reusable top navigation bar. Scope: .nav
-   Styling only — no inline styles in NavBar.jsx.
-   Archivo webfont is loaded via <link> in index.html. */
+/* Top navigation for a signed-in coach. Scope: .cnav
+   Mirrors player-nav.css; styling only, no inline styles in CoachNav.jsx. */
 
-.nav {
-  position: relative;
-  z-index: 5;
+.cnav {
+  position: sticky;
+  top: 0;
+  z-index: 40;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  flex-wrap: wrap;
+  gap: 20px;
   padding: 18px 40px;
   border-bottom: 1px solid rgba(79, 70, 229, 0.2);
-  background: rgba(9, 13, 22, 0.55);
+  background: rgba(9, 13, 22, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   font-family: Archivo, sans-serif;
 }
 
-.nav__brand {
+.cnav__brand {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.nav__brand-logo {
+.cnav__brand svg {
   filter: drop-shadow(0 0 10px rgba(255, 46, 99, 0.7));
 }
 
-.nav__brand-text {
+.cnav__brand-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.nav__brand-name {
+.cnav__brand-name {
   font-size: 21px;
   font-weight: 900;
   line-height: 1;
@@ -43,7 +44,7 @@
   text-shadow: 0 0 18px rgba(255, 46, 99, 0.5);
 }
 
-.nav__brand-tag {
+.cnav__brand-tag {
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.24em;
@@ -51,9 +52,9 @@
   color: #5a6784;
 }
 
-.nav__links {
+.cnav__links {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   gap: 30px;
   font-size: 12.5px;
   font-weight: 700;
@@ -61,62 +62,51 @@
   text-transform: uppercase;
 }
 
-.nav__link {
+.cnav__link {
   padding: 8px 2px;
   border-bottom: 2px solid transparent;
   color: #c7d0e0;
   text-decoration: none;
 }
 
-.nav__link:hover {
+.cnav__link:hover {
   color: #ff2e63;
 }
 
-.nav__link.is-active {
+.cnav__link.is-active {
   border-bottom-color: #ff2e63;
   color: #ff2e63;
   text-shadow: 0 0 16px rgba(255, 46, 99, 0.65);
 }
 
-.nav__actions {
+.cnav__link--cta {
+  color: #ff2e63;
+}
+
+.cnav__account {
   display: flex;
   align-items: center;
   gap: 14px;
   min-height: 44px;
 }
 
-.nav__cta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
-  background: #ff2e63;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #fff;
-  text-decoration: none;
-  box-shadow: 0 0 26px rgba(255, 46, 99, 0.45);
-  transition: background 0.15s, box-shadow 0.15s;
-}
-
-.nav__cta:hover {
-  background: #ff4776;
-  color: #fff;
-  box-shadow: 0 0 36px rgba(255, 46, 99, 0.6);
-}
-
-.nav__chip {
+.cnav__chip {
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 6px 14px 6px 6px;
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(79, 70, 229, 0.35);
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s;
 }
 
-.nav__chip-avatar {
+.cnav__chip:hover {
+  border-color: rgba(255, 46, 99, 0.6);
+  background: rgba(255, 46, 99, 0.08);
+}
+
+.cnav__avatar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,14 +120,14 @@
   color: #fff;
 }
 
-.nav__chip-text {
+.cnav__chip-text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 3px;
 }
 
-.nav__chip-name {
+.cnav__chip-name {
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -145,7 +135,7 @@
   color: #fff;
 }
 
-.nav__chip-sub {
+.cnav__chip-sub {
   font-size: 9.5px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -153,39 +143,41 @@
   color: #a5b0ff;
 }
 
-.nav__logout {
-  padding: 10px 14px;
-  background: transparent;
-  border: 1px solid rgba(79, 70, 229, 0.45);
+.cnav__chip-sub.is-pending {
+  color: #f59e0b;
+}
+
+.cnav__signout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(79, 70, 229, 0.3);
   cursor: pointer;
-  font-family: Archivo, sans-serif;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #c9c6fa;
+  color: #8b97af;
   transition: border-color 0.15s, color 0.15s;
 }
 
-.nav__logout:hover {
-  border-color: #ff2e63;
+.cnav__signout:hover {
+  border-color: rgba(255, 46, 99, 0.6);
   color: #ff2e63;
 }
 
-.nav a:focus-visible,
-.nav button:focus-visible {
+.cnav a:focus-visible,
+.cnav button:focus-visible {
   outline: 2px solid #4f46e5;
   outline-offset: 2px;
 }
 
-@media (max-width: 860px) {
-  .nav {
-    flex-wrap: wrap;
-    gap: 16px;
+@media (max-width: 900px) {
+  .cnav {
     padding: 16px 20px;
+    gap: 16px;
   }
 
-  .nav__links {
+  .cnav__links {
     order: 3;
     width: 100%;
     gap: 20px;

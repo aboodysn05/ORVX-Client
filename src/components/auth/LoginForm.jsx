@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
+import { destForRole } from '../../utils/authRedirect'
 import { PasswordField } from './PasswordField'
 
 export function LoginForm() {
@@ -18,7 +19,7 @@ export function LoginForm() {
     setSubmitting(true)
     try {
       const user = await login(email, password)
-      navigate(user?.role === 'coach' ? '/coach/gateway' : '/dashboard')
+      navigate(destForRole(user?.role))
     } catch (err) {
       setError(
         err.response?.data?.message ||
