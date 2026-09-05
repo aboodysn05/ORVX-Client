@@ -1,23 +1,32 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { AdminShell } from '../components/layout/AdminShell'
 import { useAuth } from '../hooks/useAuth'
 import { cardName, initials } from '../utils/playerCard'
 import '../styles/admin-overview.css'
 
-// Sys-Admin Overview & Profile — translated from OVRX Admin Profile.dc.html.
-// Frontend only: mock security/impact/log data, local state for the
-// notification toggles and a transient toast.
+// Sys-Admin Overview — the admin console landing page. Frontend only:
+// mock snapshot counters, a mock append-only action log, a transient toast.
 
-const IMPACT = [
-  { label: 'Coaches Approved', value: '42', note: '6 pending in the requests queue', color: '#10B981', pct: 78 },
-  { label: 'Positions Unlocked', value: '18', note: 'Baseline re-assessments granted', color: '#A5B0FF', pct: 44 },
-  { label: 'Uptime On Shift', value: '4h 12m', note: 'Signed in 08:41 UTC · no idle breaks', color: '#FF2E63', pct: 62 },
+const BANNER_META = [
+  { k: 'Admin ID', v: 'Admin_01' },
+  { k: 'Member Since', v: '2025-03-11' },
+  { k: 'Last Login', v: '2026-08-31 08:41 UTC' },
+  { k: 'Session Uptime', v: '4h 12m' },
 ]
 
-const PREFS = [
-  { key: 'stuck', label: 'Email me for stuck submissions (>48h)', on: 'Digest at 08:00 UTC', off: 'No alert sent' },
-  { key: 'coaches', label: 'Notify on new coach registrations', on: 'Instant email', off: 'No alert sent' },
-  { key: 'capacity', label: 'Alert when clubs hit capacity', on: 'Instant email', off: 'Muted' },
+// Actionable snapshot — each tile deep-links into the section that owns it.
+const SNAPSHOT = [
+  { label: 'Pending Coach Requests', value: '6', note: 'Oldest waiting 4 days', to: '/admin/requests', color: '#F59E0B', cta: 'Review queue' },
+  { label: 'Clubs Near Capacity', value: '3', note: '2 already at the cap', to: '/admin/clubs', color: '#FF2E63', cta: 'Manage clubs' },
+  { label: 'Results Outstanding', value: '4', note: 'Season 1 · Division A', to: '/admin/leagues', color: '#4F46E5', cta: 'Enter results' },
+  { label: 'Active Drills', value: '7', note: '2 retired this month', to: '/admin/drills', color: '#10B981', cta: 'Open catalogue' },
+]
+
+const SEASON = [
+  { label: 'Coaches Approved', value: '42', note: 'Season to date' },
+  { label: 'Positions Unlocked', value: '18', note: 'Baseline re-assessments' },
+  { label: 'Clubs Provisioned', value: '11', note: '1 archived' },
 ]
 
 const ACTION_COLOR = { Access: '#A5B0FF', Results: '#10B981', Catalogue: '#F59E0B', Session: '#6E7C96' }
@@ -42,7 +51,6 @@ const LOG = [
 
 export function AdminOverviewPage() {
   const { user } = useAuth()
-  const [prefs, setPrefs] = useState({ stuck: true, coaches: true, capacity: false })
   const [toast, setToast] = useState('')
 
   function fire(msg) {
@@ -51,149 +59,80 @@ export function AdminOverviewPage() {
     fire._t = setTimeout(() => setToast(''), 2600)
   }
 
-  function togglePref(p) {
-    const active = prefs[p.key]
-    setPrefs((prev) => ({ ...prev, [p.key]: !prev[p.key] }))
-    fire(`${active ? 'Muted: ' : 'Enabled: '}${p.label}`)
-  }
-
-  const onCount = PREFS.filter((p) => prefs[p.key]).length
-
   return (
-    <AdminShell footerNote="OVRX Admin Console · Profile & Settings" footerRight="Credential changes require 2FA re-entry">
+    <AdminShell
+      footerNote="OVRX Admin Console · Overview"
+      footerRight="Every action is written to the append-only audit log"
+    >
       <section className="adm-section">
-        <div className="adm-herocopy">
-          <span className="adm-kicker">Account · Session · Personal Log</span>
-          <h1 className="adm-title">Administrator Overview &amp; Profile</h1>
-          <p className="adm-lead">
-            Manage your root access credentials, security settings, and view your personal system
-            operations log.
-          </p>
+        <div className="aov-banner">
+          <span className="aov-banner__avatar">{initials(user?.name) || 'AD'}</span>
+          <div className="aov-banner__id">
+            <span className="aov-banner__kicker">
+              <span className="aov-banner__pulse" />
+              Signed in · Root Access
+            </span>
+            <h1 className="aov-banner__name">{cardName(user?.name) || 'A. Duarte'}</h1>
+            <span className="aov-mono aov-banner__email">{user?.email || 'a.duarte@ovrx.app'}</span>
+          </div>
+          <div className="aov-banner__meta">
+            {BANNER_META.map((m) => (
+              <span key={m.k} className="aov-metacell">
+                <span className="aov-metacell__k">{m.k}</span>
+                <span className="aov-mono aov-metacell__v">{m.v}</span>
+              </span>
+            ))}
+          </div>
         </div>
+        <p className="aov-welcome">
+          Everything below is live across the console. Jump straight to whatever needs a decision, then
+          check your action trail at the bottom.
+        </p>
       </section>
 
-      <section className="adm-section aov-cards">
-        <div className="aov-card">
-          <span className="aov-card__k">Identity</span>
-          <div className="aov-identity">
-            <span className="aov-identity__avatar">{initials(user?.name) || 'AD'}</span>
-            <span className="aov-identity__id">
-              <span className="aov-identity__name">{cardName(user?.name)}</span>
-              <span className="aov-mono aov-identity__email">{user?.email || 'a.duarte@ovrx.app'}</span>
-              <span className="aov-rootbadge">
-                <span className="aov-rootbadge__dot" />
-                Root Access
-              </span>
-            </span>
-          </div>
-          <div className="aov-idgrid">
-            <span className="aov-idcell">
-              <span className="aov-idcell__k">Admin ID</span>
-              <span className="aov-mono aov-idcell__v">Admin_01</span>
-            </span>
-            <span className="aov-idcell">
-              <span className="aov-idcell__k">Member Since</span>
-              <span className="aov-mono aov-idcell__v">2025-03-11</span>
-            </span>
-          </div>
+      <section className="adm-section">
+        <div className="aov-sectionhead">
+          <span className="aov-sectionhead__title">Needs Your Attention</span>
+          <span className="aov-mono aov-sectionhead__meta">4 open items</span>
         </div>
-
-        <div className="aov-card">
-          <span className="aov-card__k">Security Status</span>
-          <div className="aov-2fa">
-            <span className="aov-2fa__id">
-              <span className="aov-2fa__title">Two-Factor Auth</span>
-              <span className="aov-mono aov-2fa__sub">Authenticator app · TOTP</span>
-            </span>
-            <span className="aov-2fa__badge">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                <path d="M5 13l4 4L19 7" />
-              </svg>
-              Enabled
-            </span>
-          </div>
-          <div className="aov-lastlogin">
-            <span className="aov-lastlogin__k">Last Login</span>
-            <span className="aov-mono aov-lastlogin__ts">2026-08-31 08:41:07 UTC</span>
-            <span className="aov-mono aov-lastlogin__meta">
-              <span>IP 192.168.1.1</span>
-              <span>Lisbon, PT</span>
-            </span>
-          </div>
-          <div className="aov-pw">
-            <button
-              type="button"
-              className="aov-pw__btn"
-              onClick={() => fire('Password rotation sent to a.duarte@ovrx.systems')}
-            >
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <rect x="4" y="10" width="16" height="10" />
-                <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-              </svg>
-              Update Password
-            </button>
-            <span className="aov-mono aov-pw__note">Rotated 46 days ago · policy 90 days</span>
-          </div>
-        </div>
-
-        <div className="aov-card">
-          <span className="aov-card__head">
-            <span className="aov-card__k">Admin Impact</span>
-            <span className="aov-mono aov-card__meta">Season to date</span>
-          </span>
-          {IMPACT.map((i) => (
-            <div key={i.label} className="aov-impact" style={{ borderLeftColor: i.color }}>
-              <span className="aov-impact__row">
-                <span className="aov-impact__k">{i.label}</span>
-                <span className="aov-impact__v" style={{ color: i.color }}>
-                  {i.value}
-                </span>
+        <div className="aov-snap">
+          {SNAPSHOT.map((s) => (
+            <Link key={s.label} to={s.to} className="aov-snapcard" style={{ '--c': s.color }}>
+              <span className="aov-snapcard__top">
+                <span className="aov-snapcard__label">{s.label}</span>
+                <svg
+                  className="aov-snapcard__arrow"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.4"
+                >
+                  <path d="M6 18L18 6M9 6h9v9" />
+                </svg>
               </span>
-              <span className="aov-impact__bar">
-                <span
-                  className="aov-impact__fill"
-                  style={{ width: `${i.pct}%`, background: i.color, boxShadow: `0 0 12px ${i.color}` }}
-                />
-              </span>
-              <span className="aov-mono aov-impact__note">{i.note}</span>
-            </div>
+              <span className="aov-snapcard__value">{s.value}</span>
+              <span className="aov-mono aov-snapcard__note">{s.note}</span>
+              <span className="aov-snapcard__cta">{s.cta}</span>
+            </Link>
           ))}
         </div>
       </section>
 
       <section className="adm-section">
-        <div className="aov-prefs">
-          <div className="aov-prefs__intro">
-            <span className="aov-card__k">Notification Preferences</span>
-            <span className="aov-prefs__title">System Alerts &amp; Routing</span>
-            <span className="aov-mono aov-prefs__summary">
-              {onCount} of {PREFS.length} routes active. Critical security events always email,
-              regardless of these settings.
-            </span>
-          </div>
-          <div className="aov-prefs__list">
-            {PREFS.map((p) => {
-              const active = prefs[p.key]
-              return (
-                <button
-                  key={p.key}
-                  type="button"
-                  className={`aov-pref ${active ? 'is-on' : ''}`}
-                  onClick={() => togglePref(p)}
-                >
-                  <span className="aov-pref__text">
-                    <span className="aov-pref__label">{p.label}</span>
-                    <span className={`aov-mono aov-pref__note ${active ? 'is-on' : ''}`}>
-                      {active ? p.on : p.off}
-                    </span>
-                  </span>
-                  <span className={`adm-toggle ${active ? 'is-on' : ''}`}>
-                    <span className="adm-toggle__knob" />
-                  </span>
-                </button>
-              )
-            })}
-          </div>
+        <div className="aov-sectionhead">
+          <span className="aov-sectionhead__title">Your Impact</span>
+          <span className="aov-mono aov-sectionhead__meta">Season to date</span>
+        </div>
+        <div className="aov-season">
+          {SEASON.map((s) => (
+            <div key={s.label} className="aov-seasoncell">
+              <span className="aov-seasoncell__v">{s.value}</span>
+              <span className="aov-seasoncell__k">{s.label}</span>
+              <span className="aov-mono aov-seasoncell__note">{s.note}</span>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -209,10 +148,16 @@ export function AdminOverviewPage() {
               Append-Only
             </span>
           </span>
-          <span className="aov-mono aov-log-head__uptime">
-            <span className="aov-log-head__dot" />
-            Session uptime 4h 12m
-          </span>
+          <button
+            type="button"
+            className="aov-log-head__export"
+            onClick={() => fire('Audit export queued · emailed to you on completion')}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+              <path d="M12 3v12M7 10l5 5 5-5M5 21h14" />
+            </svg>
+            Export Log
+          </button>
         </div>
 
         <div className="aov-term">
@@ -234,17 +179,12 @@ export function AdminOverviewPage() {
               {LOG.map((r, i) => (
                 <div key={i} className="aov-term__grid aov-term__row">
                   <span className="aov-mono aov-term__ts">{r.ts}</span>
-                  <span
-                    className="aov-mono aov-term__action"
-                    style={{ color: ACTION_COLOR[r.kind] }}
-                  >
+                  <span className="aov-mono aov-term__action" style={{ color: ACTION_COLOR[r.kind] }}>
                     {r.action}
                   </span>
                   <span className="aov-mono aov-term__target">{r.target}</span>
                   <span className="adm-tc--right">
-                    <span className={`adm-pill adm-pill--${STATUS_TONE[r.status]} aov-mono`}>
-                      {r.status}
-                    </span>
+                    <span className={`adm-pill adm-pill--${STATUS_TONE[r.status]} aov-mono`}>{r.status}</span>
                   </span>
                 </div>
               ))}
