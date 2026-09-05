@@ -7,6 +7,7 @@ import { DrillsPage } from './pages/DrillsPage'
 import { LeaguesPage } from './pages/LeaguesPage'
 import { AboutPage } from './pages/AboutPage'
 import { PlayerAssessmentPage } from './pages/PlayerAssessmentPage'
+import { CoachGatewayPage } from './pages/CoachGatewayPage'
 import { TrainPage } from './pages/TrainPage'
 import { WorkoutPage } from './pages/WorkoutPage'
 import { SubmitProofPage } from './pages/SubmitProofPage'
@@ -26,6 +27,14 @@ function App() {
         element={
           <RequireAuth>
             <PlayerAssessmentPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/coach/gateway"
+        element={
+          <RequireAuth>
+            <CoachGatewayPage />
           </RequireAuth>
         }
       />

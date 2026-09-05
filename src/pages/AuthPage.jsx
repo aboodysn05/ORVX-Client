@@ -12,8 +12,10 @@ export function AuthPage({ mode = 'login' }) {
   const { user } = useAuth()
   const isLogin = mode !== 'register'
 
+  // A visitor who is already signed in is sent on rather than shown the
+  // form. Coaches have no dashboard yet — their home is the gateway request.
   if (user) {
-    return <Navigate to="/dashboard" replace />
+    return <Navigate to={user.role === 'coach' ? '/coach/gateway' : '/dashboard'} replace />
   }
 
   return (
