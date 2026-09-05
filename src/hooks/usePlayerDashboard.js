@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   POSITION_CODE,
   RADAR_AXES,
@@ -10,7 +10,8 @@ import {
   xpPairsFor,
 } from '../utils/attributes'
 import { readApprovedSessions, writeApprovedSessions } from '../utils/playerProfile'
-import { readFinishedSessions, timeAgo } from '../utils/trainingSession'
+import { listSessions } from '../api/sessions'
+import { timeAgo } from '../utils/trainingSession'
 
 const REVIEW_STATE = {
   approved: { state: 'approved', label: 'Approved' },
@@ -47,6 +48,17 @@ export function usePlayerDashboard(profile, email) {
   const [hubOpen, setHubOpen] = useState(false)
   const [selectedClub, setSelectedClub] = useState(null)
   const [sentOpen, setSentOpen] = useState(false)
+  const [finished, setFinished] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    listSessions('submitted').then((data) => {
+      if (!cancelled) setFinished(data)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const position = profile?.position || 'Attacker'
   const gk = isGoalkeeper(position)
@@ -117,14 +129,13 @@ export function usePlayerDashboard(profile, email) {
     }
   })
 
-  // Training sessions the player has finished and submitted for review, newest
-  // first. Written by the Submit Proof flow (utils/trainingSession).
-  const finished = readFinishedSessions(email)
+  // Training sessions the player has finished and submitted for review,
+  // newest first — fetched from GET /sessions?status=submitted above.
   const submissions = finished.slice(0, 5).map((session) => {
     const review = REVIEW_STATE[session.reviewStatus] || REVIEW_STATE.pending
     return {
       name: session.name,
-      meta: `Submitted ${timeAgo(session.submittedAt)} · ${session.reviewer}`,
+      meta: `Submitted ${timeAgo(session.submittedAt)} · ${session.reviewerName || 'Unassigned'}`,
       status: review.label,
       state: review.state,
     }

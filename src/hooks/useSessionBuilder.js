@@ -1,8 +1,11 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { listDrills } from '../api/drills'
 
 // All Session Builder logic, kept close to the design script so it is easy to
-// check against. Everything is local state for now; `buildHandoff()` is the
-// single seam that becomes a POST to /sessions once the backend exists.
+// check against. The drill catalog (`library`) is fetched from the real
+// backend (GET /drills, via src/api/drills.js) on mount; everything else here
+// is still local UI state. `buildHandoff()` is the seam TrainPage uses to
+// call POST /sessions.
 
 export const FOCUS_OPTIONS = [
   'Pace & Acceleration',
@@ -13,28 +16,6 @@ export const FOCUS_OPTIONS = [
 
 export const ATTR_KEYS = ['PAC', 'DRI', 'SHO', 'PAS', 'DEF', 'PHY']
 
-// Drill catalog. `perSet` is seconds per set for rep-based drills; time for
-// seconds-based drills is derived from the seconds value instead.
-const LIBRARY = [
-  { id: 'slalom', name: 'Cone Slalom Agility Weave', boosts: { PAC: 2 }, sets: 3, reps: 5, unitKind: 'reps', perSet: 200 },
-  { id: 'onev1', name: 'Tight-Space 1v1 Dribbling', boosts: { DRI: 2 }, sets: 4, reps: 3, unitKind: 'reps', perSet: 225 },
-  { id: 'box', name: 'Box-to-Box Sprint Drills', boosts: { PHY: 1, PAC: 1 }, sets: 5, reps: 30, unitKind: 'secs', perSet: 120 },
-  { id: 'wall', name: 'Wall-Pass Rebound Control', boosts: { PAS: 2 }, sets: 4, reps: 12, unitKind: 'reps', perSet: 150 },
-  { id: 'finish', name: 'First-Touch Finishing Volley', boosts: { SHO: 2 }, sets: 3, reps: 8, unitKind: 'reps', perSet: 200 },
-  { id: 'ladder', name: 'Speed Ladder Quick Feet', boosts: { PAC: 1, DRI: 1 }, sets: 4, reps: 20, unitKind: 'secs', perSet: 90 },
-  { id: 'shield', name: 'Shielding & Shoulder Duels', boosts: { PHY: 2 }, sets: 3, reps: 6, unitKind: 'reps', perSet: 180 },
-  { id: 'press', name: 'Recovery Press & Tackle Angles', boosts: { DEF: 2 }, sets: 4, reps: 6, unitKind: 'reps', perSet: 165 },
-  { id: 'chip', name: 'Long-Range Chip Accuracy', boosts: { PAS: 1, SHO: 1 }, sets: 3, reps: 10, unitKind: 'reps', perSet: 200 },
-  { id: 'turn', name: 'Cruyff Turn Repetition Set', boosts: { DRI: 2 }, sets: 4, reps: 8, unitKind: 'reps', perSet: 135 },
-]
-
-const DEFAULT_ITEMS = [
-  { uid: 'i1', ref: 'slalom', sets: 3, reps: 5 },
-  { uid: 'i2', ref: 'onev1', sets: 4, reps: 3 },
-  { uid: 'i3', ref: 'box', sets: 5, reps: 30 },
-]
-
-const libOf = (id) => LIBRARY.find((drill) => drill.id === id)
 const pad2 = (n) => String(n).padStart(2, '0')
 
 function drillMinutes(base, sets, reps) {
@@ -51,7 +32,25 @@ export function useSessionBuilder() {
   const [focus, setFocus] = useState(FOCUS_OPTIONS[0])
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState(null) // one ATTR_KEY or null
-  const [items, setItems] = useState(DEFAULT_ITEMS)
+  const [items, setItems] = useState([])
+  const [library, setLibrary] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    listDrills()
+      .then((drills) => {
+        if (!cancelled) setLibrary(drills)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const libOf = (id) => library.find((drill) => drill.id === id)
 
   function step(uid, field, delta) {
     setItems((prev) =>
@@ -103,7 +102,8 @@ export function useSessionBuilder() {
   const gainsLine = gains.length ? gains.join('  |  ') : 'No drills selected'
 
   const q = query.trim().toLowerCase()
-  const catalog = LIBRARY.filter((drill) => !q || drill.name.toLowerCase().includes(q))
+  const catalog = library
+    .filter((drill) => !q || drill.name.toLowerCase().includes(q))
     .filter((drill) => !filter || drill.boosts[filter])
     .map((drill) => ({
       id: drill.id,
@@ -131,6 +131,7 @@ export function useSessionBuilder() {
       focus,
       totalTime,
       rewards: gains,
+      // Display-only drill list (used by the summary card before submit).
       drills: items.map((item) => {
         const base = libOf(item.ref)
         return {
@@ -141,6 +142,9 @@ export function useSessionBuilder() {
           unit: base.unitKind === 'secs' ? 'Secs' : 'Reps',
         }
       }),
+      // What POST /sessions actually needs: real drill ids so the backend can
+      // look up the canonical name/boosts itself rather than trust ours.
+      drillPayload: items.map((item) => ({ drillId: item.ref, sets: item.sets, reps: item.reps })),
     }
   }
 
@@ -162,7 +166,8 @@ export function useSessionBuilder() {
     gainsLine,
     catalog,
     catalogCount: pad2(catalog.length),
-    noResults: catalog.length === 0,
+    noResults: !loading && catalog.length === 0,
+    loading,
     buildHandoff,
   }
 }

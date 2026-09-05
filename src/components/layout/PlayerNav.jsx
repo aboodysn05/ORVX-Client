@@ -1,6 +1,7 @@
+import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { readPlayerProfile } from '../../utils/playerProfile'
+import { getMyProfile } from '../../api/players'
 import { cardName, initials } from '../../utils/playerCard'
 import '../../styles/player-nav.css'
 
@@ -19,7 +20,22 @@ export function PlayerNav() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const profile = readPlayerProfile(user?.email)
+  const [profile, setProfile] = useState(null)
+
+  // Best-effort: the OVR badge just doesn't render if this fails or the
+  // player hasn't completed the assessment yet (same as before, when a
+  // missing localStorage entry meant profile was null).
+  useEffect(() => {
+    let cancelled = false
+    getMyProfile()
+      .then((data) => {
+        if (!cancelled) setProfile(data)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   function handleSignOut() {
     logout()

@@ -1,8 +1,8 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useSessionBuilder } from '../hooks/useSessionBuilder'
 import { useActiveSessionStatus } from '../hooks/useActiveSessionStatus'
-import { useAuth } from '../hooks/useAuth'
-import { startSession } from '../utils/trainingSession'
+import { createSession } from '../api/sessions'
 import { PlayerNav } from '../components/layout/PlayerNav'
 import { SiteFooter } from '../components/layout/SiteFooter'
 import '../styles/train.css'
@@ -114,21 +114,33 @@ function CatalogCard({ drill }) {
 // useSessionBuilder); "Start & Record" stashes the session draft.
 export function TrainPage() {
   const navigate = useNavigate()
-  const { user } = useAuth()
   const sb = useSessionBuilder()
   const active = useActiveSessionStatus()
+  const [starting, setStarting] = useState(false)
+  const [startError, setStartError] = useState('')
 
   // Only one session can be in flight at a time. While an unfinished one exists
   // the builder is read-only for starting — the player resumes, submits, or
-  // discards it from the banner first.
+  // discards it from the banner first. The backend enforces this rule too
+  // (409 SESSION_IN_PROGRESS) — this client-side check is just for a snappier
+  // UI, not the real guard.
   const blocked = active.hasUnfinished
   const activeName = active.session?.name || 'Your session'
   const completed = active.status === 'completed'
 
-  function handleStart() {
+  async function handleStart() {
     if (blocked) return
-    startSession(user?.email, sb.buildHandoff())
-    navigate('/workout')
+    const { name, focus, drillPayload } = sb.buildHandoff()
+    setStartError('')
+    setStarting(true)
+    try {
+      await createSession({ name, focus, drills: drillPayload })
+      navigate('/workout')
+    } catch (err) {
+      setStartError(err.response?.data?.message || 'Unable to start the session. Please try again.')
+    } finally {
+      setStarting(false)
+    }
   }
 
   return (
@@ -316,6 +328,7 @@ export function TrainPage() {
           <span className="sb-catalog__divider" />
 
           <div className="sb-catalog__list">
+            {sb.loading && <span className="sb-catalog__empty">Loading drill catalog…</span>}
             {sb.catalog.map((drill) => (
               <CatalogCard key={drill.id} drill={drill} />
             ))}
@@ -344,14 +357,19 @@ export function TrainPage() {
             type="button"
             className="sb-bar__start"
             onClick={handleStart}
-            disabled={sb.isEmpty || blocked}
+            disabled={sb.isEmpty || blocked || starting}
           >
-            {blocked ? 'Finish Your Current Session' : 'Start & Record Session'}
+            {blocked ? 'Finish Your Current Session' : starting ? 'Starting…' : 'Start & Record Session'}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
               <path d="M7 4l13 8-13 8z" />
             </svg>
           </button>
         </div>
+        {startError && (
+          <span style={{ color: '#FF2E63', fontSize: '0.85rem', display: 'block', marginTop: '0.5rem' }}>
+            {startError}
+          </span>
+        )}
       </div>
     </div>
   )
