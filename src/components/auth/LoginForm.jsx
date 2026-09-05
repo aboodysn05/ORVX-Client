@@ -17,8 +17,8 @@ export function LoginForm() {
     setError('')
     setSubmitting(true)
     try {
-      await login(email, password)
-      navigate('/dashboard')
+      const user = await login(email, password)
+      navigate(user?.role === 'coach' ? '/coach/gateway' : '/dashboard')
     } catch (err) {
       setError(
         err.response?.data?.message ||
