@@ -1,0 +1,366 @@
+/* Admin Clubs — page-specific. Scope: .acl-* */
+
+.acl-headright {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.acl-viewtoggle {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+}
+
+.acl-viewtoggle__btn {
+  padding: 11px 16px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: Archivo, sans-serif;
+  font-size: 10.5px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8b97af;
+  transition: color 0.15s;
+}
+
+.acl-viewtoggle__btn.is-active {
+  background: rgba(255, 46, 99, 0.14);
+  border-color: rgba(255, 46, 99, 0.6);
+  color: #ff2e63;
+}
+
+.acl-counters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 30px;
+}
+
+.acl-gridsection {
+  padding-bottom: 70px;
+  padding-top: 30px;
+}
+
+.acl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 18px;
+}
+
+.acl-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.acl-card.is-full {
+  border-color: rgba(255, 46, 99, 0.4);
+}
+
+.acl-card.is-archived,
+.acl-lgrid.is-archived {
+  opacity: 0.55;
+}
+
+.acl-card__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.acl-emblem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 62px;
+  width: 62px;
+  height: 62px;
+  background: rgba(9, 13, 22, 0.75);
+  border: 1px solid rgba(245, 158, 11, 0.45);
+}
+
+.acl-emblem__k {
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #5a6784;
+}
+
+.acl-emblem__v {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1.05;
+}
+
+.acl-card__id {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.acl-card__namerow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+}
+
+.acl-card__name {
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.acl-card__coach {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: #8d99b0;
+}
+
+.acl-card__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.acl-tag {
+  padding: 5px 9px;
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.acl-tag--indigo {
+  background: rgba(79, 70, 229, 0.14);
+  border: 1px solid rgba(79, 70, 229, 0.5);
+  color: #a5b0ff;
+}
+
+.acl-tag--grey {
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #8b97af;
+}
+
+.acl-gauge {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.acl-gauge__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.acl-gauge__k {
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7c89a2;
+}
+
+.acl-gauge__nums {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.acl-gauge__roster {
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.acl-gauge__cap {
+  font-size: 13px;
+  font-weight: 900;
+  color: #5a6784;
+}
+
+.acl-gauge__bar {
+  display: block;
+  width: 100%;
+  height: 10px;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.acl-gauge__fill {
+  display: block;
+  height: 100%;
+}
+
+.acl-gauge__note {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.acl-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.acl-capfield {
+  flex: 1 1 138px;
+  min-width: 0;
+}
+
+.acl-mini {
+  padding: 13px 15px;
+  border: 1px solid;
+  cursor: pointer;
+  font-family: Archivo, sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition: background 0.15s, color 0.15s;
+}
+
+.acl-mini--indigo {
+  background: rgba(79, 70, 229, 0.14);
+  border-color: rgba(79, 70, 229, 0.55);
+  color: #a5b0ff;
+}
+.acl-mini--indigo:hover {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.acl-mini--danger {
+  background: transparent;
+  border-color: rgba(255, 46, 99, 0.5);
+  color: #ff2e63;
+}
+.acl-mini--danger:hover {
+  background: #ff2e63;
+  color: #fff;
+}
+
+.acl-mini--grey {
+  background: transparent;
+  border-color: rgba(148, 163, 184, 0.35);
+  color: #8b97af;
+}
+
+/* list view */
+.acl-lgrid {
+  grid-template-columns: 0.5fr 1.5fr 1.2fr 1.5fr 0.9fr 1.6fr;
+  min-width: 1200px;
+}
+
+.acl-lslot {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.acl-lclub {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.acl-lclub .acl-card__name {
+  font-size: 14.5px;
+}
+
+.acl-lcoach {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+
+.acl-lcoach span:first-child {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #c7d0e0;
+}
+
+.acl-lcoach__note {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #5a6784;
+}
+
+.acl-lcap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.acl-lcap__bar {
+  display: block;
+  width: 100%;
+  max-width: 150px;
+  height: 7px;
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.acl-ldiv {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a5b0ff;
+}
+
+.acl-lactions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.acl-lcapsel {
+  width: auto;
+  padding: 11px 12px;
+  font-size: 10.5px;
+}
+
+.acl-lactions .acl-mini {
+  padding: 11px 13px;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+}
+
+.adm-modal__actions .adm-btn {
+  padding: 15px 19px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
