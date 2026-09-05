@@ -716,13 +716,6 @@ body {
   box-shadow: 0 0 12px rgba(255, 46, 99, 0.4);
 }
 
-.attr__fill--62 { width: 62%; }
-.attr__fill--77 { width: 77%; }
-.attr__fill--79 { width: 79%; }
-.attr__fill--84 { width: 84%; }
-.attr__fill--86 { width: 86%; }
-.attr__fill--88 { width: 88%; }
-
 .card__foot {
   display: flex;
   align-items: center;
