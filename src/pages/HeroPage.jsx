@@ -6,6 +6,9 @@ import { DailyQuote } from '../components/DailyQuote'
 import { listDrills } from '../api/drills'
 import { listClubs } from '../api/clubs'
 import { listCompetitions, getStandings } from '../api/competitions'
+import { getFeaturedPlayer } from '../api/players'
+import { cardName, initials } from '../utils/playerCard'
+import { attrsFor } from '../utils/attributes'
 import heroShot from '../assets/hero.jpg'
 import '../styles/home.css'
 
@@ -74,15 +77,22 @@ export function HeroPage() {
   const [clubCount, setClubCount] = useState(null)
   const [topStandings, setTopStandings] = useState([])
   const [leagueName, setLeagueName] = useState('')
+  const [featuredPlayer, setFeaturedPlayer] = useState(null)
 
   useEffect(() => {
     let cancelled = false
 
     async function load() {
-      const [drills, clubs, competitions] = await Promise.all([listDrills(), listClubs(), listCompetitions()])
+      const [drills, clubs, competitions, player] = await Promise.all([
+        listDrills(),
+        listClubs(),
+        listCompetitions(),
+        getFeaturedPlayer(),
+      ])
       if (cancelled) return
       setDrillCount(drills.length)
       setClubCount(clubs.length)
+      setFeaturedPlayer(player)
 
       const league = competitions.find((c) => c.type === 'league')
       if (league) {
@@ -98,6 +108,29 @@ export function HeroPage() {
       cancelled = true
     }
   }, [])
+
+  // Falls back to the illustrative demo card when no player has completed
+  // the assessment yet (a real, if currently unlikely, empty state).
+  const attrDefs = attrsFor(featuredPlayer?.position || 'Attacker')
+  const card = featuredPlayer
+    ? {
+        avatar: initials(featuredPlayer.name),
+        name: cardName(featuredPlayer.name),
+        subtitle: featuredPlayer.position,
+        overall: featuredPlayer.overall,
+        attrs: attrDefs.map((def) => ({ name: def.name, value: featuredPlayer.attributes[def.key] })),
+        footLeft: 'Self-assessed baseline',
+        footRight: `${featuredPlayer.tier} Tier`,
+      }
+    : {
+        avatar: 'ME',
+        name: 'Mousa Eriqat',
+        subtitle: 'Right Winger · Northgate FC',
+        overall: 84,
+        attrs: ATTRIBUTES,
+        footLeft: 'Last approved · 2m ago',
+        footRight: '+2 this week',
+      }
 
   const stats = [
     { value: drillCount === null ? '—' : `${drillCount}`, label: 'Drills Available' },
@@ -255,35 +288,35 @@ export function HeroPage() {
         <div className="card">
           <div className="card__head">
             <div className="card__id">
-              <span className="card__avatar">ME</span>
+              <span className="card__avatar">{card.avatar}</span>
               <span className="card__name">
-                <strong>Mousa Eriqat</strong>
-                <span>Right Winger · Northgate FC</span>
+                <strong>{card.name}</strong>
+                <span>{card.subtitle}</span>
               </span>
             </div>
             <span className="card__ovr">
               <span className="card__ovr-label">OVR</span>
-              <span className="card__ovr-value">84</span>
+              <span className="card__ovr-value">{card.overall}</span>
             </span>
           </div>
 
           <div className="card__attrs">
-            {ATTRIBUTES.map((attr) => (
+            {card.attrs.map((attr) => (
               <div key={attr.name} className="attr">
                 <div className="attr__row">
                   <span className="attr__name">{attr.name}</span>
                   <span className="attr__value">{attr.value}</span>
                 </div>
                 <span className="attr__bar">
-                  <span className={`attr__fill attr__fill--${attr.value}`} />
+                  <span className="attr__fill" style={{ width: `${attr.value}%` }} />
                 </span>
               </div>
             ))}
           </div>
 
           <div className="card__foot">
-            <span>Last approved · 2m ago</span>
-            <span>+2 this week</span>
+            <span>{card.footLeft}</span>
+            <span>{card.footRight}</span>
           </div>
         </div>
       </section>

@@ -16,3 +16,9 @@ export function submitAssessment(payload) {
 export function getMyProfile() {
   return client.get('/players/me').then((res) => res.data.player)
 }
+
+// Public — resolves to null (not a rejection) when no player has completed
+// the assessment yet. Used by the logged-out Hero page's illustrative card.
+export function getFeaturedPlayer() {
+  return client.get('/players/featured').then((res) => res.data.player)
+}
