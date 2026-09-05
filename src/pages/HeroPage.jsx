@@ -1,15 +1,13 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { SiteNav } from '../components/layout/SiteNav'
 import { SiteFooter } from '../components/layout/SiteFooter'
 import { DailyQuote } from '../components/DailyQuote'
+import { listDrills } from '../api/drills'
+import { listClubs } from '../api/clubs'
+import { listCompetitions, getStandings } from '../api/competitions'
 import heroShot from '../assets/hero.jpg'
 import '../styles/home.css'
-
-const STATS = [
-  { value: '50+', label: 'Drills Approved' },
-  { value: '8+', label: 'Clubs Joined' },
-  { value: '6', label: 'Attribute Tracks' },
-]
 
 const FEATURES = [
   {
@@ -63,13 +61,6 @@ const STEPS = [
   },
 ]
 
-const STANDINGS = [
-  { club: 'Northgate FC', p: 6, w: 5, gd: '+9', pts: 16, lead: true },
-  { club: 'Riverside United', p: 6, w: 4, gd: '+5', pts: 13 },
-  { club: 'Eastfield Athletic', p: 6, w: 2, gd: '-2', pts: 7 },
-  { club: 'Southbank Rovers', p: 6, w: 1, gd: '-12', pts: 4 },
-]
-
 function ArrowIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -79,6 +70,41 @@ function ArrowIcon() {
 }
 
 export function HeroPage() {
+  const [drillCount, setDrillCount] = useState(null)
+  const [clubCount, setClubCount] = useState(null)
+  const [topStandings, setTopStandings] = useState([])
+  const [leagueName, setLeagueName] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function load() {
+      const [drills, clubs, competitions] = await Promise.all([listDrills(), listClubs(), listCompetitions()])
+      if (cancelled) return
+      setDrillCount(drills.length)
+      setClubCount(clubs.length)
+
+      const league = competitions.find((c) => c.type === 'league')
+      if (league) {
+        const standings = await getStandings(league.id)
+        if (cancelled) return
+        setLeagueName(league.name)
+        setTopStandings(standings.slice(0, 4))
+      }
+    }
+
+    load().catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const stats = [
+    { value: drillCount === null ? '—' : `${drillCount}`, label: 'Drills Available' },
+    { value: clubCount === null ? '—' : `${clubCount}`, label: 'Clubs' },
+    { value: '6', label: 'Attribute Tracks' },
+  ]
+
   return (
     <div className="home">
       <div className="home__grid" />
@@ -172,7 +198,7 @@ export function HeroPage() {
 
       {/* Stats */}
       <section className="stats">
-        {STATS.map((stat) => (
+        {stats.map((stat) => (
           <div key={stat.label} className="stats__item">
             <span className="stats__value">{stat.value}</span>
             <span className="stats__label">{stat.label}</span>
@@ -299,8 +325,8 @@ export function HeroPage() {
 
         <div className="table-card">
           <div className="table-card__head">
-            <strong>Champions League · Group B</strong>
-            <span>Matchday 6</span>
+            <strong>{leagueName || 'Premier Development League'} · Top 4</strong>
+            <span>Live standings</span>
           </div>
           <table className="standings">
             <thead>
@@ -313,13 +339,13 @@ export function HeroPage() {
               </tr>
             </thead>
             <tbody>
-              {STANDINGS.map((row) => (
-                <tr key={row.club} className={row.lead ? 'is-lead' : ''}>
+              {topStandings.map((row) => (
+                <tr key={row.club} className={row.position === 1 ? 'is-lead' : ''}>
                   <td>{row.club}</td>
-                  <td>{row.p}</td>
-                  <td>{row.w}</td>
-                  <td>{row.gd}</td>
-                  <td>{row.pts}</td>
+                  <td>{row.played}</td>
+                  <td>{row.won}</td>
+                  <td>{row.goalDiff > 0 ? `+${row.goalDiff}` : row.goalDiff}</td>
+                  <td>{row.points}</td>
                 </tr>
               ))}
             </tbody>

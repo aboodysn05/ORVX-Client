@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { PageShell } from '../components/layout/PageShell'
 import { ArrowIcon } from '../components/ui/ArrowIcon'
+import { listDrillsCatalog } from '../api/drills'
 import '../styles/drills.css'
 
 const CATS = [
@@ -21,51 +22,6 @@ const COACHES = [
   'Coach Idris · Riverside United',
 ]
 
-const DRILLS = [
-  {
-    id: 'd1', stat: 'DRI', reward: '+3 DRI', title: 'Cone Slalom Agility Weave', coach: 'Coach Marcus',
-    level: 'Intermediate', focus: 'Agility & Feet', duration: '15 mins', completes: 342, rating: '4.8',
-    setup: 'Eight cones, one metre apart, in a straight line. Ball at the first cone, phone on a tripod square to the run.',
-    execution: 'Weave the full line using both feet, turn at the end and return. Six passes without touching a cone.',
-    rule: 'The full run must stay in frame from first touch to final turn. Cuts void the submission.',
-  },
-  {
-    id: 'd2', stat: 'PAC', reward: '+2 PAC', title: '30m Flying Sprint Repeats', coach: 'Coach Elena',
-    level: 'Elite', focus: 'Acceleration', duration: '20 mins', completes: 511, rating: '4.9',
-    setup: 'Mark 30 metres with cones on grass. Film from the side so both markers are visible.',
-    execution: 'Six sprints from a rolling start, 90 seconds recovery between reps. Call out each split.',
-    rule: 'Both cones and a visible timer must be in frame for every rep.',
-  },
-  {
-    id: 'd3', stat: 'PAS', reward: '+2 PAS', title: 'Wall Pass Accuracy Ladder', coach: 'Coach Marcus',
-    level: 'Beginner', focus: 'Short Passing', duration: '12 mins', completes: 288, rating: '4.6',
-    setup: 'Chalk a 60cm target on a wall, stand at 8, 12 and 16 metres.',
-    execution: 'Ten passes from each distance, alternating feet, first touch only.',
-    rule: 'Target and player both in frame; the count is audible or on screen.',
-  },
-  {
-    id: 'd4', stat: 'SHO', reward: '+3 SHO', title: 'Box Finishing Under Pressure', coach: 'Coach Idris',
-    level: 'Intermediate', focus: 'Finishing', duration: '18 mins', completes: 402, rating: '4.7',
-    setup: 'Goal, six balls spread across the edge of the box, one server.',
-    execution: 'One-touch finishes from each position, alternating near and far post calls.',
-    rule: 'Goal frame visible on every strike. Ten seconds maximum between attempts.',
-  },
-  {
-    id: 'd5', stat: 'DEF', reward: '+2 DEF', title: '1v1 Jockey & Recovery', coach: 'Coach Elena',
-    level: 'Intermediate', focus: 'Positioning & Tackling', duration: '16 mins', completes: 194, rating: '4.5',
-    setup: 'A ten metre channel with two cones as the gate, one attacker, one ball.',
-    execution: 'Jockey the attacker across the channel, force the weak side, win the ball inside the gate.',
-    rule: 'Full channel in frame. Six repetitions, alternating sides.',
-  },
-  {
-    id: 'd6', stat: 'PHY', reward: '+1 PHY', title: 'Late-Game Shuttle Endurance', coach: 'Coach Idris',
-    level: 'Elite', focus: 'Stamina & Strength', duration: '22 mins', completes: 267, rating: '4.4',
-    setup: 'Shuttle markers at 5, 10, 15 and 20 metres.',
-    execution: 'Four sets of shuttles to each marker and back, 60 seconds rest between sets.',
-    rule: 'Continuous footage of all four sets, timer visible.',
-  },
-]
-
 function PlayIcon() {
   return (
     <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
@@ -75,22 +31,38 @@ function PlayIcon() {
 }
 
 export function DrillsPage() {
+  const [drills, setDrills] = useState([])
+  const [loading, setLoading] = useState(true)
   const [cat, setCat] = useState('ALL')
   const [query, setQuery] = useState('')
   const [level, setLevel] = useState('All Levels')
   const [openId, setOpenId] = useState(null)
 
+  useEffect(() => {
+    let cancelled = false
+    listDrillsCatalog()
+      .then((data) => {
+        if (!cancelled) setDrills(data)
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   const q = query.trim().toLowerCase()
-  const list = DRILLS.filter(
+  const list = drills.filter(
     (d) =>
-      (cat === 'ALL' || d.stat === cat) &&
+      (cat === 'ALL' || d.statCodes.includes(cat)) &&
       (level === 'All Levels' || d.level === level) &&
       (!q ||
         d.title.toLowerCase().includes(q) ||
         d.coach.toLowerCase().includes(q) ||
         d.focus.toLowerCase().includes(q)),
   )
-  const active = DRILLS.find((d) => d.id === openId) || null
+  const active = drills.find((d) => d.id === openId) || null
 
   useEffect(() => {
     if (!active) return undefined
@@ -146,12 +118,13 @@ export function DrillsPage() {
             ))}
           </select>
           <span className="drills-count">
-            {list.length} of {DRILLS.length} drills
+            {list.length} of {drills.length} drills
           </span>
         </div>
       </section>
 
       <section className="drills-grid">
+        {loading && <div className="drills-empty pg-card">Loading drills…</div>}
         {list.map((d) => (
           <article key={d.id} className="drill pg-card">
             <div className="drill__thumb">
@@ -181,7 +154,7 @@ export function DrillsPage() {
           </article>
         ))}
 
-        {list.length === 0 && (
+        {!loading && list.length === 0 && (
           <div className="drills-empty pg-card">No drills match those filters.</div>
         )}
       </section>
@@ -241,7 +214,7 @@ export function DrillsPage() {
               </div>
 
               <div className="modal__right">
-                <span className="modal__reward">Reward · {active.reward}</span>
+                <span className="modal__reward">Reward · {active.rewardFull}</span>
 
                 <label className="modal__field">
                   <span className="modal__label">Video Proof</span>
@@ -266,7 +239,7 @@ export function DrillsPage() {
                 </label>
 
                 <button type="button" className="pg-btn" onClick={() => setOpenId(null)}>
-                  Submit to Coach for Approval ({active.reward})
+                  Submit to Coach for Approval ({active.rewardFull})
                   <ArrowIcon size={16} />
                 </button>
                 <span className="modal__note">
