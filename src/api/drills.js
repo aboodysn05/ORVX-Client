@@ -25,3 +25,45 @@ function toBuilderShape(drill) {
 export function listDrills() {
   return client.get('/drills').then((res) => res.data.drills.map(toBuilderShape))
 }
+
+function primaryBoost(boosts) {
+  const entries = Object.entries(boosts)
+  if (entries.length === 0) return { code: null, value: 0 }
+  const [key, value] = entries.reduce((best, entry) => (entry[1] > best[1] ? entry : best))
+  return { code: codeForKey(key), value }
+}
+
+function boostString(boosts) {
+  return Object.entries(boosts)
+    .map(([key, value]) => `+${value} ${codeForKey(key)}`)
+    .join(' · ')
+}
+
+// Shape for the public Drills Explorer page (frontend/src/pages/DrillsPage.jsx)
+// — same GET /drills call as the session builder, adapted differently since
+// that page shows the richer display fields (level/coach/rating/instructions)
+// rather than session-builder sets/reps controls.
+function toCatalogShape(drill) {
+  const primary = primaryBoost(drill.boosts)
+  return {
+    id: drill.id,
+    title: drill.name,
+    statCodes: Object.keys(drill.boosts).map(codeForKey),
+    stat: primary.code,
+    reward: primary.code ? `+${primary.value} ${primary.code}` : '',
+    rewardFull: boostString(drill.boosts),
+    coach: drill.coachDisplayName,
+    level: drill.level,
+    focus: drill.focusLabel,
+    duration: `${drill.durationMinutes} mins`,
+    completes: drill.completionsCount,
+    rating: drill.rating.toFixed(1),
+    setup: drill.setupText,
+    execution: drill.executionText,
+    rule: drill.ruleText,
+  }
+}
+
+export function listDrillsCatalog() {
+  return client.get('/drills').then((res) => res.data.drills.map(toCatalogShape))
+}
