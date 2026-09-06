@@ -22,3 +22,8 @@ export function getMyProfile() {
 export function getFeaturedPlayer() {
   return client.get('/players/featured').then((res) => res.data.player)
 }
+
+// The player's own club applications (pending / accepted / declined / withdrawn).
+export function getMyClubApplications() {
+  return client.get('/players/me/applications').then((res) => res.data.applications)
+}

@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { readCoachApplication } from '../../utils/coachApplication'
+import { useCoachApplication } from '../../hooks/useCoachApplication'
 import { cardName, initials } from '../../utils/playerCard'
 import '../../styles/coach-nav.css'
 
@@ -28,8 +28,21 @@ export function CoachNav() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const isEvaluator = user?.organization === 'Platform Evaluator'
-  const application = readCoachApplication(user?.email)
-  const pending = application?.status === 'pending'
+  const { application } = useCoachApplication()
+  const status = application?.status
+  const pending = status === 'pending'
+  const declined = status === 'declined'
+  const approved = status === 'approved'
+  const chipTo = isEvaluator ? '/coach/evaluator' : approved ? '/coach/club' : '/coach/gateway'
+  const chipSub = isEvaluator
+    ? 'Platform Evaluator'
+    : approved
+      ? application?.clubName || 'Coach'
+      : pending
+        ? 'Pending Approval'
+        : declined
+          ? 'Application Declined'
+          : 'Coach'
 
   function handleSignOut() {
     logout()
@@ -64,7 +77,7 @@ export function CoachNav() {
             </NavLink>
           ))}
         </div>
-      ) : application ? (
+      ) : approved ? (
         <div className="cnav__links">
           {LINKS.map((link) => (
             <NavLink
@@ -80,22 +93,20 @@ export function CoachNav() {
         </div>
       ) : (
         <Link to="/coach/gateway" className="cnav__link cnav__link--cta">
-          Complete Coach Registration →
+          {pending
+            ? 'Registration Pending Approval →'
+            : declined
+              ? 'Update Coach Registration →'
+              : 'Complete Coach Registration →'}
         </Link>
       )}
 
       <div className="cnav__account">
-        <Link to={isEvaluator ? '/coach/evaluator' : '/coach/gateway'} className="cnav__chip">
+        <Link to={chipTo} className="cnav__chip">
           <span className="cnav__avatar">{initials(user?.name)}</span>
           <span className="cnav__chip-text">
             <span className="cnav__chip-name">{cardName(user?.name)}</span>
-            <span className={`cnav__chip-sub ${pending ? 'is-pending' : ''}`}>
-              {isEvaluator
-                ? 'Platform Evaluator'
-                : pending
-                  ? 'Pending Approval'
-                  : application?.clubName || 'Coach'}
-            </span>
+            <span className={`cnav__chip-sub ${pending ? 'is-pending' : ''}`}>{chipSub}</span>
           </span>
         </Link>
         <button

@@ -9,8 +9,9 @@ import {
   isGoalkeeper,
   xpPairsFor,
 } from '../utils/attributes'
-import { readApprovedSessions, writeApprovedSessions } from '../utils/playerProfile'
 import { listSessions } from '../api/sessions'
+import { listClubs, applyToClub } from '../api/clubs'
+import { getMyClubApplications } from '../api/players'
 import { timeAgo } from '../utils/trainingSession'
 
 const REVIEW_STATE = {
@@ -19,18 +20,19 @@ const REVIEW_STATE = {
   pending: { state: 'pending', label: 'Pending Review' },
 }
 
-// The eight platform clubs a verified player can apply to. Static demo data —
-// becomes GET /clubs once the backend exists.
-export const CLUBS = [
-  { name: 'Apex Academy', crest: 'AA', coach: 'Coach Marcus', squad: '11/15 Players', rank: '2nd Place', hot: true },
-  { name: 'Vortex FC', crest: 'VF', coach: 'Coach Elena', squad: '13/15 Players', rank: '1st Place', hot: true },
-  { name: 'Cyber Strikers', crest: 'CS', coach: 'Coach Rios', squad: '14/15 Players', rank: '4th Place' },
-  { name: 'Northgate Union', crest: 'NU', coach: 'Coach Ade', squad: '12/15 Players', rank: '3rd Place' },
-  { name: 'Vantage Athletic', crest: 'VA', coach: 'Coach Haas', squad: '9/15 Players', rank: '6th Place' },
-  { name: 'Meridian FC', crest: 'MF', coach: 'Coach Bello', squad: '15/15 Players', rank: '5th Place', full: true },
-  { name: 'Ironline SC', crest: 'IL', coach: 'Coach Novak', squad: '10/15 Players', rank: '7th Place' },
-  { name: 'Halcyon Rovers', crest: 'HR', coach: 'Coach Sadiq', squad: '8/15 Players', rank: '8th Place' },
-]
+// Shapes a backend club (GET /clubs) into the card fields the hub renders.
+function toClubCard(c) {
+  return {
+    id: c.id,
+    name: c.name,
+    crest: c.crestCode,
+    coach: c.headCoachName || 'Unassigned',
+    squad: `${c.rosterCount}/${c.squadCap} Players`,
+    rank: c.leaguePosition ? `${c.leaguePosition}${['th', 'st', 'nd', 'rd'][c.leaguePosition] || 'th'} Place` : '—',
+    hot: !c.isFull && c.rosterCount < c.squadCap - 3,
+    full: c.isFull,
+  }
+}
 
 // Baseline training sessions a player must get approved before club
 // applications unlock. Everything below (meter, milestones, copy) is derived
@@ -44,11 +46,24 @@ function barColour(value) {
 }
 
 export function usePlayerDashboard(profile, email) {
-  const [approved, setApprovedState] = useState(() => readApprovedSessions(email))
   const [hubOpen, setHubOpen] = useState(false)
   const [selectedClub, setSelectedClub] = useState(null)
   const [sentOpen, setSentOpen] = useState(false)
   const [finished, setFinished] = useState([])
+  const [clubs, setClubs] = useState([])
+  const [myApplications, setMyApplications] = useState([])
+
+  // Baseline progress comes straight from the backend profile now.
+  const approved = Math.max(0, Math.min(TOTAL_SESSIONS, profile?.approvedSubmissions ?? 0))
+
+  useEffect(() => {
+    listClubs()
+      .then((rows) => setClubs(rows.filter((c) => !c.archived).map(toClubCard)))
+      .catch(() => setClubs([]))
+    getMyClubApplications()
+      .then(setMyApplications)
+      .catch(() => setMyApplications([]))
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -148,14 +163,23 @@ export function usePlayerDashboard(profile, email) {
   const sessionsSubmitted = finished.length
   const drillsLogged = finished.reduce((sum, session) => sum + (session.drills?.length || 0), 0)
 
-  const chosen = CLUBS[selectedClub ?? 0]
+  const chosen = clubs[selectedClub ?? 0]
 
-  function setApproved(n) {
-    const clamped = Math.max(0, Math.min(TOTAL_SESSIONS, n))
-    writeApprovedSessions(email, clamped)
-    setApprovedState(clamped)
+  async function confirmSend() {
+    if (!chosen?.id) {
+      setSentOpen(true)
+      setHubOpen(false)
+      return
+    }
+    try {
+      await applyToClub(chosen.id)
+      const apps = await getMyClubApplications().catch(() => myApplications)
+      setMyApplications(apps)
+    } catch {
+      // surfaced via the dashboard's error path later; still show the sent view
+    }
+    setSentOpen(true)
     setHubOpen(false)
-    setSelectedClub(null)
   }
 
   return {
@@ -181,7 +205,9 @@ export function usePlayerDashboard(profile, email) {
     meterColor: unlocked ? '#22E07E' : '#F59E0B',
     meter,
     milestones,
-    setApproved,
+    setApproved: () => {}, // baseline progress is server-driven now
+    lifecycleState: profile?.lifecycleState,
+    myApplications,
 
     // stat tiles
     drillsDone: drillsLogged,
@@ -201,7 +227,7 @@ export function usePlayerDashboard(profile, email) {
     radarLabels,
 
     // club application hub
-    clubs: CLUBS,
+    clubs,
     hubOpen,
     selectedClub,
     chosen,
@@ -211,10 +237,7 @@ export function usePlayerDashboard(profile, email) {
       setSelectedClub(null)
     },
     selectClub: (i) => setSelectedClub(i),
-    confirmSend: () => {
-      setSentOpen(true)
-      setHubOpen(false)
-    },
+    confirmSend,
 
     // sent confirmation
     sentOpen,

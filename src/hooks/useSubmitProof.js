@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from './useAuth'
-import { readApprovedSessions } from '../utils/playerProfile'
 import { getActiveSession, submitSession } from '../api/sessions'
+import { getMyProfile } from '../api/players'
+import { listCoaches } from '../api/coaches'
 
 // There's no real video upload/storage backend yet (see
 // backend/src/services/sessions.service.js's submitSession — it stores
@@ -10,19 +11,6 @@ import { getActiveSession, submitSession } from '../api/sessions'
 // gets sent as videoUrl so POST /sessions/:id/submit can be exercised
 // end-to-end. Swap this for a real upload once file storage exists.
 const PLACEHOLDER_VIDEO_URL = 'https://example.com/placeholder-clip.mp4'
-
-// The eight Club Head Coaches a verified player can route a submission to.
-// Static demo data — becomes GET /coaches once the backend exists.
-const CLUB_COACHES = [
-  'Coach Marcus · Apex Academy',
-  'Coach Elena · Vortex FC',
-  'Coach Rios · Cyber Strikers',
-  'Coach Ade · Northgate Union',
-  'Coach Haas · Vantage Athletic',
-  'Coach Bello · Meridian FC',
-  'Coach Novak · Ironline SC',
-  'Coach Sadiq · Halcyon Rovers',
-]
 
 // One approved baseline session unlocks the Club Head Coach picker. Matches the
 // dashboard's eligibility gate (usePlayerDashboard TOTAL_SESSIONS).
@@ -101,8 +89,20 @@ export function useSubmitProof() {
     }
   }, [])
 
-  const [coach, setCoach] = useState(CLUB_COACHES[0])
+  const [coaches, setCoaches] = useState([]) // [{ coachId, name, clubName }]
+  const [coachId, setCoachId] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [notes, setNotes] = useState('')
+
+  useEffect(() => {
+    getMyProfile().then(setProfile).catch(() => setProfile(null))
+    listCoaches()
+      .then((rows) => {
+        setCoaches(rows)
+        setCoachId((cur) => cur ?? rows[0]?.coachId ?? null)
+      })
+      .catch(() => setCoaches([]))
+  }, [])
   const [tipOpen, setTipOpen] = useState(false)
   const [successOpen, setSuccessOpen] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -128,9 +128,10 @@ export function useSubmitProof() {
     return { redirectTo }
   }
 
-  const approved = Math.min(BASELINE_TARGET, readApprovedSessions(email))
-  const baselineDone = approved >= BASELINE_TARGET
-  const reviewerName = baselineDone ? coach.split(' · ')[0] : 'Coach #9'
+  const approved = Math.min(BASELINE_TARGET, profile?.approvedSubmissions ?? 0)
+  const baselineDone = Boolean(profile?.baselineApproved)
+  const selectedCoach = coaches.find((c) => c.coachId === coachId) || null
+  const reviewerName = baselineDone ? selectedCoach?.name || 'Club Coach' : 'Coach #9'
   const hasClip = Boolean(clip)
   const clipDurationLabel = clip && Number.isFinite(clip.duration) ? clock(clip.duration) : ''
 
@@ -184,9 +185,13 @@ export function useSubmitProof() {
 
     // reviewer routing
     lockLabel: baselineDone ? 'Reviewer unlocked' : 'Auto-locked',
-    coaches: CLUB_COACHES,
-    coach,
-    onSelectCoach: (event) => setCoach(event.target.value),
+    coaches: coaches.map((c) => `${c.name} · ${c.clubName}`),
+    coach: selectedCoach ? `${selectedCoach.name} · ${selectedCoach.clubName}` : '',
+    onSelectCoach: (event) => {
+      const label = event.target.value
+      const match = coaches.find((c) => `${c.name} · ${c.clubName}` === label)
+      if (match) setCoachId(match.coachId)
+    },
     tipOpen,
     tipOn: () => setTipOpen(true),
     tipOff: () => setTipOpen(false),
@@ -212,6 +217,9 @@ export function useSubmitProof() {
           videoUrl: PLACEHOLDER_VIDEO_URL,
           notes,
           reviewerName,
+          // Once the baseline is verified the player routes to a real club
+          // coach; before that the backend sends it to the Platform Evaluator.
+          reviewerCoachId: baselineDone ? coachId : undefined,
         })
         setSuccessOpen(true)
       } catch (err) {

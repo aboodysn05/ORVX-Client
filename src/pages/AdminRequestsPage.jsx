@@ -1,72 +1,62 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { AdminShell } from '../components/layout/AdminShell'
+import { listCoachApplications, approveCoachApplication, declineCoachApplication } from '../api/admin'
 import '../styles/admin-requests.css'
 
-// Admin Club-Management Approval Queue — every request here is a coach asking to
-// open and run one of the 8 platform club slots. Platform Evaluators are
-// assigned by the platform, not self-serve, so they never appear in this queue.
-// Frontend only: mock request data with local state for filter, per-request
-// decision, and the dossier drawer.
+// Admin Club-Management Approval Queue — live from GET /admin/coach-applications.
+// Approving provisions a club slot and links the applicant as its head coach
+// (backend/src/services/coaches.service.js approveCoachApplication).
 
-const REQUESTS = [
-  {
-    id: 'r1', name: 'N. Adeyemi', email: 'n.adeyemi@vortexfc.co', initials: 'NA',
-    club: 'Cyber Strikers FC', clubTag: 'New Club', isNew: true,
-    doc: 'UEFA B Licence.pdf', date: '26 Aug 2026', age: '2 days', stale: false, years: '9 yrs',
-    statement:
-      'UEFA B qualified since 2019, currently running a grassroots 5v5 programme in Lagos with three age brackets. Requesting a platform club slot to move my existing 11-player squad onto OVRX for verified training records ahead of the autumn season.',
-    checks: [
-      { label: 'Licence document readable', ok: true },
-      { label: 'Club name not already taken', ok: true },
-      { label: 'Safeguarding certificate on file', ok: false },
-    ],
-  },
-  {
-    id: 'r3', name: 'K. Bowen', email: 'k.bowen@halcyonac.uk', initials: 'KB',
-    club: 'Halcyon AC', clubTag: 'Existing Club · Slot 04', isNew: false,
-    doc: 'FA Level 2.pdf', date: '23 Aug 2026', age: '5 days', stale: true, years: '6 yrs',
-    statement:
-      'Taking over Halcyon AC after the previous head coach stepped down. FA Level 2 with six years at the club as assistant. Need management rights to approve the four training submissions currently sitting unreviewed in the squad queue.',
-    checks: [
-      { label: 'Licence document readable', ok: true },
-      { label: 'Outgoing coach confirmed handover', ok: false },
-      { label: 'Safeguarding certificate on file', ok: true },
-    ],
-  },
-  {
-    id: 'r4', name: 'S. Petrov', email: 's.petrov@ironline.fc', initials: 'SP',
-    club: 'Ironline FC', clubTag: 'New Club', isNew: true,
-    doc: 'Coaching CV.pdf', date: '22 Aug 2026', age: '6 days', stale: true, years: '3 yrs',
-    statement:
-      'Three seasons coaching an adult 5v5 side. No formal licence uploaded yet — attaching my CV and two references while the certificate is reissued by the federation.',
-    checks: [
-      { label: 'Licence document readable', ok: false },
-      { label: 'Club name not already taken', ok: true },
-      { label: 'Safeguarding certificate on file', ok: false },
-    ],
-  },
-]
+const FILTERS = ['pending', 'approved', 'declined', 'all']
+const FILTER_LABEL = { pending: 'Pending', approved: 'Approved', declined: 'Declined', all: 'All' }
+const STATUS_TONE = { approved: 'green', declined: 'pink', pending: 'amber' }
 
-const FILTERS = ['Pending', 'Over 4 Days', 'Approved', 'Declined', 'All']
-const STATUS_TONE = { Approved: 'green', Declined: 'pink' }
-
-const hasMissingDoc = (r) => r.checks.some((c) => !c.ok)
+function initialsOf(name) {
+  const p = (name || '').trim().split(/\s+/)
+  return ((p[0]?.[0] || '') + (p[1]?.[0] || '')).toUpperCase() || '?'
+}
+function daysAgo(iso) {
+  return iso ? Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 86400000)) : 0
+}
+function fmtDate(iso) {
+  return iso ? new Date(iso).toLocaleDateString(undefined, { day: '2-digit', month: 'short', year: 'numeric' }) : '—'
+}
+function checksFor(a) {
+  return [
+    { label: 'Licence number provided', ok: Boolean(a.licenseNumber) },
+    { label: 'Credential document attached', ok: Boolean(a.credentialDocUrl) },
+    { label: 'Club crest attached', ok: Boolean(a.clubLogoUrl) },
+  ]
+}
 
 export function AdminRequestsPage() {
-  const [decisions, setDecisions] = useState({})
-  const [filter, setFilter] = useState('Pending')
+  const [apps, setApps] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [filter, setFilter] = useState('pending')
   const [selectedId, setSelectedId] = useState(null)
+  const [toast, setToast] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const statusOf = (id) => decisions[id] || 'Pending'
-  const setStatus = (id, status) => setDecisions((s) => ({ ...s, [id]: status }))
-  const clearStatus = (id) =>
-    setDecisions((s) => {
-      const next = { ...s }
-      delete next[id]
-      return next
-    })
+  const fire = (msg) => {
+    setToast(msg)
+    clearTimeout(fire._t)
+    fire._t = setTimeout(() => setToast(''), 2800)
+  }
 
-  // Close the dossier drawer on Escape.
+  const load = useCallback(() => {
+    setLoading(true)
+    listCoachApplications()
+      .then((rows) => {
+        setApps(rows)
+        setError('')
+      })
+      .catch((err) => setError(err.response?.data?.message || 'Could not load coach applications.'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(load, [load])
+
   useEffect(() => {
     if (!selectedId) return undefined
     const onKey = (e) => e.key === 'Escape' && setSelectedId(null)
@@ -75,26 +65,39 @@ export function AdminRequestsPage() {
   }, [selectedId])
 
   const counts = useMemo(() => {
-    const pending = REQUESTS.filter((r) => statusOf(r.id) === 'Pending')
+    const pending = apps.filter((a) => a.status === 'pending')
     return {
-      Pending: pending.length,
-      'Over 4 Days': pending.filter((r) => r.stale).length,
-      'Missing Docs': pending.filter(hasMissingDoc).length,
-      Approved: REQUESTS.filter((r) => statusOf(r.id) === 'Approved').length,
-      Declined: REQUESTS.filter((r) => statusOf(r.id) === 'Declined').length,
+      pending: pending.length,
+      approved: apps.filter((a) => a.status === 'approved').length,
+      declined: apps.filter((a) => a.status === 'declined').length,
+      all: apps.length,
+      stale: pending.filter((a) => daysAgo(a.createdAt) >= 4).length,
+      missingDocs: pending.filter((a) => checksFor(a).some((c) => !c.ok)).length,
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [decisions])
+  }, [apps])
 
-  const visible = REQUESTS.filter((r) => {
-    const status = statusOf(r.id)
-    if (filter === 'All') return true
-    if (filter === 'Pending') return status === 'Pending'
-    if (filter === 'Over 4 Days') return status === 'Pending' && r.stale
-    return status === filter
-  })
+  const visible = apps.filter((a) => filter === 'all' || a.status === filter)
+  const sel = apps.find((a) => a.id === selectedId) || null
 
-  const sel = REQUESTS.find((r) => r.id === selectedId) || null
+  async function decide(id, action) {
+    if (busy) return
+    setBusy(true)
+    try {
+      if (action === 'approve') {
+        const res = await approveCoachApplication(id)
+        fire(`Approved · ${res.club.name} provisioned in slot ${res.club.slot}`)
+      } else {
+        await declineCoachApplication(id)
+        fire('Application declined')
+      }
+      setSelectedId(null)
+      load()
+    } catch (err) {
+      fire(err.response?.data?.message || 'That action could not be completed.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   return (
     <AdminShell
@@ -107,24 +110,23 @@ export function AdminRequestsPage() {
             <span className="adm-kicker">Gateway Submissions · Manual Review</span>
             <h1 className="adm-title">Club Management Approval Queue</h1>
             <p className="adm-lead">
-              Every coach who submits the gateway form lands here with their nav locked. Approving a
-              request provisions the club record, assigns a league slot, and unlocks Squad and Review
-              Queue for that account. Platform Evaluators are assigned internally and never appear
-              here.
+              Every coach who submits the gateway form lands here. Approving a request claims a free
+              club slot and links the applicant as its head coach. Platform Evaluators are assigned
+              internally and never appear here.
             </p>
           </div>
           <div className="adm-counters">
             <span className="adm-counter adm-counter--amber">
               <span className="adm-counter__k">Pending Total</span>
-              <span className="adm-counter__v">{counts.Pending}</span>
+              <span className="adm-counter__v">{counts.pending}</span>
             </span>
             <span className="adm-counter adm-counter--pink">
               <span className="adm-counter__k">Missing Docs</span>
-              <span className="adm-counter__v">{counts['Missing Docs']}</span>
+              <span className="adm-counter__v">{counts.missingDocs}</span>
             </span>
             <span className="adm-counter adm-counter--indigo">
               <span className="adm-counter__k">Over 4 Days</span>
-              <span className="adm-counter__v">{counts['Over 4 Days']}</span>
+              <span className="adm-counter__v">{counts.stale}</span>
             </span>
           </div>
         </div>
@@ -139,8 +141,8 @@ export function AdminRequestsPage() {
               className={`adm-chipbtn ${filter === f ? 'is-active' : ''}`}
               onClick={() => setFilter(f)}
             >
-              {f}
-              {counts[f] != null && <span className="arq-chipcount">{counts[f]}</span>}
+              {FILTER_LABEL[f]}
+              <span className="arq-chipcount">{counts[f]}</span>
             </button>
           ))}
         </div>
@@ -157,41 +159,45 @@ export function AdminRequestsPage() {
             <span className="adm-th--right">Actions</span>
           </div>
 
-          {visible.map((r) => {
-            const status = statusOf(r.id)
+          {loading && <div className="adm-empty"><span className="adm-empty__note">Loading…</span></div>}
+          {error && !loading && (
+            <div className="adm-empty">
+              <span className="adm-empty__title">Couldn't load</span>
+              <span className="adm-empty__note">{error}</span>
+            </div>
+          )}
+
+          {!loading && !error && visible.map((a) => {
+            const stale = a.status === 'pending' && daysAgo(a.createdAt) >= 4
             const borderColor =
-              status === 'Approved' ? '#10B981' : status === 'Declined' ? '#FF2E63' : 'transparent'
+              a.status === 'approved' ? '#10B981' : a.status === 'declined' ? '#FF2E63' : 'transparent'
             return (
               <div
-                key={r.id}
+                key={a.id}
                 className="adm-trow adm-trow--clickable arq-grid"
                 style={{ borderLeft: `2px solid ${borderColor}` }}
                 role="button"
                 tabIndex={0}
-                aria-label={`Open dossier for ${r.name}, ${r.club}`}
-                onClick={() => setSelectedId(r.id)}
+                aria-label={`Open dossier for ${a.applicantName}, ${a.clubName}`}
+                onClick={() => setSelectedId(a.id)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault()
-                    setSelectedId(r.id)
+                    setSelectedId(a.id)
                   }
                 }}
               >
                 <span className="arq-applicant" data-label="Applicant">
-                  <span className="adm-avatar">{r.initials}</span>
+                  <span className="adm-avatar">{initialsOf(a.applicantName)}</span>
                   <span className="arq-applicant__id">
-                    <span className="arq-applicant__name">{r.name}</span>
-                    <span className="arq-applicant__email">{r.email}</span>
+                    <span className="arq-applicant__name">{a.applicantName}</span>
+                    <span className="arq-applicant__email">{a.applicantEmail}</span>
                   </span>
                 </span>
 
                 <span className="arq-club" data-label="Target Club">
-                  <span className="arq-club__name">{r.club}</span>
-                  <span
-                    className={`arq-club__tag ${r.isNew ? 'is-new' : ''}`}
-                  >
-                    {r.clubTag}
-                  </span>
+                  <span className="arq-club__name">{a.clubName}</span>
+                  <span className="arq-club__tag is-new">New Club · cap {a.squadCapacity}</span>
                 </span>
 
                 <span className="arq-cred" data-label="Credentials">
@@ -200,15 +206,15 @@ export function AdminRequestsPage() {
                       <path d="M14 3H6v18h12V7l-4-4z" />
                       <path d="M14 3v4h4" />
                     </svg>
-                    {r.doc}
+                    {a.licenseNumber || 'No licence number'}
                   </span>
-                  <span className="arq-cred__years">{r.years} experience</span>
+                  <span className="arq-cred__years">{a.yearsExperience} yrs experience</span>
                 </span>
 
                 <span className="arq-date" data-label="Submitted">
-                  <span className="arq-date__d">{r.date}</span>
-                  <span className={`arq-date__age ${r.stale ? 'is-stale' : ''}`}>
-                    {r.age} in queue
+                  <span className="arq-date__d">{fmtDate(a.createdAt)}</span>
+                  <span className={`arq-date__age ${stale ? 'is-stale' : ''}`}>
+                    {daysAgo(a.createdAt)}d in queue
                   </span>
                 </span>
 
@@ -217,41 +223,31 @@ export function AdminRequestsPage() {
                   onClick={(e) => e.stopPropagation()}
                   onKeyDown={(e) => e.stopPropagation()}
                 >
-                  {status === 'Pending' ? (
+                  {a.status === 'pending' ? (
                     <>
-                      <button
-                        type="button"
-                        className="arq-act arq-act--approve"
-                        onClick={() => setSelectedId(r.id)}
-                      >
+                      <button type="button" className="arq-act arq-act--approve" onClick={() => setSelectedId(a.id)}>
                         Review &amp; Approve
                       </button>
                       <button
                         type="button"
                         className="arq-act arq-act--decline"
-                        onClick={() => setStatus(r.id, 'Declined')}
+                        disabled={busy}
+                        onClick={() => decide(a.id, 'decline')}
                       >
                         Decline
                       </button>
                     </>
                   ) : (
-                    <>
-                      <span className={`adm-pill adm-pill--${STATUS_TONE[status]}`}>{status}</span>
-                      <button
-                        type="button"
-                        className="arq-act arq-act--undo"
-                        onClick={() => clearStatus(r.id)}
-                      >
-                        Undo
-                      </button>
-                    </>
+                    <span className={`adm-pill adm-pill--${STATUS_TONE[a.status]}`}>
+                      {FILTER_LABEL[a.status]}
+                    </span>
                   )}
                 </span>
               </div>
             )
           })}
 
-          {visible.length === 0 && (
+          {!loading && !error && visible.length === 0 && (
             <div className="adm-empty">
               <span className="adm-empty__title">Queue Clear</span>
               <span className="adm-empty__note">No requests match this filter.</span>
@@ -263,23 +259,16 @@ export function AdminRequestsPage() {
       {sel && (
         <div className="adm-drawer">
           <div className="adm-drawer__scrim" onClick={() => setSelectedId(null)} />
-          <aside className="adm-drawer__panel" role="dialog" aria-modal="true" aria-label={`${sel.name} dossier`}>
+          <aside className="adm-drawer__panel" role="dialog" aria-modal="true" aria-label={`${sel.applicantName} dossier`}>
             <div className="adm-drawer__head">
               <span>
                 <span className="adm-drawer__eyebrow">Applicant Dossier</span>
-                <span className="adm-drawer__title" style={{ display: 'block' }}>
-                  {sel.name}
-                </span>
+                <span className="adm-drawer__title" style={{ display: 'block' }}>{sel.applicantName}</span>
                 <span className="adm-drawer__sub" style={{ display: 'block' }}>
-                  {sel.email} · submitted {sel.date}
+                  {sel.applicantEmail} · submitted {fmtDate(sel.createdAt)}
                 </span>
               </span>
-              <button
-                type="button"
-                className="adm-drawer__close"
-                aria-label="Close"
-                onClick={() => setSelectedId(null)}
-              >
+              <button type="button" className="adm-drawer__close" aria-label="Close" onClick={() => setSelectedId(null)}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
@@ -289,104 +278,92 @@ export function AdminRequestsPage() {
             <div className="adm-drawer__body">
               <div className="arq-facts">
                 {[
-                  { k: 'Requested Role', v: 'Club Owner', color: '#FF2E63' },
-                  { k: 'Target Club', v: sel.club, color: '#fff' },
-                  { k: 'Experience', v: sel.years, color: '#fff' },
+                  { k: 'Full Name', v: sel.fullName, color: '#fff' },
+                  { k: 'Target Club', v: sel.clubName, color: '#fff' },
+                  { k: 'Experience', v: `${sel.yearsExperience} yrs`, color: '#fff' },
                   {
                     k: 'Current Status',
-                    v: statusOf(sel.id),
-                    color:
-                      statusOf(sel.id) === 'Approved'
-                        ? '#10B981'
-                        : statusOf(sel.id) === 'Declined'
-                          ? '#FF2E63'
-                          : '#F59E0B',
+                    v: FILTER_LABEL[sel.status],
+                    color: sel.status === 'approved' ? '#10B981' : sel.status === 'declined' ? '#FF2E63' : '#F59E0B',
                   },
                 ].map((f) => (
                   <span key={f.k} className="arq-fact">
                     <span className="arq-fact__k">{f.k}</span>
-                    <span className="arq-fact__v" style={{ color: f.color }}>
-                      {f.v}
-                    </span>
+                    <span className="arq-fact__v" style={{ color: f.color }}>{f.v}</span>
                   </span>
                 ))}
               </div>
 
               <div className="arq-block">
-                <span className="arq-block__label">Credentials Statement</span>
-                <p className="arq-statement">{sel.statement}</p>
-                <span className="arq-openbtn">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="M14 3H6v18h12V7l-4-4z" />
-                    <path d="M14 3v4h4" />
-                  </svg>
-                  Open {sel.doc}
-                </span>
+                <span className="arq-block__label">Credential Document</span>
+                <p className="arq-statement">
+                  {sel.credentialDocUrl
+                    ? `Licence ${sel.licenseNumber || '(no number)'} — document on file.`
+                    : `Licence ${sel.licenseNumber || '(no number)'} — no document attached.`}
+                </p>
+                {sel.credentialDocUrl && (
+                  <a className="arq-openbtn" href={sel.credentialDocUrl} target="_blank" rel="noreferrer">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                      <path d="M14 3H6v18h12V7l-4-4z" />
+                      <path d="M14 3v4h4" />
+                    </svg>
+                    Open credential document
+                  </a>
+                )}
               </div>
 
               <div className="arq-block">
                 <span className="arq-block__label">Verification Checklist</span>
-                {sel.checks.map((c) => (
+                {checksFor(sel).map((c) => (
                   <span key={c.label} className="arq-check">
                     <span
                       className="arq-check__box"
-                      style={{
-                        borderColor: c.ok ? '#10B981' : '#F59E0B',
-                        color: c.ok ? '#10B981' : '#F59E0B',
-                      }}
+                      style={{ borderColor: c.ok ? '#10B981' : '#F59E0B', color: c.ok ? '#10B981' : '#F59E0B' }}
                     >
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                         <path d={c.ok ? 'M5 13l4 4L19 7' : 'M12 7v7M12 17v.5'} />
                       </svg>
                     </span>
                     <span className="arq-check__label">{c.label}</span>
-                    <span
-                      className="arq-check__state"
-                      style={{ color: c.ok ? '#10B981' : '#F59E0B' }}
-                    >
+                    <span className="arq-check__state" style={{ color: c.ok ? '#10B981' : '#F59E0B' }}>
                       {c.ok ? 'Verified' : 'Missing'}
                     </span>
                   </span>
                 ))}
               </div>
 
-              <div className="arq-notice">
-                <span className="arq-notice__eyebrow">
-                  <span className="arq-notice__dot" />
-                  Provisioning Notice
-                </span>
-                <p className="arq-notice__text">
-                  Approving this request will provision the club record — {sel.club} — assign a league
-                  slot and unlock Squad and Review Queue for this account. Proceed?
-                </p>
-                <span className="arq-notice__actions">
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn--green"
-                    onClick={() => {
-                      setStatus(sel.id, 'Approved')
-                      setSelectedId(null)
-                    }}
-                  >
-                    Proceed · Grant Access
-                  </button>
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn--danger"
-                    onClick={() => {
-                      setStatus(sel.id, 'Declined')
-                      setSelectedId(null)
-                    }}
-                  >
-                    Decline Request
-                  </button>
-                  <button type="button" className="adm-btn adm-btn--ghost" onClick={() => setSelectedId(null)}>
-                    Cancel
-                  </button>
-                </span>
-              </div>
+              {sel.status === 'pending' && (
+                <div className="arq-notice">
+                  <span className="arq-notice__eyebrow">
+                    <span className="arq-notice__dot" />
+                    Provisioning Notice
+                  </span>
+                  <p className="arq-notice__text">
+                    Approving this request claims a free club slot for <strong>{sel.clubName}</strong> and
+                    links {sel.applicantName} as its head coach. Proceed?
+                  </p>
+                  <span className="arq-notice__actions">
+                    <button type="button" className="adm-btn adm-btn--green" disabled={busy} onClick={() => decide(sel.id, 'approve')}>
+                      Proceed · Grant Access
+                    </button>
+                    <button type="button" className="adm-btn adm-btn--danger" disabled={busy} onClick={() => decide(sel.id, 'decline')}>
+                      Decline Request
+                    </button>
+                    <button type="button" className="adm-btn adm-btn--ghost" onClick={() => setSelectedId(null)}>
+                      Cancel
+                    </button>
+                  </span>
+                </div>
+              )}
             </div>
           </aside>
+        </div>
+      )}
+
+      {toast && (
+        <div className="adm-toast adm-toast--green">
+          <span className="adm-toast__dot" />
+          <span className="adm-toast__msg">{toast}</span>
         </div>
       )}
     </AdminShell>

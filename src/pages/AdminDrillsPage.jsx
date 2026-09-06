@@ -1,22 +1,51 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { AdminShell } from '../components/layout/AdminShell'
 import { attrsFor } from '../utils/attributes'
+import { listAdminDrills, createDrill, updateDrill, setDrillRetired } from '../api/admin'
 import '../styles/admin-drills.css'
 
-// Admin Global Drill Catalogue Configuration. Frontend only: mock catalogue,
-// local overrides + locally-created drills applied on save, a create/edit
-// drawer and a transient toast.
-//
-// The attribute set is the canonical one from utils/attributes.js (6 outfield +
-// 6 goalkeeper). A drill boosts one *or more* attributes, each with its own XP
-// weight (1-3) — this mirrors the backend's drill_attribute_boosts table, where
-// "a drill can boost more than one".
+// Admin Global Drill Catalogue Configuration — live from GET /admin/drills.
+// A drill boosts one or more attributes (weight 1-3) and carries per-drill
+// volume caps the Session Builder enforces (backend/src/services/drills.service.js).
 
 const ATTR_GROUPS = {
   outfield: attrsFor('Attacker'), // [{ key, code, name } x6]
   goalkeeper: attrsFor('Goalkeeper'),
 }
 const ALL_ATTRS = [...ATTR_GROUPS.outfield, ...ATTR_GROUPS.goalkeeper]
+
+// The backend keys boosts by lowercase attribute name; this page works in the
+// short uppercase display codes.
+const CODE_TO_KEY = Object.fromEntries(ALL_ATTRS.map((a) => [a.code, a.key]))
+const KEY_TO_CODE = Object.fromEntries(ALL_ATTRS.map((a) => [a.key, a.code]))
+
+function toFrontendDrill(d) {
+  return {
+    id: d.id,
+    code: `DRL-${String(d.id).padStart(3, '0')}`,
+    name: d.name,
+    category: d.category || 'General',
+    group: d.positionGroup === 'goalkeeper' ? 'goalkeeper' : 'outfield',
+    boosts: Object.fromEntries(
+      Object.entries(d.boosts || {}).map(([k, v]) => [KEY_TO_CODE[k] || k.toUpperCase(), v]),
+    ),
+    level: d.level || 'Intermediate',
+    minReps: d.minReps,
+    maxReps: d.maxReps,
+    minSets: d.minSets,
+    maxSets: d.maxSets,
+    secondsPerSet: d.secondsPerSet,
+    active: d.active,
+    video: Boolean(d.demoVideoUrl),
+  }
+}
+
+function boostsToPayload(boosts) {
+  return Object.entries(boosts).map(([code, value]) => ({
+    code: CODE_TO_KEY[code] || code.toLowerCase(),
+    value,
+  }))
+}
 
 // Admin-catalogue display colours per attribute code (there is no canonical
 // colour map in the app yet — this is a presentation concern local to the
@@ -37,18 +66,6 @@ const CATEGORIES = [
 const LEVELS = ['Beginner', 'Intermediate', 'Elite']
 const BOOST_STEPS = [1, 2, 3]
 
-const DRILLS = [
-  { id: 'd1', code: 'DRL-014', name: 'Cone Weave 20m', category: 'Ball Control', group: 'outfield', boosts: { DRI: 2, PAC: 1 }, level: 'Intermediate', minReps: 4, maxReps: 20, minSets: 1, maxSets: 4, active: true, video: true },
-  { id: 'd2', code: 'DRL-021', name: 'Sprint Ladder 40m', category: 'Sprint & Agility', group: 'outfield', boosts: { PAC: 3 }, level: 'Elite', minReps: 2, maxReps: 12, minSets: 2, maxSets: 5, active: true, video: true },
-  { id: 'd3', code: 'DRL-007', name: 'First-Time Finish', category: 'Finishing', group: 'outfield', boosts: { SHO: 2, PAS: 1 }, level: 'Intermediate', minReps: 5, maxReps: 20, minSets: 1, maxSets: 4, active: true, video: true },
-  { id: 'd4', code: 'DRL-033', name: 'Wall Pass Rebound', category: 'Passing & Vision', group: 'outfield', boosts: { PAS: 2 }, level: 'Beginner', minReps: 10, maxReps: 20, minSets: 1, maxSets: 3, active: true, video: false },
-  { id: 'd5', code: 'DRL-045', name: 'Jockey & Recover', category: 'Defensive Shape', group: 'outfield', boosts: { DEF: 2, PHY: 1 }, level: 'Intermediate', minReps: 4, maxReps: 16, minSets: 2, maxSets: 4, active: true, video: true },
-  { id: 'd6', code: 'DRL-052', name: 'Loaded Carry Shuttle', category: 'Strength & Conditioning', group: 'outfield', boosts: { PHY: 3 }, level: 'Elite', minReps: 3, maxReps: 10, minSets: 2, maxSets: 6, active: true, video: false },
-  { id: 'd7', code: 'DRL-002', name: 'Static Cone Touch', category: 'Ball Control', group: 'outfield', boosts: { DRI: 1 }, level: 'Beginner', minReps: 8, maxReps: 20, minSets: 1, maxSets: 3, active: false, video: true },
-  { id: 'd8', code: 'DRL-058', name: 'Reaction Save Drill', category: 'Goalkeeping', group: 'goalkeeper', boosts: { REF: 3, HAN: 1 }, level: 'Elite', minReps: 5, maxReps: 18, minSets: 2, maxSets: 5, active: true, video: true },
-  { id: 'd9', code: 'DRL-011', name: 'Long Range Curler', category: 'Finishing', group: 'outfield', boosts: { SHO: 3, PAS: 1 }, level: 'Elite', minReps: 4, maxReps: 14, minSets: 1, maxSets: 4, active: false, video: false },
-]
-
 const GROUP_FILTERS = ['All', 'Outfield', 'Goalkeeper']
 const STATUS_FILTERS = ['All', 'Active', 'Retired']
 
@@ -61,10 +78,12 @@ export function AdminDrillsPage() {
   const [groupFilter, setGroupFilter] = useState('All')
   const [attrFilter, setAttrFilter] = useState('All')
   const [statusFilter, setStatusFilter] = useState('All')
-  const [overrides, setOverrides] = useState({})
-  const [created, setCreated] = useState([])
+  const [list, setList] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [editing, setEditing] = useState(null) // drill id | 'new' | null
   const [form, setForm] = useState(null)
+  const [busy, setBusy] = useState(false)
   const [toast, setToast] = useState('')
 
   function fire(msg) {
@@ -72,6 +91,19 @@ export function AdminDrillsPage() {
     clearTimeout(fire._t)
     fire._t = setTimeout(() => setToast(''), 2600)
   }
+
+  const load = useCallback(() => {
+    setLoading(true)
+    listAdminDrills()
+      .then((rows) => {
+        setList(rows.map(toFrontendDrill))
+        setLoadError('')
+      })
+      .catch((err) => setLoadError(err.response?.data?.message || 'Could not load the drill catalogue.'))
+      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(load, [load])
 
   // Close the drawer on Escape.
   useEffect(() => {
@@ -81,13 +113,6 @@ export function AdminDrillsPage() {
     return () => window.removeEventListener('keydown', onKey)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form])
-
-  const merged = (d) => ({ ...d, ...(overrides[d.id] || {}) })
-  const list = useMemo(
-    () => [...created, ...DRILLS].map(merged),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [created, overrides],
-  )
 
   // Attribute chips follow the selected position group.
   const attrChoices =
@@ -125,14 +150,14 @@ export function AdminDrillsPage() {
   }
   function openEdit(d) {
     setEditing(d.id)
-    setForm({ ...merged(d), isNew: false })
+    setForm({ ...d, isNew: false })
   }
   function openCreate() {
     setEditing('new')
     setForm({
       name: '', category: CATEGORIES[0], group: 'outfield', boosts: { PAC: 2 },
       level: 'Intermediate', minReps: 4, maxReps: 20, minSets: 1, maxSets: 4,
-      active: true, video: false, isNew: true,
+      secondsPerSet: 120, active: true, video: false, isNew: true,
     })
   }
 
@@ -164,19 +189,68 @@ export function AdminDrillsPage() {
   const noAttr = form && Object.keys(f.boosts || {}).length === 0
   const formAttrs = form ? ATTR_GROUPS[f.group] : []
 
-  function save() {
+  async function save() {
     if (repsBad || setsBad) return fire('Fix the min/max conflict before saving')
     if (!f.name.trim()) return fire('Drill name is required')
     if (noAttr) return fire('Select at least one target attribute')
-    if (editing === 'new') {
-      const code = `DRL-${String(200 + created.length + 1).padStart(3, '0')}`
-      setCreated((prev) => [{ ...form, id: `new-${Date.now()}`, code, isNew: false }, ...prev])
-      fire(`${f.name} added to the catalogue · ${code}`)
-    } else {
-      setOverrides((prev) => ({ ...prev, [editing]: { ...form } }))
-      fire(`${f.name} saved · caps live in builder`)
+    setBusy(true)
+    try {
+      if (editing === 'new') {
+        const drill = await createDrill({
+          name: f.name.trim(),
+          category: f.category,
+          level: f.level,
+          unitKind: 'reps',
+          positionGroup: f.group,
+          minSets: f.minSets,
+          maxSets: f.maxSets,
+          minReps: f.minReps,
+          maxReps: f.maxReps,
+          defaultSets: f.minSets,
+          defaultReps: f.minReps,
+          secondsPerSet: f.secondsPerSet || 120,
+          demoVideoUrl: f.video ? 'https://example.com/demo-clip.mp4' : null,
+          active: f.active,
+          boosts: boostsToPayload(f.boosts),
+        })
+        fire(`${drill.name} added to the catalogue`)
+      } else {
+        await updateDrill(editing, {
+          name: f.name.trim(),
+          category: f.category,
+          level: f.level,
+          positionGroup: f.group,
+          minSets: f.minSets,
+          maxSets: f.maxSets,
+          minReps: f.minReps,
+          maxReps: f.maxReps,
+          demoVideoUrl: f.video ? 'https://example.com/demo-clip.mp4' : null,
+          active: f.active,
+          boosts: boostsToPayload(f.boosts),
+        })
+        fire(`${f.name} saved`)
+      }
+      closeDrawer()
+      load()
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not save the drill.')
+    } finally {
+      setBusy(false)
     }
-    closeDrawer()
+  }
+
+  async function toggleRetire() {
+    setBusy(true)
+    try {
+      await setDrillRetired(editing, f.active) // f.active is the current state -> retire if active
+      fire(`${f.name}${f.active ? ' retired — hidden from builder' : ' reinstated'}`)
+      closeDrawer()
+      load()
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not update the drill.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -305,7 +379,15 @@ export function AdminDrillsPage() {
             <span className="adm-th--right">Edit</span>
           </div>
 
-          {visible.map((d) => {
+          {loading && <div className="adm-empty"><span className="adm-empty__note">Loading catalogue…</span></div>}
+          {loadError && !loading && (
+            <div className="adm-empty">
+              <span className="adm-empty__title">Couldn't load</span>
+              <span className="adm-empty__note">{loadError}</span>
+            </div>
+          )}
+
+          {!loading && !loadError && visible.map((d) => {
             const pc = primaryCode(d.boosts)
             const pm = attrMeta(pc)
             const sum = totalXp(d.boosts)
@@ -395,7 +477,7 @@ export function AdminDrillsPage() {
             )
           })}
 
-          {visible.length === 0 && (
+          {!loading && !loadError && visible.length === 0 && (
             <div className="adm-empty">
               <span className="adm-empty__title">No Drills Match</span>
               <span className="adm-empty__note">Clear the search or the attribute / status filters.</span>
@@ -605,7 +687,7 @@ export function AdminDrillsPage() {
               </button>
 
               <div className="adr-formactions">
-                <button type="button" className="adm-btn adm-btn--indigo" onClick={save}>
+                <button type="button" className="adm-btn adm-btn--indigo" disabled={busy} onClick={save}>
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
                     <path d="M5 13l4 4L19 7" />
                   </svg>
@@ -615,15 +697,7 @@ export function AdminDrillsPage() {
                   Cancel
                 </button>
                 {!f.isNew && (
-                  <button
-                    type="button"
-                    className="adm-btn adm-btn--danger adr-retire"
-                    onClick={() => {
-                      const next = !f.active
-                      patch('active', next)
-                      fire(`${f.name}${next ? ' reinstated' : ' retired — hidden from builder'}`)
-                    }}
-                  >
+                  <button type="button" className="adm-btn adm-btn--danger adr-retire" disabled={busy} onClick={toggleRetire}>
                     {f.active ? 'Retire Drill' : 'Reinstate Drill'}
                   </button>
                 )}
