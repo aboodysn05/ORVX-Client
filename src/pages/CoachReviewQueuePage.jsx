@@ -9,10 +9,10 @@ import '../styles/coach-review.css'
 // queues.
 
 const SUBS = [
-  { id: 1, scope: 'free', player: 'J. Adeyemi', initials: 'JA', position: 'Attacker', drill: 'Cone Slalom Agility Weave', time: '12m ago', mins: 12, xp: '+2 PAC', target: '+2 Pace', volume: '3 Sets × 15 Reps', ovr: 79, height: 178, weight: 72, baseline: 'Baseline 2 of 3', notes: 'Wet grass on the far cone, slipped once on set two but kept the take unbroken.' },
-  { id: 2, scope: 'free', player: 'L. Moreau', initials: 'LM', position: 'Defender', drill: 'Shadow Marking Steps', time: '34m ago', mins: 34, xp: '+2 DEF', target: '+2 Defending', volume: '4 Sets × 12 Reps', ovr: 79, height: 185, weight: 80, baseline: 'Baseline 1 of 3', notes: 'Filmed at the training cage, partner acting as attacker for each rep.' },
-  { id: 3, scope: 'free', player: 'K. Ibarra', initials: 'KI', position: 'Goalkeeper', drill: 'Reaction Save Wall', time: '1h ago', mins: 60, xp: '+2 REF', target: '+2 Reflexes', volume: '3 Sets × 20 Secs', ovr: 81, height: 190, weight: 84, baseline: 'Baseline 3 of 3', notes: 'Rebound wall at three metres. Last set is the fastest sequence.' },
-  { id: 4, scope: 'free', player: 'T. Okonkwo', initials: 'TO', position: 'Attacker', drill: 'Tight-Space 1v1 Dribbling', time: '2h ago', mins: 120, xp: '+2 DRI', target: '+2 Dribbling', volume: '3 Sets × 20 Secs', ovr: 76, height: 174, weight: 68, baseline: 'Baseline 1 of 3', notes: 'Used a 3x3 metre box marked with tape. Camera on a tripod at knee height.' },
+  { id: 1, scope: 'free', player: 'J. Adeyemi', initials: 'JA', position: 'Attacker', drill: 'Cone Slalom Agility Weave', time: '12m ago', mins: 12, xp: '+2 PAC', target: '+2 Pace', volume: '3 Sets × 15 Reps', ovr: 79, height: 178, weight: 72, baseline: 'Baseline session', notes: 'Wet grass on the far cone, slipped once on set two but kept the take unbroken.' },
+  { id: 2, scope: 'free', player: 'L. Moreau', initials: 'LM', position: 'Defender', drill: 'Shadow Marking Steps', time: '34m ago', mins: 34, xp: '+2 DEF', target: '+2 Defending', volume: '4 Sets × 12 Reps', ovr: 79, height: 185, weight: 80, baseline: 'Baseline session', notes: 'Filmed at the training cage, partner acting as attacker for each rep.' },
+  { id: 3, scope: 'free', player: 'K. Ibarra', initials: 'KI', position: 'Goalkeeper', drill: 'Reaction Save Wall', time: '1h ago', mins: 60, xp: '+2 REF', target: '+2 Reflexes', volume: '3 Sets × 20 Secs', ovr: 81, height: 190, weight: 84, baseline: 'Baseline session', notes: 'Rebound wall at three metres. Last set is the fastest sequence.' },
+  { id: 4, scope: 'free', player: 'T. Okonkwo', initials: 'TO', position: 'Attacker', drill: 'Tight-Space 1v1 Dribbling', time: '2h ago', mins: 120, xp: '+2 DRI', target: '+2 Dribbling', volume: '3 Sets × 20 Secs', ovr: 76, height: 174, weight: 68, baseline: 'Baseline session', notes: 'Used a 3x3 metre box marked with tape. Camera on a tripod at knee height.' },
   { id: 5, scope: 'squad', player: 'R. Vasquez', initials: 'RV', position: 'Defender', drill: 'Box-to-Box Sprint Drills', time: '26m ago', mins: 26, xp: '+1 PHY', target: '+1 Physical', volume: '4 Sets × 15 Secs', ovr: 82, height: 181, weight: 77, baseline: 'Squad · Matchweek 6', notes: 'Full pitch length, timed by a teammate. Slight wind against on the return runs.' },
   { id: 6, scope: 'squad', player: 'S. Haruna', initials: 'SH', position: 'Attacker', drill: 'First-Touch Wall Rebounds', time: '1h ago', mins: 60, xp: '+2 PAS', target: '+2 Passing', volume: '3 Sets × 18 Reps', ovr: 78, height: 176, weight: 70, baseline: 'Squad · Matchweek 6', notes: 'Concrete wall, both feet alternating. Ball out of frame once on set three.' },
   { id: 7, scope: 'squad', player: 'D. Ferreira', initials: 'DF', position: 'Goalkeeper', drill: 'Low Dive Recovery', time: '3h ago', mins: 180, xp: '+2 DIV', target: '+2 Diving', volume: '3 Sets × 14 Reps', ovr: 80, height: 188, weight: 82, baseline: 'Squad · Matchweek 6', notes: 'Both sides worked. Left-side dives feel slower on the second set.' },
@@ -104,7 +104,7 @@ export function CoachReviewQueuePage() {
             </span>
             <p className="crq-scopenote">
               {platform
-                ? 'Your queue holds unassigned players only — their first 3 baseline sessions before any club can sign them.'
+                ? 'Your queue holds unassigned players only — their single baseline session before any club can sign them.'
                 : 'Your queue holds your own squad players only. Free agents are handled by the Platform Evaluator.'}
             </p>
             <div className="crq-roletoggle">

@@ -197,7 +197,7 @@ export function CoachSquadManagerPage() {
           <div className="csm-panel__head">
             <h2 className="csm-panel__title">Pending Applications</h2>
             <span className="csm-panel__hint">
-              All applicants completed 3 baseline sessions with Coach #9
+              All applicants completed their baseline session with Coach #9
             </span>
           </div>
 
@@ -227,7 +227,7 @@ export function CoachSquadManagerPage() {
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                       <path d="M4 12l5 5L20 6" />
                     </svg>
-                    3/3 Verified
+                    Baseline Verified
                   </span>
                   <span className="csm-table__date">{a.date}</span>
                   <span className="csm-table__actions">
@@ -250,8 +250,7 @@ export function CoachSquadManagerPage() {
             <div className="csm-empty">
               <span className="csm-empty__title">No open applications</span>
               <span className="csm-empty__note">
-                Free agents appear here once Coach #9 has approved all three of their baseline
-                sessions.
+                Free agents appear here once Coach #9 has approved their baseline session.
               </span>
             </div>
           )}

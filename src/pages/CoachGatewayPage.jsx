@@ -17,7 +17,7 @@ const CLUB_UNLOCKS = [
   'Full management rights over your squad roster.',
   'Approve or reject player training submissions.',
   'Enter match results and league fixtures.',
-  'Scout free agents who completed their 3-session baseline.',
+  'Scout free agents who completed their baseline session.',
 ]
 
 function UploadIcon() {

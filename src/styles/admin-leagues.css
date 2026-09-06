@@ -1,24 +1,102 @@
 /* Admin Leagues — page-specific. Scope: .alg-* */
 
-.alg-seasonpick {
-  flex: 0 0 260px;
-  max-width: 260px;
+.alg-counters {
+  margin-top: 26px;
 }
 
-.alg-counters {
+.alg-counter--text {
+  font-size: 16px;
+  line-height: 1.15;
+}
+
+/* --- competition switcher --- */
+
+.alg-comptabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
   margin-top: 30px;
 }
 
+.alg-comptab {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(79, 70, 229, 0.28);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.alg-comptab:hover {
+  border-color: rgba(255, 46, 99, 0.45);
+}
+
+.alg-comptab.is-active {
+  border-color: rgba(255, 46, 99, 0.6);
+  background: rgba(255, 46, 99, 0.08);
+}
+
+.alg-comptab__type {
+  align-self: flex-start;
+  padding: 4px 9px;
+  font-size: 8.5px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border: 1px solid;
+}
+
+.alg-comptab__type--league {
+  border-color: rgba(16, 185, 129, 0.5);
+  color: #10b981;
+}
+
+.alg-comptab__type--knockout {
+  border-color: rgba(79, 70, 229, 0.6);
+  color: #a5b0ff;
+}
+
+.alg-comptab__name {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.alg-comptab__season {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #5a6784;
+}
+
+/* --- layout --- */
+
 .alg-body {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 26px;
-  padding-bottom: 72px;
   padding-top: 30px;
+  padding-bottom: 72px;
   align-items: start;
 }
 
+.alg-main {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+}
+
 .alg-colhead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin: 0 0 16px;
   font-size: 11px;
   font-weight: 900;
@@ -27,126 +105,198 @@
   color: #7c89a2;
 }
 
-/* fixtures column */
-.alg-fixtures {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+/* --- record-a-match form --- */
 
-.alg-fx {
+.alg-record {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 20px;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(79, 70, 229, 0.25);
+  gap: 18px;
+  padding: 22px;
+  background: rgba(15, 23, 42, 0.82);
+  border: 1px solid rgba(79, 70, 229, 0.3);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  transition: border-color 0.2s, background 0.2s;
 }
 
-.alg-fx.is-locked {
-  border-color: rgba(16, 185, 129, 0.35);
-  background: rgba(15, 23, 42, 0.55);
-}
-
-.alg-fx.is-flash {
-  animation: adm-flash 0.9s ease-out;
-}
-
-.alg-fx__head {
+.alg-record__bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
 }
 
-.alg-fx__round {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #a5b0ff;
+.alg-record__bar .alg-colhead {
+  margin: 0;
 }
 
-.alg-fx__kick {
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  color: #5a6784;
-}
-
-.alg-fx__head .adm-pill {
-  margin-left: auto;
-}
-
-.alg-fx__scoreline {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
+.alg-today {
+  display: inline-flex;
   align-items: center;
-  gap: 14px;
-}
-
-.alg-fx__team {
-  font-size: 13.5px;
+  gap: 8px;
+  padding: 7px 12px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #e8ecf5;
-}
-
-.alg-fx__team--home {
-  text-align: right;
-}
-
-.alg-fx__team--away {
-  text-align: left;
-}
-
-.alg-fx__final {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 24px;
-  font-weight: 700;
   color: #10b981;
 }
 
-.alg-fx__dash {
+.alg-today__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 10px #10b981;
+  animation: adm-pulse 1.9s ease-in-out infinite;
+}
+
+.alg-record__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+/* segmented control */
+.alg-seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(9, 13, 22, 0.75);
+  border: 1px solid rgba(79, 70, 229, 0.3);
+}
+
+.alg-seg__btn {
+  flex: 1 1 auto;
+  padding: 11px 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: Archivo, sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8b97af;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.alg-seg__btn.is-on {
+  background: rgba(79, 70, 229, 0.18);
+  border-color: rgba(79, 70, 229, 0.6);
+  color: #a5b0ff;
+}
+
+/* scoreboard with steppers */
+.alg-scoreboard {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 16px;
+  padding: 18px;
+  background: rgba(9, 13, 22, 0.55);
+  border: 1px solid rgba(79, 70, 229, 0.2);
+}
+
+.alg-scoreside {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.alg-scoreside__name {
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #c7d0e0;
+  text-align: center;
+}
+
+.alg-scoreboard__vs {
+  padding-bottom: 12px;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: #5a6784;
 }
 
-.alg-fx__inputs {
+.alg-step {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(79, 70, 229, 0.4);
+}
+
+.alg-step__btn {
+  width: 40px;
+  height: 44px;
+  background: rgba(15, 23, 42, 0.9);
+  border: none;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  color: #a5b0ff;
+  transition: background 0.15s, color 0.15s;
+}
+
+.alg-step__btn:hover {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.alg-step__v {
+  width: 52px;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+}
+
+/* goalscorers — two columns */
+.alg-scorers2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.alg-scorerbox {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.alg-scorerbox__label {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.alg-scorein {
-  width: 54px;
-  padding: 10px 0;
-  text-align: center;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.alg-fx__scorers {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(148, 163, 184, 0.12);
-}
-
-.alg-fx__scorerslabel {
   font-size: 9px;
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: #7c89a2;
+}
+
+.alg-scorerbox__count {
+  margin-left: auto;
+  padding: 2px 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  background: rgba(16, 185, 129, 0.14);
+  color: #10b981;
+}
+
+.alg-scorerbox__count.is-off {
+  background: rgba(245, 158, 11, 0.14);
+  color: #f59e0b;
 }
 
 .alg-tagrow {
@@ -178,8 +328,8 @@
 }
 
 .alg-taginput {
-  flex: 1 1 160px;
-  min-width: 120px;
+  flex: 1 1 130px;
+  min-width: 110px;
   padding: 9px 11px;
   background: rgba(9, 13, 22, 0.8);
   border: 1px solid rgba(79, 70, 229, 0.3);
@@ -195,33 +345,157 @@
   border-color: rgba(255, 46, 99, 0.55);
 }
 
-.alg-fx__actions {
+.alg-record__actions {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 10px;
 }
 
-.alg-fx__lockednote,
-.alg-fx__scorerslabel + * .alg-fx__lockednote {
+/* --- recorded match cards --- */
+
+.alg-recorded__n {
+  padding: 2px 8px;
+  background: rgba(79, 70, 229, 0.18);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: #a5b0ff;
+}
+
+.alg-rec {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(79, 70, 229, 0.22);
+}
+
+.alg-rec.is-today {
+  border-left: 2px solid #10b981;
+}
+
+.alg-rec.is-flash {
+  animation: adm-flash 0.9s ease-out;
+}
+
+.alg-rec__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.alg-rec__round {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #a5b0ff;
+}
+
+.alg-rec__when {
   font-size: 10px;
   font-weight: 800;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: #5a6784;
+}
+
+.alg-rec__score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+.alg-rec__team {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #e8ecf5;
+}
+
+.alg-rec__team--home {
+  text-align: right;
+}
+
+.alg-rec__nums {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 22px;
+  font-weight: 700;
   color: #10b981;
 }
 
-.alg-fx__actions .adm-btn--ghost {
-  margin-left: auto;
+.alg-rec__dash {
+  color: #5a6784;
 }
 
-/* side column */
+.alg-rec__scorers {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+  font-size: 11px;
+  font-weight: 700;
+  color: #8d99b0;
+}
+
+.alg-rec__side {
+  text-align: right;
+}
+
+.alg-rec__side--away {
+  text-align: left;
+}
+
+.alg-rec__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.alg-minibtn {
+  padding: 8px 13px;
+  background: transparent;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  cursor: pointer;
+  font-family: Archivo, sans-serif;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #8b97af;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.alg-minibtn:hover {
+  border-color: rgba(79, 70, 229, 0.6);
+  color: #a5b0ff;
+}
+
+.alg-minibtn--danger:hover {
+  border-color: rgba(255, 46, 99, 0.6);
+  color: #ff2e63;
+}
+
+/* --- right rail --- */
+
 .alg-side {
   position: sticky;
   top: 96px;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-width: 0;
 }
 
 .alg-standings {
@@ -238,7 +512,7 @@
 
 .alg-strow {
   display: grid;
-  grid-template-columns: 26px minmax(96px, 1.6fr) 26px 26px 26px 26px 40px 38px minmax(90px, auto);
+  grid-template-columns: 24px minmax(84px, 1.6fr) 24px 24px 24px 24px 38px 34px minmax(84px, auto);
   align-items: center;
   gap: 6px;
   padding: 10px 4px;
@@ -260,6 +534,10 @@
 
 .alg-strow:last-child {
   border-bottom: 0;
+}
+
+.alg-strow.is-top {
+  background: rgba(245, 158, 11, 0.06);
 }
 
 .alg-strow__pos {
@@ -320,38 +598,103 @@
   font-weight: 700;
   letter-spacing: 0.04em;
   color: #5a6784;
+  text-wrap: pretty;
 }
 
-.alg-lastcommit {
+/* --- knockout bracket --- */
+
+.alg-round {
+  margin-bottom: 16px;
+}
+
+.alg-round__name {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 9.5px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a5b0ff;
+}
+
+.alg-tie {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 16px 18px;
-  background: rgba(9, 13, 22, 0.6);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  gap: 7px;
+  padding: 12px 14px;
+  margin-bottom: 8px;
+  background: rgba(9, 13, 22, 0.55);
+  border: 1px solid rgba(79, 70, 229, 0.22);
 }
 
-.alg-lastcommit__eyebrow {
-  font-size: 8.5px;
-  font-weight: 900;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #10b981;
+.alg-tie.is-decided {
+  border-color: rgba(16, 185, 129, 0.35);
 }
 
-.alg-lastcommit__score {
-  font-size: 13px;
+.alg-tie__row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.alg-tie__team {
+  font-size: 11px;
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  color: #c7d0e0;
+  text-align: right;
+}
+
+.alg-tie__team--away {
+  text-align: left;
+}
+
+.alg-tie__team.is-through {
+  color: #10b981;
+}
+
+.alg-tie__legs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.alg-tie__agg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 16px;
+  font-weight: 700;
   color: #fff;
 }
 
-.alg-lastcommit__meta {
-  font-size: 10.5px;
-  font-weight: 700;
-  color: #7c89a2;
+.alg-tie__legdetail {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #5a6784;
+  white-space: nowrap;
 }
+
+.alg-tie__through {
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #7c89a2;
+  text-align: center;
+}
+
+.alg-tie.is-decided .alg-tie__through {
+  color: #10b981;
+}
+
+/* --- rules --- */
 
 .alg-rules {
   display: flex;
@@ -412,11 +755,27 @@
   color: #5a6784;
 }
 
+/* --- responsive --- */
+
 @media (max-width: 1080px) {
   .alg-body {
     grid-template-columns: 1fr;
   }
   .alg-side {
     position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .alg-record__grid,
+  .alg-scorers2 {
+    grid-template-columns: 1fr;
+  }
+  .alg-scoreboard {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .alg-scoreboard__vs {
+    padding-bottom: 0;
   }
 }

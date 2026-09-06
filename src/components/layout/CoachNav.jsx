@@ -11,6 +11,14 @@ const LINKS = [
   { label: 'Leagues', to: '/leagues' },
 ]
 
+// Platform Evaluator ("Coach #9") is a coach-role account flagged by
+// organization. They run no club — no Club / Squad / Review Queue surfaces —
+// so their nav is just the Baseline Console plus the public Leagues page.
+const EVALUATOR_LINKS = [
+  { label: 'Baseline Console', to: '/coach/evaluator' },
+  { label: 'Leagues', to: '/leagues' },
+]
+
 // Top navigation for a signed-in coach — the coach-side equivalent of
 // PlayerNav. The workspace links are shown once a coach has submitted their
 // club-management request (see utils/coachApplication.js); an amber sub-label
@@ -19,6 +27,7 @@ export function CoachNav() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const isEvaluator = user?.organization === 'Platform Evaluator'
   const application = readCoachApplication(user?.email)
   const pending = application?.status === 'pending'
 
@@ -41,7 +50,21 @@ export function CoachNav() {
         </span>
       </Link>
 
-      {application ? (
+      {isEvaluator ? (
+        <div className="cnav__links">
+          {EVALUATOR_LINKS.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              className={({ isActive }) =>
+                `cnav__link ${isActive || pathname.startsWith(link.to) ? 'is-active' : ''}`
+              }
+            >
+              {link.label}
+            </NavLink>
+          ))}
+        </div>
+      ) : application ? (
         <div className="cnav__links">
           {LINKS.map((link) => (
             <NavLink
@@ -62,12 +85,16 @@ export function CoachNav() {
       )}
 
       <div className="cnav__account">
-        <Link to="/coach/gateway" className="cnav__chip">
+        <Link to={isEvaluator ? '/coach/evaluator' : '/coach/gateway'} className="cnav__chip">
           <span className="cnav__avatar">{initials(user?.name)}</span>
           <span className="cnav__chip-text">
             <span className="cnav__chip-name">{cardName(user?.name)}</span>
             <span className={`cnav__chip-sub ${pending ? 'is-pending' : ''}`}>
-              {pending ? 'Pending Approval' : application?.clubName || 'Coach'}
+              {isEvaluator
+                ? 'Platform Evaluator'
+                : pending
+                  ? 'Pending Approval'
+                  : application?.clubName || 'Coach'}
             </span>
           </span>
         </Link>
