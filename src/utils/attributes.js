@@ -28,7 +28,10 @@ const DEMO_GK = { reflexes: 86, handling: 84, diving: 81, positioning: 79, kicki
 
 export const POSITION_CODE = { Attacker: 'ATT', Defender: 'DEF', Goalkeeper: 'GK' }
 
-// Which two attributes each of the three baseline sessions awards XP toward.
+// Which two attributes a baseline session can award XP toward, by slot. Only
+// slot 0 is used now that the baseline is a single session (see
+// usePlayerDashboard.js TOTAL_SESSIONS); the rest are kept for the radar's
+// XP-pair labelling.
 const XP_PAIRS_OUTFIELD = [
   ['PAC', 'DRI'],
   ['SHO', 'PAS'],

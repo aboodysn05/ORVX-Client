@@ -1,6 +1,6 @@
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { destForRole } from '../utils/authRedirect'
+import { destForUser } from '../utils/authRedirect'
 import { LoginForm } from '../components/auth/LoginForm'
 import { RegisterForm } from '../components/auth/RegisterForm'
 import '../styles/auth.css'
@@ -17,7 +17,7 @@ export function AuthPage({ mode = 'login' }) {
   // form. Coaches have no dashboard yet — their home is the gateway request;
   // admins land on the console.
   if (user) {
-    return <Navigate to={destForRole(user.role)} replace />
+    return <Navigate to={destForUser(user)} replace />
   }
 
   return (

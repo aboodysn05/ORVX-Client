@@ -16,7 +16,7 @@ function BoltIcon() {
 }
 
 // Section 2, left column: the "Progression Gate" that unlocks club
-// applications once three baseline sessions are approved.
+// applications once the player's baseline session is approved.
 export function EligibilityPanel({
   approved,
   totalSessions,

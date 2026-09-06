@@ -11,6 +11,7 @@ import { CoachGatewayPage } from './pages/CoachGatewayPage'
 import { CoachClubProfilePage } from './pages/CoachClubProfilePage'
 import { CoachReviewQueuePage } from './pages/CoachReviewQueuePage'
 import { CoachSquadManagerPage } from './pages/CoachSquadManagerPage'
+import { EvaluatorConsolePage } from './pages/EvaluatorConsolePage'
 import { TrainPage } from './pages/TrainPage'
 import { WorkoutPage } from './pages/WorkoutPage'
 import { SubmitProofPage } from './pages/SubmitProofPage'
@@ -67,6 +68,14 @@ function App() {
         element={
           <RequireAuth>
             <CoachReviewQueuePage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/coach/evaluator"
+        element={
+          <RequireAuth>
+            <EvaluatorConsolePage />
           </RequireAuth>
         }
       />
