@@ -16,7 +16,6 @@ import { WorkoutPage } from './pages/WorkoutPage'
 import { SubmitProofPage } from './pages/SubmitProofPage'
 import { AdminOverviewPage } from './pages/AdminOverviewPage'
 import { AdminRequestsPage } from './pages/AdminRequestsPage'
-import { AdminUsersPage } from './pages/AdminUsersPage'
 import { AdminClubsPage } from './pages/AdminClubsPage'
 import { AdminDrillsPage } from './pages/AdminDrillsPage'
 import { AdminLeaguesPage } from './pages/AdminLeaguesPage'
@@ -116,14 +115,6 @@ function App() {
         element={
           <RequireAuth>
             <AdminRequestsPage />
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/admin/users"
-        element={
-          <RequireAuth>
-            <AdminUsersPage />
           </RequireAuth>
         }
       />

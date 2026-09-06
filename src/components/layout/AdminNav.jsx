@@ -6,7 +6,6 @@ import '../../styles/admin-nav.css'
 const LINKS = [
   { label: 'Overview', to: '/admin' },
   { label: 'Requests', to: '/admin/requests' },
-  { label: 'Users', to: '/admin/users' },
   { label: 'Clubs', to: '/admin/clubs' },
   { label: 'Drills', to: '/admin/drills' },
   { label: 'Leagues', to: '/admin/leagues' },
