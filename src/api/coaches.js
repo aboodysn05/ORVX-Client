@@ -1,0 +1,16 @@
+import client from './client'
+
+// Coach onboarding + the head-coach directory that powers the player's
+// reviewer picker. Shapes match backend/src/services/coaches.service.js.
+
+export function applyAsCoach(payload) {
+  return client.post('/coaches/applications', payload).then((res) => res.data.application)
+}
+
+export function getMyCoachApplication() {
+  return client.get('/coaches/applications/me').then((res) => res.data.application)
+}
+
+export function listCoaches() {
+  return client.get('/coaches').then((res) => res.data.coaches)
+}

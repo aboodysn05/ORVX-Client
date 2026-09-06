@@ -1,39 +1,26 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { AdminShell } from '../components/layout/AdminShell'
+import { listClubs } from '../api/clubs'
+import { listCompetitions, getStandings, getFixtures, getBracket } from '../api/competitions'
+import { recordMatch, updateMatch, deleteMatch } from '../api/admin'
 import '../styles/admin-leagues.css'
 
 // Admin Competition Engine — record a match on the day it's played and enter
 // its result + goalscorers, for both competition types (league and knockout
-// "tournament"). Frontend only: matches are held in local state, shaped like
-// the backend `fixtures` table (round_label / leg / scores / status). Standings
-// (league) and ties + aggregates (knockout) are DERIVED from recorded matches
-// every render — never stored, the same rule the backend follows.
+// "tournament"). Live against the backend: matches are POST/PATCH/DELETEd to
+// /admin/*, and the league table / knockout bracket are re-fetched from the
+// backend (which derives them from played matches — never stored) after every
+// change.
 
-const COMPETITIONS = [
-  { id: 'comp-league', name: 'Premier Development League', type: 'league', season: '2025/26' },
-  { id: 'comp-cup', name: 'OVRX Cup', type: 'knockout', season: '2025/26' },
-]
-
-const CLUBS = [
-  { id: 'ngf', name: 'Northgate FC' },
-  { id: 'riv', name: 'Riverside United' },
-  { id: 'esr', name: 'Eastside Rangers' },
-  { id: 'har', name: 'Harbour Athletic' },
-  { id: 'kin', name: 'Kingsway Town' },
-  { id: 'mpf', name: 'Meadow Park FC' },
-  { id: 'cwn', name: 'Central Wanderers' },
-  { id: 'lkr', name: 'Lakeside Rovers' },
-]
-
-const KO_ROUNDS = ['Semi-Finals', 'Final']
-const LEAGUE_ROUNDS = Array.from({ length: 16 }, (_, i) => `Matchday ${i + 1}`)
+const KO_ROUNDS = ['Round of 16', 'Quarter-Finals', 'Semi-Finals', 'Final']
+const LEAGUE_ROUNDS = Array.from({ length: 22 }, (_, i) => `Matchday ${i + 1}`)
 const MAX_SCORE = 30
 
 const RULES = [
   { k: 'Win', v: '3 pts' },
   { k: 'Draw', v: '1 pt' },
   { k: 'Loss', v: '0 pts' },
-  { k: 'Tiebreak', v: 'GD → GF → H2H' },
+  { k: 'Tiebreak', v: 'GD → GF → name' },
 ]
 
 const TODAY = new Date()
@@ -41,47 +28,39 @@ const todayISO = TODAY.toISOString().slice(0, 10)
 const prettyToday = TODAY.toLocaleDateString(undefined, {
   weekday: 'long', day: '2-digit', month: 'long', year: 'numeric',
 })
-const clockOf = (ms) => new Date(ms).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+const clockOf = (iso) =>
+  new Date(iso).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
 const dayLabel = (iso) => {
-  if (iso === todayISO) return 'Today'
+  const day = (iso || '').slice(0, 10)
+  if (day === todayISO) return 'Today'
   return new Date(iso).toLocaleDateString(undefined, { day: '2-digit', month: 'short' })
 }
 
-// --- seed matches so the standings / bracket are not empty on first load ---
-let seq = 0
-const mk = (competitionId, round, leg, homeId, awayId, hs, as, homeScorers, awayScorers, daysAgo) => ({
-  id: `seed-${++seq}`,
-  competitionId,
-  round,
-  leg,
-  homeId,
-  awayId,
-  homeScore: hs,
-  awayScore: as,
-  homeScorers,
-  awayScorers,
-  playedOn: new Date(TODAY.getTime() - daysAgo * 86400000).toISOString().slice(0, 10),
-  recordedAt: TODAY.getTime() - daysAgo * 86400000,
-})
+// Flatten a fixture's goals[] into the two per-club name lists the form/record
+// card work with.
+function scorersFor(goals, clubId) {
+  return (goals || []).filter((g) => g.clubId === clubId).map((g) => g.scorerName)
+}
 
-const SEED = [
-  // League — two matchdays, every club has played
-  mk('comp-league', 'Matchday 1', null, 'ngf', 'lkr', 4, 1, ['A. Reed', 'A. Reed', 'M. Cole', 'T. Frost'], ['P. Nunez'], 21),
-  mk('comp-league', 'Matchday 1', null, 'riv', 'cwn', 2, 0, ['D. Amos', 'J. Pike'], [], 21),
-  mk('comp-league', 'Matchday 1', null, 'esr', 'mpf', 3, 1, ['K. Boyd', 'K. Boyd', 'L. Hart'], ['S. Vane'], 21),
-  mk('comp-league', 'Matchday 1', null, 'har', 'kin', 1, 1, ['R. Doyle'], ['C. Webb'], 21),
-  mk('comp-league', 'Matchday 2', null, 'ngf', 'cwn', 3, 0, ['A. Reed', 'M. Cole', 'M. Cole'], [], 14),
-  mk('comp-league', 'Matchday 2', null, 'lkr', 'mpf', 0, 2, [], ['S. Vane', 'O. Kerr'], 14),
-  mk('comp-league', 'Matchday 2', null, 'riv', 'kin', 2, 1, ['D. Amos', 'D. Amos'], ['C. Webb'], 14),
-  mk('comp-league', 'Matchday 2', null, 'esr', 'har', 1, 1, ['L. Hart'], ['R. Doyle'], 14),
-  // Knockout — one semi-final tie decided over two legs, the other with
-  // only leg 1 played (leg 2 still to come).
-  mk('comp-cup', 'Semi-Finals', 1, 'ngf', 'mpf', 2, 0, ['A. Reed', 'M. Cole'], [], 13),
-  mk('comp-cup', 'Semi-Finals', 2, 'mpf', 'ngf', 1, 3, ['S. Vane'], ['A. Reed', 'A. Reed', 'T. Frost'], 6),
-  mk('comp-cup', 'Semi-Finals', 1, 'esr', 'riv', 1, 1, ['K. Boyd'], ['D. Amos'], 13),
-]
-
-const nameOf = (id) => CLUBS.find((c) => c.id === id)?.name || '—'
+// Map a backend fixture (GET /competitions/:id/fixtures) to this page's shape.
+function toMatch(f) {
+  return {
+    id: f.id,
+    round: f.round,
+    leg: f.leg,
+    homeId: f.homeClubId,
+    awayId: f.awayClubId,
+    homeName: f.home,
+    awayName: f.away,
+    homeScore: f.homeScore ?? 0,
+    awayScore: f.awayScore ?? 0,
+    homeScorers: scorersFor(f.goals, f.homeClubId),
+    awayScorers: scorersFor(f.goals, f.awayClubId),
+    playedOn: (f.scheduledAt || '').slice(0, 10),
+    scheduledAt: f.scheduledAt,
+    status: f.status,
+  }
+}
 
 function makeForm(type, roundSeed) {
   return {
@@ -98,30 +77,118 @@ function makeForm(type, roundSeed) {
   }
 }
 
+// Build the goals[] payload the backend expects:
+//  - `[]` for a goalless match (clears any stale scorers on an edit),
+//  - the full list when both sides' named scorers exactly match their score,
+//  - `undefined` (omit) when the lists are incomplete — goalscorers are
+//    optional, and a partial list would be rejected as a GOAL_COUNT_MISMATCH.
+function goalsPayload(form) {
+  if (form.homeScore + form.awayScore === 0) return []
+  const homeOk = form.homeScorers.length === form.homeScore
+  const awayOk = form.awayScorers.length === form.awayScore
+  if (!homeOk || !awayOk) return undefined
+  return [
+    ...form.homeScorers.map((scorerName) => ({ clubId: Number(form.homeId), scorerName })),
+    ...form.awayScorers.map((scorerName) => ({ clubId: Number(form.awayId), scorerName })),
+  ]
+}
+
 export function AdminLeaguesPage() {
-  const [competitionId, setCompetitionId] = useState('comp-league')
-  const [matches, setMatches] = useState(SEED)
+  const [competitions, setCompetitions] = useState([])
+  const [competitionId, setCompetitionId] = useState(null)
+  const [clubs, setClubs] = useState([])
+  const [matches, setMatches] = useState([])
+  const [standings, setStandings] = useState([])
+  const [bracket, setBracket] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
+  const [busy, setBusy] = useState(false)
+
   const [editingId, setEditingId] = useState(null)
   const [toast, setToast] = useState('')
   const [flashId, setFlashId] = useState(null)
   const formRef = useRef(null)
 
-  const comp = COMPETITIONS.find((c) => c.id === competitionId)
-  const isKnockout = comp.type === 'knockout'
+  const comp = competitions.find((c) => c.id === competitionId) || null
+  const isKnockout = comp?.type === 'knockout'
 
+  const nameOf = useMemo(() => {
+    const byId = new Map(clubs.map((c) => [c.id, c.name]))
+    return (id) => byId.get(id) || '—'
+  }, [clubs])
+
+  // --- initial load: competitions + clubs ---
+  useEffect(() => {
+    let cancelled = false
+    Promise.all([listCompetitions(), listClubs()])
+      .then(([comps, clubRows]) => {
+        if (cancelled) return
+        setCompetitions(comps)
+        setClubs(clubRows.filter((c) => !c.archived))
+        setCompetitionId((cur) => cur ?? comps[0]?.id ?? null)
+        setLoadError('')
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err.response?.data?.message || 'Could not load competitions.')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // --- per-competition data: fixtures + derived table/bracket ---
+  function reloadCompetition(id = competitionId) {
+    if (!id) return Promise.resolve()
+    const current = competitions.find((c) => c.id === id)
+    const jobs = [
+      getFixtures(id)
+        .then((rows) => setMatches(rows.map(toMatch)))
+        .catch(() => setMatches([])),
+    ]
+    if (current?.type === 'knockout') {
+      jobs.push(getBracket(id).then(setBracket).catch(() => setBracket([])))
+      setStandings([])
+    } else {
+      jobs.push(getStandings(id).then(setStandings).catch(() => setStandings([])))
+      setBracket([])
+    }
+    return Promise.all(jobs)
+  }
+
+  useEffect(() => {
+    reloadCompetition(competitionId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [competitionId, competitions.length])
+
+  // Played results, newest first — a match recorded today sits on top.
   const compMatches = useMemo(
-    () => matches.filter((m) => m.competitionId === competitionId).sort((a, b) => b.recordedAt - a.recordedAt),
-    [matches, competitionId],
+    () =>
+      matches
+        .filter((m) => m.status === 'played')
+        .sort((a, b) => new Date(b.scheduledAt) - new Date(a.scheduledAt)),
+    [matches],
   )
 
-  const nextMatchday = useMemo(() => {
+  // Fixtures the admin still has to enter a result for.
+  const scheduledFixtures = useMemo(
+    () =>
+      matches
+        .filter((m) => m.status !== 'played')
+        .sort((a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt)),
+    [matches],
+  )
+
+  const nextRound = useMemo(() => {
     const nums = compMatches
       .map((m) => Number((m.round || '').match(/\d+/)?.[0]))
       .filter((n) => !Number.isNaN(n))
     return `Matchday ${nums.length ? Math.max(...nums) : 1}`
   }, [compMatches])
 
-  const [form, setForm] = useState(() => makeForm(comp.type, nextMatchday))
+  const [form, setForm] = useState(() => makeForm('league', 'Matchday 1'))
 
   function fire(msg) {
     setToast(msg)
@@ -132,8 +199,8 @@ export function AdminLeaguesPage() {
   function switchCompetition(id) {
     setCompetitionId(id)
     setEditingId(null)
-    const next = COMPETITIONS.find((c) => c.id === id)
-    setForm(makeForm(next.type))
+    const next = competitions.find((c) => c.id === id)
+    setForm(makeForm(next?.type || 'league'))
   }
 
   const patch = (p) => setForm((f) => ({ ...f, ...p }))
@@ -159,44 +226,56 @@ export function AdminLeaguesPage() {
 
   function resetForm() {
     setEditingId(null)
-    setForm(makeForm(comp.type, nextMatchday))
+    setForm(makeForm(comp?.type || 'league', nextRound))
   }
 
-  function submit() {
+  async function submit() {
+    if (busy) return
     if (!form.homeId || !form.awayId) return fire('Pick both clubs')
     if (form.homeId === form.awayId) return fire('A club cannot play itself')
 
-    const record = {
-      id: editingId || `m-${Date.now()}`,
-      competitionId,
-      round: form.round,
-      leg: isKnockout ? form.leg : null,
-      homeId: form.homeId,
-      awayId: form.awayId,
-      homeScore: form.homeScore,
-      awayScore: form.awayScore,
-      homeScorers: form.homeScorers,
-      awayScorers: form.awayScorers,
-      playedOn: editingId ? matches.find((m) => m.id === editingId).playedOn : todayISO,
-      recordedAt: editingId ? matches.find((m) => m.id === editingId).recordedAt : Date.now(),
+    setBusy(true)
+    try {
+      if (editingId) {
+        const saved = await updateMatch(editingId, {
+          homeScore: form.homeScore,
+          awayScore: form.awayScore,
+          roundLabel: form.round,
+          leg: isKnockout ? form.leg : null,
+          goals: goalsPayload(form),
+        })
+        setFlashId(saved.id)
+        fire('Match updated · table recalculated')
+      } else {
+        const saved = await recordMatch(competitionId, {
+          homeClubId: Number(form.homeId),
+          awayClubId: Number(form.awayId),
+          roundLabel: form.round,
+          leg: isKnockout ? form.leg : null,
+          homeScore: form.homeScore,
+          awayScore: form.awayScore,
+          playedOn: todayISO,
+          goals: goalsPayload(form),
+        })
+        setFlashId(saved.id)
+        fire('Match recorded · table recalculated')
+      }
+      await reloadCompetition(competitionId)
+      setTimeout(() => setFlashId(null), 900)
+      resetForm()
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not save the match')
+    } finally {
+      setBusy(false)
     }
-
-    setMatches((prev) => {
-      if (editingId) return prev.map((m) => (m.id === editingId ? record : m))
-      return [record, ...prev]
-    })
-    setFlashId(record.id)
-    setTimeout(() => setFlashId(null), 900)
-    fire(editingId ? 'Match updated · table recalculated' : 'Match recorded · table recalculated')
-    resetForm()
   }
 
   function editMatch(m) {
     setEditingId(m.id)
     setForm({
-      homeId: m.homeId,
-      awayId: m.awayId,
-      round: m.round,
+      homeId: String(m.homeId),
+      awayId: String(m.awayId),
+      round: m.round || (isKnockout ? 'Semi-Finals' : 'Matchday 1'),
       leg: m.leg ?? (isKnockout ? 1 : null),
       homeScore: m.homeScore,
       awayScore: m.awayScore,
@@ -208,89 +287,68 @@ export function AdminLeaguesPage() {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  function deleteMatch(id) {
-    setMatches((prev) => prev.filter((m) => m.id !== id))
-    if (editingId === id) resetForm()
-    fire('Match deleted · table recalculated')
+  async function removeMatch(id) {
+    if (busy) return
+    setBusy(true)
+    try {
+      await deleteMatch(id)
+      if (editingId === id) resetForm()
+      await reloadCompetition(competitionId)
+      fire('Match deleted · table recalculated')
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not delete the match')
+    } finally {
+      setBusy(false)
+    }
   }
 
-  // --- derived: league standings ---
-  const standings = useMemo(() => {
-    const t = {}
-    CLUBS.forEach((c) => {
-      t[c.id] = { id: c.id, name: c.name, p: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, pts: 0, form: [] }
+  // --- league standings: backend rows overlaid onto the full club list so
+  // clubs yet to play still appear (bottom, all zeroes). ---
+  const table = useMemo(() => {
+    const played = new Map(standings.map((r) => [r.clubId, r]))
+    const rows = clubs.map((c) => {
+      const r = played.get(c.id)
+      return r
+        ? {
+            id: c.id,
+            name: c.name,
+            p: r.played,
+            w: r.won,
+            d: r.drawn,
+            l: r.lost,
+            gd: r.goalDiff,
+            gf: r.goalsFor,
+            pts: r.points,
+            form: r.form || [],
+          }
+        : { id: c.id, name: c.name, p: 0, w: 0, d: 0, l: 0, gd: 0, gf: 0, pts: 0, form: [] }
     })
-    const chrono = [...compMatches].sort((a, b) => a.recordedAt - b.recordedAt)
-    chrono.forEach((m) => {
-      const H = t[m.homeId]
-      const A = t[m.awayId]
-      if (!H || !A) return
-      H.p++
-      A.p++
-      H.gf += m.homeScore
-      H.ga += m.awayScore
-      A.gf += m.awayScore
-      A.ga += m.homeScore
-      if (m.homeScore > m.awayScore) {
-        H.w++, A.l++, (H.pts += 3), H.form.push('W'), A.form.push('L')
-      } else if (m.homeScore < m.awayScore) {
-        A.w++, H.l++, (A.pts += 3), A.form.push('W'), H.form.push('L')
-      } else {
-        H.d++, A.d++, H.pts++, A.pts++, H.form.push('D'), A.form.push('D')
-      }
-    })
-    return Object.values(t).sort(
-      (x, y) =>
-        y.pts - x.pts ||
-        y.gf - y.ga - (x.gf - x.ga) ||
-        y.gf - x.gf ||
-        x.name.localeCompare(y.name),
-    )
-  }, [compMatches])
-
-  // --- derived: knockout ties (grouped by round, aggregated across legs) ---
-  const bracket = useMemo(() => {
-    const byRound = new Map()
-    compMatches.forEach((m) => {
-      if (!byRound.has(m.round)) byRound.set(m.round, new Map())
-      const pk = [m.homeId, m.awayId].slice().sort().join('~')
-      const map = byRound.get(m.round)
-      if (!map.has(pk)) map.set(pk, [])
-      map.get(pk).push(m)
-    })
-    return KO_ROUNDS.filter((rn) => byRound.has(rn)).map((rn) => {
-      const ties = [...byRound.get(rn).values()].map((legs) => {
-        const leg1 = legs.find((x) => x.leg === 1) || legs.find((x) => x.leg == null) || legs[0]
-        const leg2 = legs.find((x) => x.leg === 2) || null
-        const homeId = leg1.homeId
-        const awayId = leg1.awayId
-        const goalsFor = (id) =>
-          legs.reduce((n, l) => n + (l.homeId === id ? l.homeScore : l.awayId === id ? l.awayScore : 0), 0)
-        // A numbered leg (1 or 2) always implies a two-legged tie; leg === null
-        // is a genuine one-off match decided on the night.
-        const twoLeg = leg1.leg != null
-        const aggH = goalsFor(homeId)
-        const aggA = goalsFor(awayId)
-        const decided = twoLeg ? Boolean(leg2) : true
-        const through = !decided || aggH === aggA ? null : aggH > aggA ? homeId : awayId
-        return { homeId, awayId, leg1, leg2, twoLeg, aggH, aggA, decided, through }
-      })
-      return { round: rn, ties }
-    })
-  }, [compMatches])
+    rows.sort((x, y) => y.pts - x.pts || y.gd - x.gd || y.gf - x.gf || x.name.localeCompare(y.name))
+    return rows
+  }, [standings, clubs])
 
   const recordedToday = compMatches.filter((m) => m.playedOn === todayISO).length
   const goalsRecorded = compMatches.reduce((n, m) => n + m.homeScore + m.awayScore, 0)
   const tiesDecided = bracket.reduce((n, r) => n + r.ties.filter((t) => t.through).length, 0)
-  const leader = standings.find((r) => r.p > 0)
+  const leader = table.find((r) => r.p > 0)
 
   const roundOptions = isKnockout ? KO_ROUNDS : LEAGUE_ROUNDS
   const scorerMismatch = (list, score) => list.length !== score
 
+  if (loading) {
+    return (
+      <AdminShell footerNote="OVRX Admin Console · Competition Engine">
+        <section className="adm-section">
+          <p className="adm-lead">Loading competitions…</p>
+        </section>
+      </AdminShell>
+    )
+  }
+
   return (
     <AdminShell
       footerNote="OVRX Admin Console · Competition Engine"
-      footerRight="Standings & aggregates are derived from recorded matches — never stored"
+      footerRight="Standings & aggregates are derived from played matches — never stored"
     >
       <section className="adm-section">
         <div className="adm-herorow">
@@ -302,11 +360,12 @@ export function AdminLeaguesPage() {
               goalscorers, and commit. Works for both the round-robin league and the knockout cup;
               the league table and cup bracket rebuild from every match you record.
             </p>
+            {loadError && <p className="adm-lead" style={{ color: '#FF2E63' }}>{loadError}</p>}
           </div>
         </div>
 
         <div className="alg-comptabs">
-          {COMPETITIONS.map((c) => (
+          {competitions.map((c) => (
             <button
               key={c.id}
               type="button"
@@ -325,7 +384,7 @@ export function AdminLeaguesPage() {
         <div className="adm-counters alg-counters">
           <div className="adm-counter adm-counter--indigo">
             <span className="adm-counter__k">Clubs</span>
-            <span className="adm-counter__v">{CLUBS.length}</span>
+            <span className="adm-counter__v">{clubs.length}</span>
           </div>
           <div className="adm-counter adm-counter--green">
             <span className="adm-counter__k">Recorded Today</span>
@@ -361,10 +420,15 @@ export function AdminLeaguesPage() {
             <div className="alg-record__grid">
               <label className="adm-field">
                 <span className="adm-field__label">Home Club</span>
-                <select className="adm-select" value={form.homeId} onChange={(e) => patch({ homeId: e.target.value })}>
+                <select
+                  className="adm-select"
+                  value={form.homeId}
+                  onChange={(e) => patch({ homeId: e.target.value })}
+                  disabled={Boolean(editingId)}
+                >
                   <option value="">Select club…</option>
-                  {CLUBS.map((c) => (
-                    <option key={c.id} value={c.id} disabled={c.id === form.awayId}>
+                  {clubs.map((c) => (
+                    <option key={c.id} value={c.id} disabled={String(c.id) === form.awayId}>
                       {c.name}
                     </option>
                   ))}
@@ -372,10 +436,15 @@ export function AdminLeaguesPage() {
               </label>
               <label className="adm-field">
                 <span className="adm-field__label">Away Club</span>
-                <select className="adm-select" value={form.awayId} onChange={(e) => patch({ awayId: e.target.value })}>
+                <select
+                  className="adm-select"
+                  value={form.awayId}
+                  onChange={(e) => patch({ awayId: e.target.value })}
+                  disabled={Boolean(editingId)}
+                >
                   <option value="">Select club…</option>
-                  {CLUBS.map((c) => (
-                    <option key={c.id} value={c.id} disabled={c.id === form.homeId}>
+                  {clubs.map((c) => (
+                    <option key={c.id} value={c.id} disabled={String(c.id) === form.homeId}>
                       {c.name}
                     </option>
                   ))}
@@ -417,7 +486,7 @@ export function AdminLeaguesPage() {
 
             <div className="alg-scoreboard">
               <div className="alg-scoreside">
-                <span className="alg-scoreside__name">{form.homeId ? nameOf(form.homeId) : 'Home'}</span>
+                <span className="alg-scoreside__name">{form.homeId ? nameOf(Number(form.homeId)) : 'Home'}</span>
                 <span className="alg-step">
                   <button type="button" className="alg-step__btn" aria-label="Home score down" onClick={() => bump('home', -1)}>
                     −
@@ -430,7 +499,7 @@ export function AdminLeaguesPage() {
               </div>
               <span className="alg-scoreboard__vs">vs</span>
               <div className="alg-scoreside">
-                <span className="alg-scoreside__name">{form.awayId ? nameOf(form.awayId) : 'Away'}</span>
+                <span className="alg-scoreside__name">{form.awayId ? nameOf(Number(form.awayId)) : 'Away'}</span>
                 <span className="alg-step">
                   <button type="button" className="alg-step__btn" aria-label="Away score down" onClick={() => bump('away', -1)}>
                     −
@@ -452,7 +521,7 @@ export function AdminLeaguesPage() {
                 return (
                   <div key={side} className="alg-scorerbox">
                     <span className="alg-scorerbox__label">
-                      {clubId ? nameOf(clubId) : side === 'home' ? 'Home' : 'Away'} goalscorers
+                      {clubId ? nameOf(Number(clubId)) : side === 'home' ? 'Home' : 'Away'} goalscorers
                       <span className={`alg-scorerbox__count ${scorerMismatch(form[listKey], score) ? 'is-off' : ''}`}>
                         {form[listKey].length}/{score}
                       </span>
@@ -483,18 +552,61 @@ export function AdminLeaguesPage() {
               })}
             </div>
 
+            <p className="alg-standings__note">
+              Goalscorer names are optional — leave them blank to just log the score. If you name any,
+              each club's list must match its score exactly or the names are dropped.
+            </p>
+
             <div className="alg-record__actions">
-              <button type="button" className="adm-btn adm-btn--green" onClick={submit}>
+              <button type="button" className="adm-btn adm-btn--green" onClick={submit} disabled={busy}>
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6">
                   <path d="M5 13l4 4L19 7" />
                 </svg>
                 {editingId ? 'Save Changes' : 'Record Match'}
               </button>
-              <button type="button" className="adm-btn adm-btn--ghost" onClick={resetForm}>
+              <button type="button" className="adm-btn adm-btn--ghost" onClick={resetForm} disabled={busy}>
                 {editingId ? 'Cancel Edit' : 'Reset'}
               </button>
             </div>
           </div>
+
+          {scheduledFixtures.length > 0 && (
+            <div className="alg-recorded">
+              <h2 className="alg-colhead">
+                Scheduled — Result Pending
+                <span className="alg-recorded__n">{scheduledFixtures.length}</span>
+              </h2>
+              {scheduledFixtures.map((m) => (
+                <article key={m.id} className="alg-rec">
+                  <div className="alg-rec__top">
+                    <span className="alg-rec__round">
+                      {m.round}
+                      {m.leg ? ` · Leg ${m.leg}` : ''}
+                    </span>
+                    <span className="alg-rec__when">{dayLabel(m.scheduledAt)}</span>
+                  </div>
+                  <div className="alg-rec__score">
+                    <span className="alg-rec__team alg-rec__team--home">{m.homeName || nameOf(m.homeId)}</span>
+                    <span className="alg-rec__nums">vs</span>
+                    <span className="alg-rec__team alg-rec__team--away">{m.awayName || nameOf(m.awayId)}</span>
+                  </div>
+                  <div className="alg-rec__actions">
+                    <button type="button" className="alg-minibtn" onClick={() => editMatch(m)} disabled={busy}>
+                      Enter Result
+                    </button>
+                    <button
+                      type="button"
+                      className="alg-minibtn alg-minibtn--danger"
+                      onClick={() => removeMatch(m.id)}
+                      disabled={busy}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </article>
+              ))}
+            </div>
+          )}
 
           <div className="alg-recorded">
             <h2 className="alg-colhead">
@@ -520,18 +632,18 @@ export function AdminLeaguesPage() {
                     {m.leg ? ` · Leg ${m.leg}` : ''}
                   </span>
                   <span className="alg-rec__when">
-                    {dayLabel(m.playedOn)} · {clockOf(m.recordedAt)}
+                    {dayLabel(m.scheduledAt)} · {clockOf(m.scheduledAt)}
                   </span>
                 </div>
 
                 <div className="alg-rec__score">
-                  <span className="alg-rec__team alg-rec__team--home">{nameOf(m.homeId)}</span>
+                  <span className="alg-rec__team alg-rec__team--home">{m.homeName || nameOf(m.homeId)}</span>
                   <span className="alg-rec__nums">
                     {m.homeScore}
                     <span className="alg-rec__dash">–</span>
                     {m.awayScore}
                   </span>
-                  <span className="alg-rec__team alg-rec__team--away">{nameOf(m.awayId)}</span>
+                  <span className="alg-rec__team alg-rec__team--away">{m.awayName || nameOf(m.awayId)}</span>
                 </div>
 
                 {(m.homeScorers.length > 0 || m.awayScorers.length > 0) && (
@@ -550,10 +662,15 @@ export function AdminLeaguesPage() {
                 )}
 
                 <div className="alg-rec__actions">
-                  <button type="button" className="alg-minibtn" onClick={() => editMatch(m)}>
+                  <button type="button" className="alg-minibtn" onClick={() => editMatch(m)} disabled={busy}>
                     Edit
                   </button>
-                  <button type="button" className="alg-minibtn alg-minibtn--danger" onClick={() => deleteMatch(m.id)}>
+                  <button
+                    type="button"
+                    className="alg-minibtn alg-minibtn--danger"
+                    onClick={() => removeMatch(m.id)}
+                    disabled={busy}
+                  >
                     Delete
                   </button>
                 </div>
@@ -578,7 +695,7 @@ export function AdminLeaguesPage() {
                   <span>Pts</span>
                   <span className="alg-strow__form">Form</span>
                 </div>
-                {standings.map((row, i) => (
+                {table.map((row, i) => (
                   <div key={row.id} className={`alg-strow ${row.p > 0 && i === 0 ? 'is-top' : ''}`}>
                     <span className="alg-strow__pos">{i + 1}</span>
                     <span className="alg-strow__club">{row.name}</span>
@@ -586,7 +703,7 @@ export function AdminLeaguesPage() {
                     <span>{row.w}</span>
                     <span>{row.d}</span>
                     <span>{row.l}</span>
-                    <span>{row.gf - row.ga > 0 ? `+${row.gf - row.ga}` : row.gf - row.ga}</span>
+                    <span>{row.gd > 0 ? `+${row.gd}` : row.gd}</span>
                     <span className="alg-strow__pts">{row.pts}</span>
                     <span className="alg-strow__form">
                       {row.form.slice(-5).map((r, fi) => (
@@ -600,8 +717,8 @@ export function AdminLeaguesPage() {
                 ))}
               </div>
               <p className="alg-standings__note">
-                Rebuilt from {compMatches.length} recorded match{compMatches.length === 1 ? '' : 'es'} ·
-                tiebreak GD → GF → head-to-head
+                Rebuilt from {compMatches.length} played match{compMatches.length === 1 ? '' : 'es'} ·
+                tiebreak GD → GF → name
               </p>
             </div>
           )}
@@ -618,35 +735,34 @@ export function AdminLeaguesPage() {
                   {r.ties.map((t, ti) => (
                     <div key={ti} className={`alg-tie ${t.through ? 'is-decided' : ''}`}>
                       <div className="alg-tie__row">
-                        <span className={`alg-tie__team ${t.through === t.homeId ? 'is-through' : ''}`}>
-                          {nameOf(t.homeId)}
+                        <span className={`alg-tie__team ${t.through === t.home ? 'is-through' : ''}`}>
+                          {t.home}
                         </span>
                         <span className="alg-tie__legs">
-                          {t.twoLeg ? (
+                          {t.agg ? (
                             <>
-                              <span className="alg-tie__agg">
-                                {t.aggH}<span className="alg-rec__dash">–</span>{t.aggA}
-                              </span>
+                              <span className="alg-tie__agg">{t.agg}</span>
                               <span className="alg-tie__legdetail">
-                                L1 {t.leg1.homeScore}-{t.leg1.awayScore}
-                                {t.leg2 ? ` · L2 ${t.leg2.awayScore}-${t.leg2.homeScore}` : ' · L2 —'}
+                                L1 {t.leg1 || '—'}
+                                {t.leg2 ? ` · L2 ${t.leg2}` : ' · L2 —'}
                               </span>
                             </>
                           ) : (
                             <span className="alg-tie__agg">
-                              {t.leg1.homeScore}<span className="alg-rec__dash">–</span>{t.leg1.awayScore}
+                              {t.leg1 || '—'}
+                              {t.leg2 ? ` · ${t.leg2}` : ''}
                             </span>
                           )}
                         </span>
-                        <span className={`alg-tie__team alg-tie__team--away ${t.through === t.awayId ? 'is-through' : ''}`}>
-                          {nameOf(t.awayId)}
+                        <span className={`alg-tie__team alg-tie__team--away ${t.through === t.away ? 'is-through' : ''}`}>
+                          {t.away}
                         </span>
                       </div>
                       <span className="alg-tie__through">
                         {t.through
-                          ? `${nameOf(t.through)} advance`
-                          : t.twoLeg && !t.leg2
-                            ? 'Second leg to play'
+                          ? `${t.through} advance`
+                          : t.pending
+                            ? 'Tie still to be decided'
                             : 'Level — extra time / penalties'}
                       </span>
                     </div>

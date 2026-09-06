@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
-import { readCoachApplication, saveCoachApplication } from '../utils/coachApplication'
+import { applyAsCoach } from '../api/coaches'
+import { useCoachApplication, refreshCoachApplication } from '../hooks/useCoachApplication'
 import '../styles/coach-gateway.css'
 
 // Coach onboarding — translated from the design canvas (OVRX Coach Gateway.dc.html).
@@ -60,16 +61,33 @@ function BrandMark({ size = 26 }) {
 export function CoachGatewayPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const existing = readCoachApplication(user?.email)
+  const { application: existing, loading } = useCoachApplication()
 
-  const [submitted, setSubmitted] = useState(Boolean(existing))
-  const [name, setName] = useState(existing?.name || user?.name || '')
-  const [years, setYears] = useState(existing?.years || '')
-  const [license, setLicense] = useState(existing?.license || '')
-  const [clubName, setClubName] = useState(existing?.clubName || '')
-  const [capacity, setCapacity] = useState(existing?.capacity || 16)
-  const [credFile, setCredFile] = useState(existing?.credFile || '')
-  const [logoFile, setLogoFile] = useState(existing?.logoFile || '')
+  const [submitted, setSubmitted] = useState(false)
+  const [name, setName] = useState(user?.name || '')
+  const [years, setYears] = useState('')
+  const [license, setLicense] = useState('')
+  const [clubName, setClubName] = useState('')
+  const [capacity, setCapacity] = useState(16)
+  const [credFile, setCredFile] = useState('')
+  const [logoFile, setLogoFile] = useState('')
+  const [error, setError] = useState('')
+
+  // Hydrate from an existing application once it loads. Only a *pending*
+  // request shows the "awaiting approval" view — an approved coach is
+  // redirected to their workspace (below), and a declined coach gets the
+  // form back, pre-filled, so they can revise and resubmit.
+  useEffect(() => {
+    if (!existing) return
+    setSubmitted(existing.status === 'pending')
+    setName(existing.fullName || user?.name || '')
+    setYears(String(existing.yearsExperience ?? ''))
+    setLicense(existing.licenseNumber || '')
+    setClubName(existing.clubName || '')
+    setCapacity(existing.squadCapacity || 16)
+    setCredFile(existing.credentialDocUrl ? 'credential.pdf' : '')
+    setLogoFile(existing.clubLogoUrl ? 'crest.png' : '')
+  }, [existing, user])
 
   const credInputRef = useRef(null)
   const logoInputRef = useRef(null)
@@ -98,13 +116,44 @@ export function CoachGatewayPage() {
     setLogoFile(event.target.files?.[0]?.name || '')
   }
 
-  function handleSubmit() {
-    saveCoachApplication(user?.email, { name, years, license, clubName, capacity, credFile, logoFile })
-    setSubmitted(true)
+  async function handleSubmit() {
+    setError('')
+    try {
+      await applyAsCoach({
+        fullName: name.trim(),
+        yearsExperience: parseInt(years, 10) || 0,
+        licenseNumber: license.trim() || null,
+        clubName: clubName.trim(),
+        squadCapacity: Number(capacity),
+        credentialDocUrl: credFile ? 'https://example.com/credential.pdf' : null,
+        clubLogoUrl: logoFile ? 'https://example.com/crest.png' : null,
+      })
+      await refreshCoachApplication()
+      setSubmitted(true)
+    } catch (err) {
+      setError(err.response?.data?.message || 'Could not submit your request. Check the form and try again.')
+    }
   }
 
   const toneClass = (tone) =>
     tone === 'set' ? 'is-set' : tone === 'file' ? 'is-file' : ''
+
+  // The Platform Evaluator is a coach-role account with no club onboarding.
+  if (user?.organization === 'Platform Evaluator') {
+    return <Navigate to="/coach/evaluator" replace />
+  }
+
+  // An approved coach has a live workspace — never keep them on the
+  // onboarding gateway (that showed a stale "Pending Verification" screen).
+  // The status is revalidated on mount, so an approval granted elsewhere is
+  // picked up on the next visit even without a page reload.
+  if (existing?.status === 'approved') {
+    return <Navigate to="/coach/club" replace />
+  }
+
+  const declined = existing?.status === 'declined'
+  // Only block the page on load when we have nothing cached to show yet.
+  const showLoading = loading && !existing
 
   return (
     <div className="cg">
@@ -131,13 +180,27 @@ export function CoachGatewayPage() {
         </div>
       </section>
 
-      {!submitted && (
+      {showLoading && (
+        <section className="cg__layout">
+          <p className="cg__lead">Loading your registration status…</p>
+        </section>
+      )}
+
+      {!showLoading && !submitted && (
         <section className="cg__layout">
           <div className="cg__main">
             <div className="cg__step">
               <span className="cg__step-kicker">Step 01 · Credentials</span>
               <span className="cg__step-title">Coaching Identity</span>
             </div>
+
+            {declined && (
+              <p className="cg__pending-banner">
+                Your previous request was declined
+                {existing?.reviewNote ? `: ${existing.reviewNote}` : '.'} Update your details below
+                and resubmit for review.
+              </p>
+            )}
 
             <div className="cg__grid-fields">
               <label className="cg__field">
@@ -278,7 +341,7 @@ export function CoachGatewayPage() {
                 Submit Request for Approval
               </button>
               <span className="cg__submit-hint">
-                Platform admins review coach requests within 48 hours.
+                {error || 'Platform admins review coach requests within 48 hours.'}
               </span>
             </div>
           </div>
@@ -307,7 +370,7 @@ export function CoachGatewayPage() {
         </section>
       )}
 
-      {submitted && (
+      {!showLoading && submitted && (
         <section className="cg__layout">
           <div className="cg__pending-main">
             <div className="cg__pending-head">

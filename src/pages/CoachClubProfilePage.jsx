@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { PageShell } from '../components/layout/PageShell'
 import { useAuth } from '../hooks/useAuth'
-import { readCoachApplication } from '../utils/coachApplication'
+import { useCoachApplication } from '../hooks/useCoachApplication'
 import '../styles/coach-club.css'
 
 // Coach Club Profile — translated from the design canvas
@@ -57,8 +57,8 @@ function ArrowIcon() {
 
 export function CoachClubProfilePage() {
   const { user } = useAuth()
-  const application = readCoachApplication(user?.email)
-  const clubName = application?.clubName || 'Apex Academy FC'
+  const { application } = useCoachApplication()
+  const clubName = application?.clubName || 'Your Club'
   const headCoach = user?.name || 'Coach Marcus'
   const crest = clubName
     .split(/\s+/)

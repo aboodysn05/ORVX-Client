@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './components/auth/RequireAuth'
+import { RequireApprovedCoach } from './components/auth/RequireApprovedCoach'
 import { HeroPage } from './pages/HeroPage'
 import { AuthPage } from './pages/AuthPage'
 import { Dashboard } from './pages/Dashboard'
@@ -50,25 +51,25 @@ function App() {
       <Route
         path="/coach/club"
         element={
-          <RequireAuth>
+          <RequireApprovedCoach>
             <CoachClubProfilePage />
-          </RequireAuth>
+          </RequireApprovedCoach>
         }
       />
       <Route
         path="/coach/squad"
         element={
-          <RequireAuth>
+          <RequireApprovedCoach>
             <CoachSquadManagerPage />
-          </RequireAuth>
+          </RequireApprovedCoach>
         }
       />
       <Route
         path="/coach/review"
         element={
-          <RequireAuth>
+          <RequireApprovedCoach>
             <CoachReviewQueuePage />
-          </RequireAuth>
+          </RequireApprovedCoach>
         }
       />
       <Route

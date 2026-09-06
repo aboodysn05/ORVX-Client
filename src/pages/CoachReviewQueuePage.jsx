@@ -1,23 +1,11 @@
 import { useEffect, useState } from 'react'
 import { PageShell } from '../components/layout/PageShell'
+import { getReviewQueue, reviewSubmission } from '../api/review'
 import '../styles/coach-review.css'
 
-// Coach Drill Proof Review Queue — translated from the design canvas
-// (OVRX Coach Review Queue.dc.html). Frontend only: works on the mock
-// submissions below with local state (selection, verdicts, playback timer,
-// toast). A role toggle previews both the club-coach and platform-evaluator
-// queues.
-
-const SUBS = [
-  { id: 1, scope: 'free', player: 'J. Adeyemi', initials: 'JA', position: 'Attacker', drill: 'Cone Slalom Agility Weave', time: '12m ago', mins: 12, xp: '+2 PAC', target: '+2 Pace', volume: '3 Sets × 15 Reps', ovr: 79, height: 178, weight: 72, baseline: 'Baseline session', notes: 'Wet grass on the far cone, slipped once on set two but kept the take unbroken.' },
-  { id: 2, scope: 'free', player: 'L. Moreau', initials: 'LM', position: 'Defender', drill: 'Shadow Marking Steps', time: '34m ago', mins: 34, xp: '+2 DEF', target: '+2 Defending', volume: '4 Sets × 12 Reps', ovr: 79, height: 185, weight: 80, baseline: 'Baseline session', notes: 'Filmed at the training cage, partner acting as attacker for each rep.' },
-  { id: 3, scope: 'free', player: 'K. Ibarra', initials: 'KI', position: 'Goalkeeper', drill: 'Reaction Save Wall', time: '1h ago', mins: 60, xp: '+2 REF', target: '+2 Reflexes', volume: '3 Sets × 20 Secs', ovr: 81, height: 190, weight: 84, baseline: 'Baseline session', notes: 'Rebound wall at three metres. Last set is the fastest sequence.' },
-  { id: 4, scope: 'free', player: 'T. Okonkwo', initials: 'TO', position: 'Attacker', drill: 'Tight-Space 1v1 Dribbling', time: '2h ago', mins: 120, xp: '+2 DRI', target: '+2 Dribbling', volume: '3 Sets × 20 Secs', ovr: 76, height: 174, weight: 68, baseline: 'Baseline session', notes: 'Used a 3x3 metre box marked with tape. Camera on a tripod at knee height.' },
-  { id: 5, scope: 'squad', player: 'R. Vasquez', initials: 'RV', position: 'Defender', drill: 'Box-to-Box Sprint Drills', time: '26m ago', mins: 26, xp: '+1 PHY', target: '+1 Physical', volume: '4 Sets × 15 Secs', ovr: 82, height: 181, weight: 77, baseline: 'Squad · Matchweek 6', notes: 'Full pitch length, timed by a teammate. Slight wind against on the return runs.' },
-  { id: 6, scope: 'squad', player: 'S. Haruna', initials: 'SH', position: 'Attacker', drill: 'First-Touch Wall Rebounds', time: '1h ago', mins: 60, xp: '+2 PAS', target: '+2 Passing', volume: '3 Sets × 18 Reps', ovr: 78, height: 176, weight: 70, baseline: 'Squad · Matchweek 6', notes: 'Concrete wall, both feet alternating. Ball out of frame once on set three.' },
-  { id: 7, scope: 'squad', player: 'D. Ferreira', initials: 'DF', position: 'Goalkeeper', drill: 'Low Dive Recovery', time: '3h ago', mins: 180, xp: '+2 DIV', target: '+2 Diving', volume: '3 Sets × 14 Reps', ovr: 80, height: 188, weight: 82, baseline: 'Squad · Matchweek 6', notes: 'Both sides worked. Left-side dives feel slower on the second set.' },
-  { id: 8, scope: 'squad', player: 'A. Lindqvist', initials: 'AL', position: 'Attacker', drill: 'Close-Range Finishing', time: '5h ago', mins: 300, xp: '+2 SHO', target: '+2 Shooting', volume: '4 Sets × 10 Reps', ovr: 83, height: 179, weight: 74, baseline: 'Squad · Matchweek 6', notes: 'Six-yard finishing off a served ball, alternating feet each rep.' },
-]
+// Coach Drill Proof Review Queue — live from GET /review/queue. For a club
+// head coach that is their own squad's submissions; approving credits the
+// drill's boost XP to the player's attributes.
 
 function clock(sec) {
   const m = Math.floor(sec / 60)
@@ -25,14 +13,70 @@ function clock(sec) {
   return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`
 }
 
+function initialsOf(name) {
+  const p = (name || '').trim().split(/\s+/)
+  return ((p[0]?.[0] || '') + (p[1]?.[0] || '')).toUpperCase() || '?'
+}
+function minsAgo(iso) {
+  return iso ? Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000)) : 0
+}
+function agoLabel(mins) {
+  if (mins < 60) return `${mins}m ago`
+  if (mins < 1440) return `${Math.round(mins / 60)}h ago`
+  return `${Math.round(mins / 1440)}d ago`
+}
+
+// Map a /review/queue item to the shape this page's UI expects.
+function toSub(item) {
+  const drill = item.drills?.[0] || {}
+  const [code, val] = Object.entries(item.projectedRewards || {}).sort((a, b) => b[1] - a[1])[0] || []
+  const shortCode = code ? code.slice(0, 3).toUpperCase() : ''
+  const mins = minsAgo(item.submittedAt)
+  return {
+    id: item.id,
+    player: item.player.name,
+    initials: initialsOf(item.player.name),
+    position: item.player.position,
+    drill: drill.name || 'Training drill',
+    time: agoLabel(mins),
+    mins,
+    xp: code ? `+${val} ${shortCode}` : '—',
+    target: code ? `+${val} ${code[0].toUpperCase() + code.slice(1)}` : '—',
+    volume: drill.sets ? `${drill.sets} Sets × ${drill.reps} ${drill.unitKind === 'secs' ? 'Secs' : 'Reps'}` : '—',
+    ovr: item.player.overall,
+    height: item.player.heightCm,
+    weight: item.player.weightKg,
+    baseline: 'Baseline session',
+    notes: item.notes || 'No player notes.',
+  }
+}
+
 export function CoachReviewQueuePage() {
-  const [role, setRole] = useState('club') // 'club' | 'platform'
+  const [queue, setQueue] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState('')
   const [selected, setSelected] = useState(null)
-  const [resolved, setResolved] = useState({})
   const [feedback, setFeedback] = useState('')
   const [playing, setPlaying] = useState(false)
   const [playSec, setPlaySec] = useState(74)
   const [toast, setToast] = useState(null)
+  const [tally, setTally] = useState({ approved: 0, rejected: 0, xp: 0 })
+  const [busy, setBusy] = useState(false)
+
+  function load() {
+    setLoading(true)
+    getReviewQueue()
+      .then((rows) => {
+        const subs = rows.map(toSub)
+        setQueue(subs)
+        setLoadError('')
+        setSelected((cur) => (subs.some((s) => s.id === cur) ? cur : subs[0]?.id ?? null))
+      })
+      .catch((err) => setLoadError(err.response?.data?.message || 'Could not load the review queue.'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(load, [])
 
   useEffect(() => {
     if (!playing) return undefined
@@ -48,20 +92,13 @@ export function CoachReviewQueuePage() {
     return () => clearInterval(id)
   }, [playing])
 
-  const platform = role === 'platform'
-  const scope = platform ? 'free' : 'squad'
-  const mine = SUBS.filter((x) => x.scope === scope)
-  const open = mine.filter((x) => !resolved[x.id])
+  const open = queue
   const selectedId = selected === null ? open[0]?.id ?? null : selected
   const active = open.find((x) => x.id === selectedId) || null
 
-  const approvedCount = Object.values(resolved).filter((v) => v === 'approved').length
-  const rejectedCount = Object.values(resolved).filter((v) => v === 'rejected').length
-  const creditedXp = Object.keys(resolved).reduce((n, k) => {
-    if (resolved[k] !== 'approved') return n
-    const s = SUBS.find((x) => String(x.id) === String(k))
-    return n + (s ? parseInt(s.xp.replace(/[^0-9]/g, ''), 10) || 0 : 0)
-  }, 0)
+  const approvedCount = tally.approved
+  const rejectedCount = tally.rejected
+  const creditedXp = tally.xp
 
   function selectSub(id) {
     setSelected(id)
@@ -70,18 +107,33 @@ export function CoachReviewQueuePage() {
     setPlaying(false)
   }
 
-  function resolve(verdict) {
+  async function resolve(verdict) {
     const cur = open.find((x) => x.id === selectedId) || open[0]
-    if (!cur) return
-    const nextResolved = { ...resolved, [cur.id]: verdict }
-    const nextOpen = mine.filter((x) => !nextResolved[x.id])
-    setResolved(nextResolved)
-    setSelected(nextOpen[0]?.id ?? null)
-    setFeedback('')
-    setPlaySec(74)
-    setPlaying(false)
-    setToast({ verdict, player: cur.player, xp: cur.xp, drill: cur.drill })
+    if (!cur || busy) return
+    setBusy(true)
+    try {
+      await reviewSubmission(cur.id, { verdict, feedback: feedback || undefined })
+      setQueue((rows) => rows.filter((x) => x.id !== cur.id))
+      setTally((t) => ({
+        approved: t.approved + (verdict === 'approved' ? 1 : 0),
+        rejected: t.rejected + (verdict === 'rejected' ? 1 : 0),
+        xp: t.xp + (verdict === 'approved' ? parseInt(cur.xp.replace(/[^0-9]/g, ''), 10) || 0 : 0),
+      }))
+      const rest = open.filter((x) => x.id !== cur.id)
+      setSelected(rest[0]?.id ?? null)
+      setFeedback('')
+      setPlaySec(74)
+      setPlaying(false)
+      setToast({ verdict, player: cur.player, xp: cur.xp, drill: cur.drill })
+    } catch (err) {
+      setToast({ verdict: 'rejected', player: cur.player, xp: '', drill: err.response?.data?.message || 'Verdict failed' })
+    } finally {
+      setBusy(false)
+    }
   }
+
+  // The JSX still names `platform` in a couple of spots (queue title, cell label).
+  const platform = false
 
   return (
     <PageShell>
@@ -96,37 +148,14 @@ export function CoachReviewQueuePage() {
             </p>
           </div>
           <div className="crq-head__role">
-            <span className={`crq-rolepill is-${platform ? 'platform' : 'club'}`}>
+            <span className="crq-rolepill is-club">
               <span className="crq-rolepill__dot" />
-              <span>
-                Reviewing as: {platform ? 'Coach #9 (Platform Evaluator)' : 'Your Club (Squad Coach)'}
-              </span>
+              <span>Reviewing as: Your Club (Squad Coach)</span>
             </span>
             <p className="crq-scopenote">
-              {platform
-                ? 'Your queue holds unassigned players only — their single baseline session before any club can sign them.'
-                : 'Your queue holds your own squad players only. Free agents are handled by the Platform Evaluator.'}
+              Your queue holds submissions routed to you — your own squad plus any player who named
+              you as their reviewer. Approving credits the drill's boost XP.
             </p>
-            <div className="crq-roletoggle">
-              {[
-                { key: 'club', label: 'Squad Queue' },
-                { key: 'platform', label: 'Evaluator Queue' },
-              ].map((r) => (
-                <button
-                  key={r.key}
-                  type="button"
-                  className={`crq-roletoggle__btn ${role === r.key ? 'is-active' : ''}`}
-                  onClick={() => {
-                    setRole(r.key)
-                    setSelected(null)
-                    setResolved({})
-                    setFeedback('')
-                  }}
-                >
-                  {r.label}
-                </button>
-              ))}
-            </div>
           </div>
         </div>
 
@@ -142,18 +171,18 @@ export function CoachReviewQueuePage() {
             </span>
           </div>
           <div className="crq-stat crq-stat--green">
-            <span className="crq-stat__k">Approved Today</span>
-            <span className="crq-stat__v">{14 + approvedCount}</span>
-            <span className="crq-stat__note">Avg turnaround 18h</span>
+            <span className="crq-stat__k">Approved This Session</span>
+            <span className="crq-stat__v">{approvedCount}</span>
+            <span className="crq-stat__note">Credited to player attributes</span>
           </div>
           <div className="crq-stat crq-stat--indigo">
-            <span className="crq-stat__k">Total XP Credited</span>
-            <span className="crq-stat__v">+{42 + creditedXp} XP</span>
-            <span className="crq-stat__note">Across all reviewed players</span>
+            <span className="crq-stat__k">XP Credited</span>
+            <span className="crq-stat__v">+{creditedXp} XP</span>
+            <span className="crq-stat__note">Across players you reviewed</span>
           </div>
           <div className="crq-stat">
-            <span className="crq-stat__k">Rejected Today</span>
-            <span className="crq-stat__v">{2 + rejectedCount}</span>
+            <span className="crq-stat__k">Rejected This Session</span>
+            <span className="crq-stat__v">{rejectedCount}</span>
             <span className="crq-stat__note">Broken takes or unclear framing</span>
           </div>
         </div>
