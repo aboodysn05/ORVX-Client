@@ -1,33 +1,15 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PageShell } from '../components/layout/PageShell'
 import { useAuth } from '../hooks/useAuth'
 import { useCoachApplication } from '../hooks/useCoachApplication'
+import { listClubs, getClubOverview } from '../api/clubs'
 import '../styles/coach-club.css'
 
-// Coach Club Profile — translated from the design canvas
-// (OVRX Club Profile.dc.html). Frontend only: read-only overview built from
-// mock club data, personalised with the coach's name and requested club.
-
-const STATS = [
-  { k: 'Record', v: '8-2-1', tone: 'plain', note: 'Won · Drawn · Lost' },
-  { k: 'Squad Size', v: '12 / 16', tone: 'plain', note: '4 places open' },
-  { k: 'Average OVR', v: '79', tone: 'amber', note: '2nd highest in Division A' },
-  { k: 'Goals', v: '34 : 12', tone: 'plain', note: 'Scored · Conceded' },
-  { k: 'Verified Sessions', v: '146', tone: 'green', note: 'Approved this season' },
-]
-
-const FORM = [
-  { result: 'W', score: '4 – 1', opponent: 'Ironline', tone: 'w' },
-  { result: 'W', score: '3 – 0', opponent: 'Halcyon', tone: 'w' },
-  { result: 'D', score: '2 – 2', opponent: 'Meridian', tone: 'd' },
-]
-
-const COMPOSITION = [
-  { label: 'Attackers', count: 5, avg: 78, tone: 'pink' },
-  { label: 'Defenders', count: 5, avg: 80, tone: 'indigo' },
-  { label: 'Goalkeepers', count: 2, avg: 79, tone: 'amber' },
-]
-const COMPOSITION_TOTAL = 12
+// Coach Club Profile — live from GET /clubs/:id/overview. Resolves the coach's
+// club the same way the Squad Manager does (match on head-coach name, then the
+// approved application's club name), then renders the real standings row,
+// roster composition, verified-session count, recent form and next fixture.
 
 const ACTIONS = [
   {
@@ -42,10 +24,12 @@ const ACTIONS = [
   },
   {
     title: 'League & Fixtures',
-    note: 'Division A table, results and upcoming matchdays.',
+    note: 'Division table, results and upcoming matchdays.',
     to: '/leagues',
   },
 ]
+
+const COMP_TONE = { Attacker: 'pink', Defender: 'indigo', Goalkeeper: 'amber' }
 
 function ArrowIcon() {
   return (
@@ -55,26 +39,117 @@ function ArrowIcon() {
   )
 }
 
+function ordinalSuffix(n) {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return s[(v - 20) % 10] || s[v] || s[0]
+}
+
+function fixtureWhen(iso) {
+  const d = new Date(iso)
+  const date = d.toLocaleDateString(undefined, { weekday: 'short', day: '2-digit', month: 'short' })
+  const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })
+  return `${date} · ${time}`
+}
+
 export function CoachClubProfilePage() {
   const { user } = useAuth()
   const { application } = useCoachApplication()
-  const clubName = application?.clubName || 'Your Club'
-  const headCoach = user?.name || 'Coach Marcus'
-  const crest = clubName
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((w) => w[0].toUpperCase())
-    .join('')
+
+  const [overview, setOverview] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let alive = true
+    setLoading(true)
+    listClubs()
+      .then((clubs) => {
+        const mine =
+          clubs.find((c) => c.headCoachName && c.headCoachName === user?.name) ||
+          clubs.find((c) => application?.clubName && c.name === application.clubName)
+        if (!mine) throw new Error('We could not find a club linked to your account yet.')
+        return getClubOverview(mine.id)
+      })
+      .then((data) => {
+        if (alive) {
+          setOverview(data)
+          setError('')
+        }
+      })
+      .catch((err) => {
+        if (alive) setError(err.response?.data?.message || err.message || 'Could not load your club.')
+      })
+      .finally(() => {
+        if (alive) setLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [user, application])
+
+  if (loading) {
+    return (
+      <PageShell>
+        <section className="ccp-section">
+          <p className="ccp-kicker">Loading your club…</p>
+        </section>
+      </PageShell>
+    )
+  }
+
+  if (error || !overview) {
+    return (
+      <PageShell>
+        <section className="ccp-section">
+          <h1 className="ccp-title">Club Profile</h1>
+          <p className="ccp-stat__note">{error || 'No club data available.'}</p>
+        </section>
+      </PageShell>
+    )
+  }
+
+  const o = overview
+  const league = o.league
+  const headCoach = o.headCoachName || user?.name || 'Head Coach'
+  const crest = o.crestCode || o.name.slice(0, 3).toUpperCase()
+
+  const record = league ? `${league.won}-${league.drawn}-${league.lost}` : '—'
+  const goals = league ? `${league.goalsFor} : ${league.goalsAgainst}` : '—'
+
+  const stats = [
+    { k: 'Record', v: record, tone: 'plain', note: 'Won · Drawn · Lost' },
+    {
+      k: 'Squad Size',
+      v: `${o.rosterCount} / ${o.squadCap}`,
+      tone: 'plain',
+      note: o.placesOpen ? `${o.placesOpen} place${o.placesOpen === 1 ? '' : 's'} open` : 'Squad full',
+    },
+    {
+      k: 'Average OVR',
+      v: o.averageOverall || '—',
+      tone: 'amber',
+      note: o.rosterCount ? 'Across the active roster' : 'No players signed yet',
+    },
+    { k: 'Goals', v: goals, tone: 'plain', note: 'Scored · Conceded' },
+    {
+      k: 'Verified Sessions',
+      v: o.verifiedSessions,
+      tone: 'green',
+      note: 'Approved training proofs',
+    },
+  ]
 
   const details = [
-    { k: 'Founded', v: '2021' },
-    { k: 'Home Ground', v: 'Apex Dome, Court 3' },
-    { k: 'Format', v: '5v5 · Indoor' },
-    { k: 'Division', v: 'A · Platform Slot 01' },
-    { k: 'Club Contact', v: user?.email || 'marcus@apexacademy.fc' },
-    { k: 'Squad Capacity', v: `${application?.capacity || 16} players` },
+    { k: 'Founded', v: String(o.foundedYear) },
+    { k: 'Format', v: o.format },
+    { k: 'Division', v: o.division || '—' },
+    { k: 'Platform Slot', v: o.slot ? `Slot ${String(o.slot).padStart(2, '0')}` : '—' },
+    { k: 'Club Contact', v: o.headCoachEmail || user?.email || '—' },
+    { k: 'Squad Capacity', v: `${o.squadCap} players` },
   ]
+
+  const compositionTotal = o.composition.reduce((sum, c) => sum + c.count, 0) || 1
 
   return (
     <PageShell>
@@ -83,26 +158,33 @@ export function CoachClubProfilePage() {
           <div className="ccp-header__main">
             <span className="ccp-crest">{crest}</span>
             <div className="ccp-header__id">
-              <span className="ccp-kicker">Official Platform Club · Slot 01</span>
-              <h1 className="ccp-title">{clubName}</h1>
+              <span className="ccp-kicker">
+                {o.slot ? `Official Platform Club · Slot ${String(o.slot).padStart(2, '0')}` : 'Platform Club'}
+              </span>
+              <h1 className="ccp-title">{o.name}</h1>
               <div className="ccp-badges">
                 <span className="ccp-badge ccp-badge--indigo">Head Coach · {headCoach}</span>
-                <span className="ccp-badge ccp-badge--green">Verified</span>
-                <span className="ccp-badge ccp-badge--amber">Division A</span>
+                <span className="ccp-badge ccp-badge--green">{o.archived ? 'Archived' : 'Verified'}</span>
+                {o.division && <span className="ccp-badge ccp-badge--amber">{o.division}</span>}
               </div>
             </div>
           </div>
-          <div className="ccp-header__pos">
-            <span className="ccp-pos-label">League Position</span>
-            <span className="ccp-pos-value">
-              2<span className="ccp-pos-suffix">nd</span>
-            </span>
-            <span className="ccp-pos-note">3 points off top spot</span>
-          </div>
+          {league && (
+            <div className="ccp-header__pos">
+              <span className="ccp-pos-label">League Position</span>
+              <span className="ccp-pos-value">
+                {league.position}
+                <span className="ccp-pos-suffix">{ordinalSuffix(league.position)}</span>
+              </span>
+              <span className="ccp-pos-note">
+                {league.points} pts · {league.played} played
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="ccp-stats">
-          {STATS.map((s) => (
+          {stats.map((s) => (
             <div key={s.k} className="ccp-stat">
               <span className="ccp-stat__k">{s.k}</span>
               <span className={`ccp-stat__v is-${s.tone}`}>{s.v}</span>
@@ -117,21 +199,41 @@ export function CoachClubProfilePage() {
           <div className="ccp-card">
             <div className="ccp-card__head">
               <h2 className="ccp-card__title">Season Form</h2>
-              <span className="ccp-card__hint">Last 3 matches · newest first</span>
+              <span className="ccp-card__hint">Most recent results · newest first</span>
             </div>
-            <div className="ccp-form">
-              {FORM.map((f, i) => (
-                <span key={i} className={`ccp-form__cell is-${f.tone}`}>
-                  <span className="ccp-form__result">{f.result}</span>
-                  <span className="ccp-form__score">{f.score}</span>
-                  <span className="ccp-form__opp">{f.opponent}</span>
-                </span>
-              ))}
-            </div>
+            {o.recentResults.length === 0 ? (
+              <p className="ccp-stat__note">No results recorded yet.</p>
+            ) : (
+              <div className="ccp-form">
+                {o.recentResults.slice(0, 3).map((f) => (
+                  <span
+                    key={f.matchId}
+                    className={`ccp-form__cell is-${f.result === 'W' ? 'w' : f.result === 'L' ? 'l' : 'd'}`}
+                  >
+                    <span className="ccp-form__result">{f.result}</span>
+                    <span className="ccp-form__score">
+                      {f.goalsFor} – {f.goalsAgainst}
+                    </span>
+                    <span className="ccp-form__opp">{f.opponent}</span>
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="ccp-nextfix">
               <span className="ccp-nextfix__label">Next Fixture</span>
-              <span className="ccp-nextfix__opp">vs Vortex FC</span>
-              <span className="ccp-nextfix__meta">Sat 05 Sep · 14:00 · Home</span>
+              {o.nextFixture ? (
+                <>
+                  <span className="ccp-nextfix__opp">
+                    {o.nextFixture.home ? 'vs' : 'at'} {o.nextFixture.opponent}
+                  </span>
+                  <span className="ccp-nextfix__meta">
+                    {fixtureWhen(o.nextFixture.scheduledAt)} · {o.nextFixture.home ? 'Home' : 'Away'}
+                    {o.nextFixture.round ? ` · ${o.nextFixture.round}` : ''}
+                  </span>
+                </>
+              ) : (
+                <span className="ccp-nextfix__meta">No fixture scheduled.</span>
+              )}
               <Link to="/leagues" className="ccp-nextfix__link">
                 League Table →
               </Link>
@@ -145,19 +247,19 @@ export function CoachClubProfilePage() {
                 Manage Roster →
               </Link>
             </div>
-            {COMPOSITION.map((c) => (
-              <div key={c.label} className="ccp-comp">
+            {o.composition.map((c) => (
+              <div key={c.position} className="ccp-comp">
                 <div className="ccp-comp__row">
-                  <span className={`ccp-comp__label is-${c.tone}`}>{c.label}</span>
+                  <span className={`ccp-comp__label is-${COMP_TONE[c.position]}`}>{c.position}s</span>
                   <span className="ccp-comp__nums">
-                    <span className="ccp-comp__avg">Avg OVR {c.avg}</span>
+                    <span className="ccp-comp__avg">Avg OVR {c.averageOverall || '—'}</span>
                     <span className="ccp-comp__count">{c.count}</span>
                   </span>
                 </div>
                 <span className="ccp-comp__bar">
                   <span
-                    className={`ccp-comp__fill is-${c.tone}`}
-                    style={{ width: `${Math.round((c.count / COMPOSITION_TOTAL) * 100)}%` }}
+                    className={`ccp-comp__fill is-${COMP_TONE[c.position]}`}
+                    style={{ width: `${Math.round((c.count / compositionTotal) * 100)}%` }}
                   />
                 </span>
               </div>

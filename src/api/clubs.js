@@ -8,6 +8,12 @@ export function listClubs() {
   return client.get('/clubs').then((res) => res.data.clubs)
 }
 
+// Aggregate for the Coach Club Profile page: standings row, roster
+// composition, verified-session count, recent results, next fixture.
+export function getClubOverview(clubId) {
+  return client.get(`/clubs/${clubId}/overview`).then((res) => res.data.overview)
+}
+
 export function getRoster(clubId) {
   return client.get(`/clubs/${clubId}/roster`).then((res) => res.data)
 }
