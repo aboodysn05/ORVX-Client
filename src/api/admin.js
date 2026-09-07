@@ -3,6 +3,11 @@ import client from './client'
 // Every /admin/* endpoint (role: admin). Shapes match the admin* services in
 // backend/src/services.
 
+// --- console landing aggregate ---
+export function getAdminOverview() {
+  return client.get('/admin/overview').then((res) => res.data.overview)
+}
+
 // --- coach onboarding queue ---
 export function listCoachApplications(status) {
   const query = status ? `?status=${encodeURIComponent(status)}` : ''
