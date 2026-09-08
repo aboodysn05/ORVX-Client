@@ -76,9 +76,9 @@ export function discardSession(sessionId) {
   return client.delete(`/sessions/${sessionId}`)
 }
 
-export function submitSession(sessionId, { videoUrl, notes, reviewerName }) {
+export function submitSession(sessionId, { videoUrl, notes, reviewerName, reviewerCoachId }) {
   return client
-    .post(`/sessions/${sessionId}/submit`, { videoUrl, notes, reviewerName })
+    .post(`/sessions/${sessionId}/submit`, { videoUrl, notes, reviewerName, reviewerCoachId })
     .then((res) => toUiSession(res.data.session))
 }
 

@@ -8,6 +8,12 @@ export function getReviewQueue() {
   return client.get('/review/queue').then((res) => res.data.queue)
 }
 
+// Lifetime review totals for the signed-in reviewer:
+// { pending, approved, rejected, released, xpCredited }.
+export function getReviewStats() {
+  return client.get('/review/stats').then((res) => res.data.stats)
+}
+
 // verdict: 'approved' | 'rejected'
 // verifiedAttributes: optional { key: 0-100 } — evaluator only, sets the
 // player's baseline card absolutely instead of stacking drill boosts.
