@@ -131,7 +131,7 @@ export function useSubmitProof() {
   const approved = Math.min(BASELINE_TARGET, profile?.approvedSubmissions ?? 0)
   const baselineDone = Boolean(profile?.baselineApproved)
   const selectedCoach = coaches.find((c) => c.coachId === coachId) || null
-  const reviewerName = baselineDone ? selectedCoach?.name || 'Club Coach' : 'Coach #9'
+  const reviewerName = baselineDone ? selectedCoach?.name || 'Club Coach' : 'Platform Evaluator'
   const hasClip = Boolean(clip)
   const clipDurationLabel = clip && Number.isFinite(clip.duration) ? clock(clip.duration) : ''
 
@@ -167,7 +167,7 @@ export function useSubmitProof() {
 
     headerNote: baselineDone
       ? 'Baseline verified. Pick the Club Head Coach who should review this session.'
-      : 'This is your baseline session — Platform Coach #9 reviews it. Once it’s approved, you choose your own club coach.',
+      : 'This is your baseline session — the Platform Evaluator reviews it. Once it’s approved, you choose your own club coach.',
 
     sessionLine: `${session.name} · ${session.drills.length} ${
       session.drills.length === 1 ? 'drill' : 'drills'
@@ -264,7 +264,7 @@ export function useSubmitProof() {
     // success modal
     successOpen,
     closeSuccess: () => setSuccessOpen(false),
-    successTitle: baselineDone ? 'Session sent to your club coach' : 'Session sent to Coach #9',
+    successTitle: baselineDone ? 'Session sent to your club coach' : 'Session sent to the Platform Evaluator',
     successBody: baselineDone
       ? `${reviewerName} has your clip in their review queue. Approved sessions add verified XP to your attributes.`
       : 'Your clip is in the Platform Evaluator queue. Expect a verdict within 24 hours — approval adds verified XP and completes your baseline so you can pick a club coach.',

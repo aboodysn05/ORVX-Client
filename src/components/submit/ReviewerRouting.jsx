@@ -1,5 +1,5 @@
 // Target-reviewer panel. Until the player's baseline session is approved the
-// reviewer is locked to Platform Coach #9; once it clears, the field opens to
+// reviewer is locked to the Platform Evaluator; once it clears, the field opens to
 // the eight Club Head Coaches.
 export function ReviewerRouting({
   baselineDone,
@@ -51,9 +51,9 @@ export function ReviewerRouting({
         </div>
       ) : (
         <div className="sp-reviewer__card">
-          <span className="sp-reviewer__badge">#9</span>
+          <span className="sp-reviewer__badge">PE</span>
           <span className="sp-reviewer__who">
-            <span className="sp-reviewer__name">Coach #9</span>
+            <span className="sp-reviewer__name">Platform Evaluator</span>
             <span className="sp-reviewer__role">Official Platform Evaluator</span>
           </span>
         </div>
@@ -61,7 +61,7 @@ export function ReviewerRouting({
 
       {tipOpen && (
         <span className="sp-reviewer__tip">
-          Your baseline session is evaluated by Platform Coach #9. Once it’s approved, this field
+          Your baseline session is evaluated by the Platform Evaluator. Once it’s approved, this field
           opens up and you pick a Club Head Coach.
         </span>
       )}

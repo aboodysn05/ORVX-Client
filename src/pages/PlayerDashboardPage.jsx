@@ -96,6 +96,7 @@ export function PlayerDashboardPage() {
           approved={dash.approved}
           totalSessions={dash.totalSessions}
           applicationsNote={dash.applicationsNote}
+          pendingApplications={dash.pendingApplications.length}
         />
       </section>
 

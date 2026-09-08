@@ -47,8 +47,9 @@ function ClubCard({ club, index, selected, onSelect }) {
   )
 }
 
-// The club-application hub modal and its success confirmation. Both are
-// front-end-only flows — nothing is sent anywhere yet.
+// The club-application hub modal and its success confirmation. `onConfirm`
+// posts a real application (POST /clubs/:id/applications) via the dashboard
+// hook.
 export function ClubApplicationHub({
   open,
   clubs,
@@ -154,7 +155,7 @@ export function ClubApplicationHub({
                     </span>
                     <span className="hub__profile-who">
                       <span className="hub__profile-name">{player.name}</span>
-                      <span className="hub__profile-verified">Verified baseline · 1 session</span>
+                      <span className="hub__profile-verified">Verified baseline session</span>
                       <span className="hub__profile-line">
                         {player.height} cm · {player.weight} kg · {player.topAttrs}
                       </span>

@@ -11,7 +11,7 @@ const LINKS = [
   { label: 'Leagues', to: '/leagues' },
 ]
 
-// Platform Evaluator ("Coach #9") is a coach-role account flagged by
+// Platform Evaluator ("the Platform Evaluator") is a coach-role account flagged by
 // organization. They run no club — no Club / Squad / Review Queue surfaces —
 // so their nav is just the Baseline Console plus the public Leagues page.
 const EVALUATOR_LINKS = [

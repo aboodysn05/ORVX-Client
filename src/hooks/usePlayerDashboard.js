@@ -137,8 +137,8 @@ export function usePlayerDashboard(profile, email) {
     const state = done ? 'done' : next ? 'next' : 'locked'
     const [a, b] = xpPairs[i]
     let detail
-    if (done) detail = `+${a} / ${b} XP verified by Platform Coach`
-    else if (next) detail = `Awaiting Coach #9 · unlocks +${a} / ${b} XP`
+    if (done) detail = `+${a} / ${b} XP verified by Platform Evaluator`
+    else if (next) detail = `Awaiting the Platform Evaluator · unlocks +${a} / ${b} XP`
     else detail = `Opens after session ${i} is approved`
     return {
       title: `Session ${n}`,

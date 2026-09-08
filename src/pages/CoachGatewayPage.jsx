@@ -2,17 +2,18 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { applyAsCoach } from '../api/coaches'
+import { listClubs } from '../api/clubs'
 import { useCoachApplication, refreshCoachApplication } from '../hooks/useCoachApplication'
 import '../styles/coach-gateway.css'
 
-// Coach onboarding — translated from the design canvas (OVRX Coach Gateway.dc.html).
-// Frontend only: the request is persisted to localStorage (see
-// utils/coachApplication.js), not sent to a backend. Only one path exists —
-// requesting to open/manage a club. The "platform evaluator" role from the
-// design is a platform-assigned coach with their own onboarding, built later.
+// Coach onboarding: a coach-role user requests to open and manage one of the
+// platform's 8 club slots. The request is POSTed to the backend (POST
+// /coaches/applications) and an admin approves or declines it. The Platform
+// Evaluator is a separate coach-role account with no club onboarding.
 
-const OPEN_CLUB_SLOTS = 2 // slots 6 and 8 in the design's slot matrix
-const CAPACITIES = [10, 12, 16, 20]
+// The platform runs a fixed 8-club roster; every squad is capped at 16.
+const CLUB_SLOTS = 8
+const SQUAD_CAP = 16
 
 const CLUB_UNLOCKS = [
   'Full management rights over your squad roster.',
@@ -68,10 +69,20 @@ export function CoachGatewayPage() {
   const [years, setYears] = useState('')
   const [license, setLicense] = useState('')
   const [clubName, setClubName] = useState('')
-  const [capacity, setCapacity] = useState(16)
   const [credFile, setCredFile] = useState('')
   const [logoFile, setLogoFile] = useState('')
   const [error, setError] = useState('')
+  const [openSlots, setOpenSlots] = useState(null)
+
+  // Real free-slot count: platform clubs with no head coach and not archived.
+  useEffect(() => {
+    listClubs()
+      .then((clubs) => {
+        const free = clubs.filter((c) => !c.archived && !c.headCoachName).length
+        setOpenSlots(free)
+      })
+      .catch(() => setOpenSlots(null))
+  }, [])
 
   // Hydrate from an existing application once it loads. Only a *pending*
   // request shows the "awaiting approval" view — an approved coach is
@@ -84,7 +95,6 @@ export function CoachGatewayPage() {
     setYears(String(existing.yearsExperience ?? ''))
     setLicense(existing.licenseNumber || '')
     setClubName(existing.clubName || '')
-    setCapacity(existing.squadCapacity || 16)
     setCredFile(existing.credentialDocUrl ? 'credential.pdf' : '')
     setLogoFile(existing.clubLogoUrl ? 'crest.png' : '')
   }, [existing, user])
@@ -98,7 +108,7 @@ export function CoachGatewayPage() {
     { k: 'Experience', v: years ? `${years} yrs` : 'Not provided', tone: years ? 'set' : 'muted' },
     { k: 'Credentials', v: credFile || 'No file attached', tone: credFile ? 'file' : 'muted' },
     { k: 'Club', v: clubName || 'Unnamed club', tone: clubName ? 'set' : 'muted' },
-    { k: 'Squad Capacity', v: `${capacity} players`, tone: 'set' },
+    { k: 'Squad Capacity', v: `${SQUAD_CAP} players`, tone: 'set' },
     { k: 'Club Logo', v: logoFile || 'No file attached', tone: logoFile ? 'file' : 'muted' },
   ]
 
@@ -124,7 +134,7 @@ export function CoachGatewayPage() {
         yearsExperience: parseInt(years, 10) || 0,
         licenseNumber: license.trim() || null,
         clubName: clubName.trim(),
-        squadCapacity: Number(capacity),
+        squadCapacity: SQUAD_CAP,
         credentialDocUrl: credFile ? 'https://example.com/credential.pdf' : null,
         clubLogoUrl: logoFile ? 'https://example.com/crest.png' : null,
       })
@@ -315,20 +325,8 @@ export function CoachGatewayPage() {
               </div>
               <div className="cg__capacity-wrap">
                 <span className="cg__field-label">Squad Capacity</span>
-                <div className="cg__capacity">
-                  {CAPACITIES.map((c) => (
-                    <button
-                      key={c}
-                      type="button"
-                      className={`cg__capacity-btn ${capacity === c ? 'is-active' : ''}`}
-                      onClick={() => setCapacity(c)}
-                    >
-                      {c}
-                    </button>
-                  ))}
-                </div>
                 <span className="cg__panel-hint">
-                  5v5 format · minimum 10 registered players per matchday squad.
+                  Every platform club runs a fixed {SQUAD_CAP}-player squad · 5v5 matchday format.
                 </span>
               </div>
             </div>
@@ -359,11 +357,12 @@ export function CoachGatewayPage() {
             <div className="cg__slots-card">
               <span className="cg__slots-kicker">Slot availability</span>
               <span className="cg__slots-value">
-                {OPEN_CLUB_SLOTS}
-                <span className="cg__slots-value-sub"> / 8 clubs open</span>
+                {openSlots ?? '—'}
+                <span className="cg__slots-value-sub"> / {CLUB_SLOTS} clubs open</span>
               </span>
               <span className="cg__slots-note">
-                Slot 9 is reserved for the OVRX Platform Evaluator and is currently filled by Coach #9.
+                A club slot is assigned to your account on approval. A separate Platform Evaluator
+                account reviews every player's baseline session.
               </span>
             </div>
           </div>
@@ -412,7 +411,7 @@ export function CoachGatewayPage() {
               </button>
               <span className="cg__pending-track">
                 <span className="cg__pending-track-dot" />
-                Tracking · Slot 6 in the club matrix
+                Awaiting a platform admin's review
               </span>
             </div>
           </div>

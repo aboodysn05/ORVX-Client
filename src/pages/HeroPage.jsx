@@ -37,13 +37,15 @@ const CHECKLIST = [
   'A shareable profile link scouts and club coaches can open.',
 ]
 
-const ATTRIBUTES = [
-  { name: 'Pace', value: 88 },
-  { name: 'Shooting', value: 79 },
-  { name: 'Passing', value: 84 },
-  { name: 'Dribbling', value: 86 },
-  { name: 'Defending', value: 62 },
-  { name: 'Physical', value: 77 },
+// Illustrative attribute spread for the hero card before any real player has
+// completed an assessment.
+const SAMPLE_ATTRIBUTES = [
+  { name: 'Pace', value: 72 },
+  { name: 'Shooting', value: 66 },
+  { name: 'Passing', value: 68 },
+  { name: 'Dribbling', value: 71 },
+  { name: 'Defending', value: 54 },
+  { name: 'Physical', value: 65 },
 ]
 
 const STEPS = [
@@ -124,12 +126,12 @@ export function HeroPage() {
       }
     : {
         avatar: 'ME',
-        name: 'Mousa Eriqat',
-        subtitle: 'Right Winger · Northgate FC',
-        overall: 84,
-        attrs: ATTRIBUTES,
-        footLeft: 'Last approved · 2m ago',
-        footRight: '+2 this week',
+        name: 'Your Player Card',
+        subtitle: 'Built from your own assessment',
+        overall: 66,
+        attrs: SAMPLE_ATTRIBUTES,
+        footLeft: 'Sample card',
+        footRight: 'Bronze Tier',
       }
 
   const stats = [

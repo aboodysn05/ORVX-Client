@@ -10,13 +10,6 @@ const TABS = [
   { key: 'FIXTURES', label: 'Fixtures & Results' },
 ]
 
-// The knockout bracket only has real data up to however far it's been
-// played — this trailing tile is a decorative "what's next" placeholder,
-// not real fetched data (there's nothing to fetch until the semis finish).
-const FINAL_PLACEHOLDER = {
-  round: 'Final',
-  ties: [{ home: 'TBD', away: 'TBD', leg1: '—', leg2: '—', agg: 'Venue TBD', through: null, pending: true }],
-}
 
 function matchdayNumber(roundLabel) {
   return Number((roundLabel || '').match(/\d+/)?.[0]) || 0
@@ -70,7 +63,7 @@ export function LeaguesPage() {
       setSeason(league?.season || '')
       setStandings(standingsData)
       setFixtures(fixturesData)
-      setBracketRounds([...bracketData, FINAL_PLACEHOLDER])
+      setBracketRounds(bracketData)
       setLoading(false)
     }
 
@@ -168,6 +161,9 @@ export function LeaguesPage() {
               </tbody>
             </table>
           </div>
+          {standings.length === 0 && (
+            <p className="pg-lead">No results recorded yet — the table fills in as matches are played.</p>
+          )}
           <p className="lg-legend">
             <span className="lg-legend__key" /> Top 4 qualify for the knockout cup.
           </p>
@@ -176,6 +172,9 @@ export function LeaguesPage() {
 
       {!loading && tab === 'KNOCKOUT' && (
         <section className="lg-block">
+          {bracketRounds.length === 0 && (
+            <p className="pg-lead">The cup bracket appears once the tournament fixtures are set.</p>
+          )}
           <div className="lg-bracket">
             {bracketRounds.map((col) => (
               <div key={col.round} className="lg-bracket__col">
@@ -203,6 +202,9 @@ export function LeaguesPage() {
 
       {!loading && tab === 'FIXTURES' && (
         <section className="lg-block">
+          {fixtures.length === 0 && (
+            <p className="pg-lead">No fixtures scheduled yet.</p>
+          )}
           <div className="lg-fixtures">
             {fixtures.map((f) => (
               <article key={f.id} className="lg-fixture pg-card">
