@@ -7,10 +7,34 @@ import '../styles/coach-review.css'
 // head coach that is their own squad's submissions; approving credits the
 // drill's boost XP to the player's attributes.
 
-function clock(sec) {
-  const m = Math.floor(sec / 60)
-  const s = sec % 60
-  return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`
+function formatWhen(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return `${d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })} · ${d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}`
+}
+
+// The submitted clip. File storage isn't wired up yet, so a URL that isn't a
+// playable video is surfaced as a link instead of a dead <video>.
+function ClipPlayer({ url }) {
+  const playable = typeof url === 'string' && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url)
+  if (!url) {
+    return (
+      <div className="crq-clip crq-clip--empty">
+        <span className="crq-clip__title">No clip attached</span>
+        <span className="crq-clip__note">This submission arrived without a video proof.</span>
+      </div>
+    )
+  }
+  if (!playable) {
+    return (
+      <div className="crq-clip crq-clip--empty">
+        <span className="crq-clip__title">Clip stored as a link</span>
+        <span className="crq-clip__note">File storage isn't wired up yet, so the proof is a URL:</span>
+        <a className="crq-clip__url" href={url} target="_blank" rel="noreferrer noopener">{url}</a>
+      </div>
+    )
+  }
+  return <video className="crq-clip__video" src={url} controls preload="metadata" playsInline />
 }
 
 function initialsOf(name) {
@@ -27,12 +51,24 @@ function agoLabel(mins) {
 }
 
 // Map a /review/queue item to the shape this page's UI expects.
+const CODE_ABBR = {
+  pace: 'PAC', shooting: 'SHO', passing: 'PAS', dribbling: 'DRI', defending: 'DEF', physical: 'PHY',
+  diving: 'DIV', handling: 'HAN', kicking: 'KIC', reflexes: 'REF', speed: 'SPD', positioning: 'POS',
+}
+const abbr = (key) => CODE_ABBR[key] || key.slice(0, 3).toUpperCase()
+
 function toSub(item) {
   const drill = item.drills?.[0] || {}
   const [code, val] = Object.entries(item.projectedRewards || {}).sort((a, b) => b[1] - a[1])[0] || []
-  const shortCode = code ? code.slice(0, 3).toUpperCase() : ''
+  const shortCode = code ? abbr(code) : ''
   const mins = minsAgo(item.submittedAt)
   return {
+    videoUrl: item.videoUrl,
+    submittedAt: item.submittedAt,
+    totalTime: item.totalTime,
+    drills: item.drills || [],
+    rewards: item.projectedRewards || {},
+    totalXp: Object.values(item.projectedRewards || {}).reduce((a, b) => a + b, 0),
     id: item.id,
     player: item.player.name,
     initials: initialsOf(item.player.name),
@@ -57,8 +93,6 @@ export function CoachReviewQueuePage() {
   const [loadError, setLoadError] = useState('')
   const [selected, setSelected] = useState(null)
   const [feedback, setFeedback] = useState('')
-  const [playing, setPlaying] = useState(false)
-  const [playSec, setPlaySec] = useState(74)
   const [toast, setToast] = useState(null)
   const [stats, setStats] = useState(null) // lifetime review totals from GET /review/stats
   const [busy, setBusy] = useState(false)
@@ -85,20 +119,6 @@ export function CoachReviewQueuePage() {
 
   useEffect(load, [])
 
-  useEffect(() => {
-    if (!playing) return undefined
-    const id = setInterval(() => {
-      setPlaySec((s) => {
-        if (s >= 90) {
-          setPlaying(false)
-          return 90
-        }
-        return s + 1
-      })
-    }, 1000)
-    return () => clearInterval(id)
-  }, [playing])
-
   const open = queue
   const selectedId = selected === null ? open[0]?.id ?? null : selected
   const active = open.find((x) => x.id === selectedId) || null
@@ -110,8 +130,6 @@ export function CoachReviewQueuePage() {
   function selectSub(id) {
     setSelected(id)
     setFeedback('')
-    setPlaySec(74)
-    setPlaying(false)
   }
 
   async function resolve(verdict) {
@@ -125,8 +143,6 @@ export function CoachReviewQueuePage() {
       const rest = open.filter((x) => x.id !== cur.id)
       setSelected(rest[0]?.id ?? null)
       setFeedback('')
-      setPlaySec(74)
-      setPlaying(false)
       setToast({ verdict, player: cur.player, xp: cur.xp, drill: cur.drill })
     } catch (err) {
       setToast({ verdict: 'rejected', player: cur.player, xp: '', drill: err.response?.data?.message || 'Verdict failed' })
@@ -134,9 +150,6 @@ export function CoachReviewQueuePage() {
       setBusy(false)
     }
   }
-
-  // The JSX still names `platform` in a couple of spots (queue title, cell label).
-  const platform = false
 
   return (
     <PageShell>
@@ -146,8 +159,8 @@ export function CoachReviewQueuePage() {
             <span className="crq-kicker">Coach Workspace</span>
             <h1 className="crq-title">Drill Proof Review Queue</h1>
             <p className="crq-lead">
-              Review unbroken 90-second video submissions, inspect sets/reps, and award verified
-              attribute XP.
+              Watch the submitted clip, check the drills the player logged, and credit the attribute
+              additions they earned.
             </p>
           </div>
           <div className="crq-head__role">
@@ -195,7 +208,7 @@ export function CoachReviewQueuePage() {
         <div className="crq-queue">
           <div className="crq-queue__head">
             <h2 className="crq-queue__title">
-              {platform ? 'New Player Baselines' : 'Squad Submissions'}
+              Squad Submissions
             </h2>
             <span className="crq-queue__hint">Oldest first</span>
           </div>
@@ -248,66 +261,7 @@ export function CoachReviewQueuePage() {
                 </span>
               </div>
 
-              <div className="crq-video">
-                <span className="crq-video__frame" />
-                <span className="crq-video__corner crq-video__corner--tl" />
-                <span className="crq-video__corner crq-video__corner--tr" />
-                <span className="crq-video__corner crq-video__corner--bl" />
-                <span className="crq-video__corner crq-video__corner--br" />
-                <button
-                  type="button"
-                  className="crq-video__play"
-                  aria-label="Play submission"
-                  onClick={() => setPlaying((p) => !p)}
-                >
-                  {playing ? (
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#FF2E63">
-                      <rect x="6" y="5" width="4" height="14" />
-                      <rect x="14" y="5" width="4" height="14" />
-                    </svg>
-                  ) : (
-                    <svg width="27" height="27" viewBox="0 0 24 24" fill="#FF2E63">
-                      <path d="M8 5l12 7-12 7z" />
-                    </svg>
-                  )}
-                </button>
-                <span className="crq-video__badge">Unbroken take</span>
-                <div className="crq-video__controls">
-                  <span className="crq-video__track">
-                    <span
-                      className="crq-video__fill"
-                      style={{ width: `${Math.round((playSec / 90) * 100)}%` }}
-                    />
-                  </span>
-                  <div className="crq-video__ctlrow">
-                    <button
-                      type="button"
-                      className="crq-video__ctl"
-                      aria-label="Toggle playback"
-                      onClick={() => setPlaying((p) => !p)}
-                    >
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M8 5l12 7-12 7z" />
-                      </svg>
-                    </button>
-                    <button
-                      type="button"
-                      className="crq-video__ctl"
-                      aria-label="Restart"
-                      onClick={() => {
-                        setPlaySec(0)
-                        setPlaying(true)
-                      }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                        <path d="M20 12a8 8 0 1 1-2.3-5.6" />
-                        <path d="M20 4v4h-4" />
-                      </svg>
-                    </button>
-                    <span className="crq-video__clock">{clock(playSec)} / 01:30</span>
-                  </div>
-                </div>
-              </div>
+              <ClipPlayer url={active.videoUrl} />
 
               <div className="crq-player">
                 <span className="crq-avatar crq-avatar--lg">{active.initials}</span>
@@ -325,17 +279,43 @@ export function CoachReviewQueuePage() {
 
               <div className="crq-cells">
                 <span className="crq-cell">
-                  <span className="crq-cell__k">Executed Volume</span>
-                  <span className="crq-cell__v">{active.volume}</span>
+                  <span className="crq-cell__k">Submitted</span>
+                  <span className="crq-cell__v">{formatWhen(active.submittedAt)}</span>
                 </span>
                 <span className="crq-cell">
-                  <span className="crq-cell__k">Target Attribute</span>
-                  <span className="crq-cell__v is-amber">{active.target}</span>
+                  <span className="crq-cell__k">Session Length</span>
+                  <span className="crq-cell__v">{active.totalTime ? `${active.totalTime} min` : '—'}</span>
                 </span>
                 <span className="crq-cell">
-                  <span className="crq-cell__k">{platform ? 'Baseline Session' : 'Squad Context'}</span>
-                  <span className="crq-cell__v">{active.baseline}</span>
+                  <span className="crq-cell__k">Attribute Additions</span>
+                  <span className="crq-cell__v is-amber">
+                    {Object.entries(active.rewards).length
+                      ? Object.entries(active.rewards).map(([c, v]) => `+${v} ${abbr(c)}`).join(' · ')
+                      : 'None'}
+                  </span>
                 </span>
+              </div>
+
+              <div className="crq-field">
+                <span className="crq-field__label">Drills Completed</span>
+                <div className="crq-drills">
+                  {active.drills.map((d, i) => (
+                    <div key={`${d.name}-${i}`} className="crq-drill">
+                      <span className="crq-drill__name">{d.name}</span>
+                      <span className="crq-drill__vol">
+                        {d.sets} × {d.reps} {d.unitKind === 'secs' ? 'secs' : 'reps'}
+                      </span>
+                      <span className="crq-drill__boosts">
+                        {Object.entries(d.boosts || {}).map(([c, v]) => (
+                          <span key={c} className="crq-boost">+{v} {abbr(c)}</span>
+                        ))}
+                      </span>
+                    </div>
+                  ))}
+                  {active.drills.length === 0 && (
+                    <p className="crq-drill__empty">No drills recorded on this submission.</p>
+                  )}
+                </div>
               </div>
 
               <div className="crq-field">

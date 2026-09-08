@@ -15,3 +15,9 @@ export function getFixtures(competitionId) {
 export function getBracket(competitionId) {
   return client.get(`/competitions/${competitionId}/bracket`).then((res) => res.data.rounds)
 }
+
+// Top goalscorers for a competition, aggregated from recorded goals.
+export function getTopScorers(competitionId) {
+  return client.get(`/competitions/${competitionId}/scorers`).then((res) => res.data.scorers)
+}
+

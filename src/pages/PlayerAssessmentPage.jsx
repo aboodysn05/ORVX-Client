@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { usePlayerAssessment } from '../hooks/usePlayerAssessment'
-import { submitAssessment } from '../api/players'
+import { getMyProfile, submitAssessment } from '../api/players'
 import { cardName } from '../utils/playerCard'
 import { AssessmentStepper } from '../components/assessment/AssessmentStepper'
 import { PositionFootStep } from '../components/assessment/PositionFootStep'
@@ -18,7 +18,29 @@ import '../styles/assessment.css'
 export function PlayerAssessmentPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const assessment = usePlayerAssessment()
+  // A player who already has a card comes back here to edit it, so the wizard
+  // starts on their saved values rather than the defaults. `ready` holds the
+  // form until that lookup settles so the sliders never seed twice.
+  const [existing, setExisting] = useState(null)
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    getMyProfile()
+      .then((p) => !cancelled && setExisting(p))
+      .catch(() => {})
+      .finally(() => !cancelled && setReady(true))
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (!ready) return <div className="asm"><p className="asm__loading">Loading your card…</p></div>
+  return <AssessmentWizard navigate={navigate} user={user} existing={existing} />
+}
+
+function AssessmentWizard({ navigate, user, existing }) {
+  const assessment = usePlayerAssessment(existing)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const {
@@ -46,6 +68,7 @@ export function PlayerAssessmentPage() {
     footCode,
     badges,
     buildPayload,
+    isEdit,
   } = assessment
 
   async function handleLockIn() {
@@ -78,7 +101,9 @@ export function PlayerAssessmentPage() {
           </svg>
           <span className="asm__wordmark">OVRX</span>
         </Link>
-        <span className="asm__header-tag">Player Evaluation · Onboarding</span>
+        <span className="asm__header-tag">
+          Player Evaluation · {isEdit ? 'Update Your Card' : 'Onboarding'}
+        </span>
       </header>
 
       <div className="asm__stepper-wrap">
@@ -116,6 +141,14 @@ export function PlayerAssessmentPage() {
             />
           )}
 
+          {isEdit && (
+            <p className="asm__editnote">
+              Editing your registered card. Changing your position swaps which six attributes
+              count — your other set is kept, not lost.{' '}
+              <Link to="/dashboard">Cancel and go back</Link>
+            </p>
+          )}
+
           <div className="asm__actions">
             <button
               type="button"
@@ -145,7 +178,7 @@ export function PlayerAssessmentPage() {
                 onClick={handleLockIn}
                 disabled={submitting}
               >
-                {submitting ? 'Saving…' : 'Lock In My OVR & Join Platform'}
+                {submitting ? 'Saving…' : isEdit ? 'Save My Updated Card' : 'Lock In My OVR & Join Platform'}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M4 12h15M13 6l6 6-6 6" />
                 </svg>

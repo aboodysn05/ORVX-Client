@@ -64,13 +64,18 @@ export function DashboardOverview({
             </svg>
           </span>
           <span className="dash-identity__note">
-            Locked at registration. Only your club&apos;s head coach can change it — unavailable while
-            you are a free agent.
+            Your club&apos;s head coach can change this once you sign. Until then you can update it
+            yourself from your player card.
           </span>
-          <Link to="/train" className="dash-identity__cta">
-            <BoltIcon />
-            Create Training Session
-          </Link>
+          <div className="dash-identity__ctas">
+            <Link to="/train" className="dash-identity__cta">
+              <BoltIcon />
+              Create Training Session
+            </Link>
+            <Link to="/assessment" className="dash-identity__cta dash-identity__cta--ghost">
+              Edit Player Card
+            </Link>
+          </div>
         </div>
       </div>
 

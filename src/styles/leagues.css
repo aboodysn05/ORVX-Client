@@ -342,3 +342,22 @@
     display: none;
   }
 }
+
+/* --- top scorers ------------------------------------------------------- */
+.lg-scorers {
+  padding: 20px 22px;
+  margin-bottom: 18px;
+}
+.lg-scorers__title {
+  margin: 0 0 14px;
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.lg-scorers__empty {
+  margin: 0;
+  font-size: 13px;
+  color: #94a3b8;
+}

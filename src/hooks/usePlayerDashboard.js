@@ -20,17 +20,27 @@ const REVIEW_STATE = {
   pending: { state: 'pending', label: 'Pending Review' },
 }
 
-// Shapes a backend club (GET /clubs) into the card fields the hub renders.
+function ordinal(n) {
+  const s = ['th', 'st', 'nd', 'rd']
+  const v = n % 100
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`
+}
+
+// Shapes a backend club (GET /clubs) into the card fields the hub renders. A
+// club with no head coach can't review anything, so it can't be applied to.
 function toClubCard(c) {
   return {
     id: c.id,
     name: c.name,
     crest: c.crestCode,
-    coach: c.headCoachName || 'Unassigned',
-    squad: `${c.rosterCount}/${c.squadCap} Players`,
-    rank: c.leaguePosition ? `${c.leaguePosition}${['th', 'st', 'nd', 'rd'][c.leaguePosition] || 'th'} Place` : '—',
-    hot: !c.isFull && c.rosterCount < c.squadCap - 3,
+    coach: c.headCoachName || null,
+    rosterCount: c.rosterCount,
+    squadCap: c.squadCap,
+    squad: `${c.rosterCount}/${c.squadCap} players`,
+    places: Math.max(0, c.squadCap - c.rosterCount),
+    rank: c.leaguePosition ? `${ordinal(c.leaguePosition)} in the league` : 'No league position yet',
     full: c.isFull,
+    open: Boolean(c.headCoachName) && !c.isFull,
   }
 }
 
@@ -52,6 +62,7 @@ export function usePlayerDashboard(profile, email) {
   const [finished, setFinished] = useState([])
   const [clubs, setClubs] = useState([])
   const [myApplications, setMyApplications] = useState([])
+  const [hubError, setHubError] = useState('')
 
   // Baseline progress comes straight from the backend profile now.
   const approved = Math.max(0, Math.min(TOTAL_SESSIONS, profile?.approvedSubmissions ?? 0))
@@ -163,32 +174,41 @@ export function usePlayerDashboard(profile, email) {
   const sessionsSubmitted = finished.length
   const drillsLogged = finished.reduce((sum, session) => sum + (session.drills?.length || 0), 0)
 
-  const chosen = clubs[selectedClub ?? 0]
+  const pendingApplications = myApplications.filter((a) => a.status === 'pending')
+  const pendingClubId = pendingApplications[0]?.clubId ?? null
+  const pendingApplicationId = pendingApplications[0]?.id ?? null
+  // Decorated for the hub: which club you've applied to, and whether each one
+  // can still take an application.
+  const hubClubs = clubs.map((c) => ({
+    ...c,
+    applied: c.id === pendingClubId,
+    selectable: c.open && pendingClubId == null,
+  }))
+  const chosen = selectedClub == null ? null : hubClubs.find((c) => c.id === selectedClub) || null
 
   async function confirmSend() {
-    if (!chosen?.id) {
-      setSentOpen(true)
-      setHubOpen(false)
-      return
-    }
+    if (!chosen?.id) return
+    setHubError('')
     try {
       await applyToClub(chosen.id)
-      const apps = await getMyClubApplications().catch(() => myApplications)
-      setMyApplications(apps)
-    } catch {
-      // surfaced via the dashboard's error path later; still show the sent view
+      setMyApplications(await getMyClubApplications())
+      setSentOpen(true)
+      setHubOpen(false)
+    } catch (err) {
+      setHubError(err.response?.data?.message || 'That application could not be sent.')
     }
-    setSentOpen(true)
-    setHubOpen(false)
   }
 
   async function withdrawApplication(appId) {
-    await withdrawMyClubApplication(appId)
-    const apps = await getMyClubApplications().catch(() => myApplications)
-    setMyApplications(apps)
+    setHubError('')
+    try {
+      await withdrawMyClubApplication(appId)
+      setMyApplications(await getMyClubApplications())
+      setSelectedClub(null)
+    } catch (err) {
+      setHubError(err.response?.data?.message || 'That application could not be withdrawn.')
+    }
   }
-
-  const pendingApplications = myApplications.filter((a) => a.status === 'pending')
 
   return {
     // identity
@@ -217,7 +237,10 @@ export function usePlayerDashboard(profile, email) {
     lifecycleState: profile?.lifecycleState,
     myApplications,
     pendingApplications,
+    pendingApplicationId,
+    pendingClubId,
     withdrawApplication,
+    hubError,
 
     // stat tiles
     drillsDone: drillsLogged,
@@ -237,7 +260,7 @@ export function usePlayerDashboard(profile, email) {
     radarLabels,
 
     // club application hub
-    clubs,
+    clubs: hubClubs,
     hubOpen,
     selectedClub,
     chosen,
@@ -246,7 +269,7 @@ export function usePlayerDashboard(profile, email) {
       setHubOpen(false)
       setSelectedClub(null)
     },
-    selectClub: (i) => setSelectedClub(i),
+    selectClub: (id) => setSelectedClub(id),
     confirmSend,
 
     // sent confirmation

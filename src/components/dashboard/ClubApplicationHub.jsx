@@ -8,48 +8,59 @@ function PaperPlaneIcon({ size = 17 }) {
   )
 }
 
-function ClubCard({ club, index, selected, onSelect }) {
-  const isSelected = selected === index
-  let ctaLabel
-  if (isSelected) ctaLabel = club.full ? 'Selected — Waitlist Request' : 'Selected — See Drawer'
-  else ctaLabel = club.full ? 'Squad Full — Join Waitlist' : 'Submit Profile to Coach'
+// One club in the hub. A club is only selectable when it has a head coach to
+// receive the application, has a squad place free, and the player isn't
+// already waiting on another club.
+function ClubCard({ club, selected, onSelect }) {
+  let state = 'open'
+  let note = `${club.places} place${club.places === 1 ? '' : 's'} open`
+  if (club.applied) {
+    state = 'applied'
+    note = 'Your application is with this coach'
+  } else if (!club.coach) {
+    state = 'nocoach'
+    note = 'No head coach yet — cannot receive applications'
+  } else if (club.full) {
+    state = 'full'
+    note = 'Squad is full'
+  } else if (!club.selectable) {
+    state = 'blocked'
+    note = 'Withdraw your current application first'
+  }
 
   return (
-    <div className={`hub-club ${isSelected ? 'is-selected' : ''}`}>
-      <div className="hub-club__head">
+    <button
+      type="button"
+      className={`hub-club is-${state} ${selected ? 'is-selected' : ''}`}
+      disabled={!club.selectable && !club.applied}
+      onClick={() => club.selectable && onSelect(club.id)}
+    >
+      <span className="hub-club__head">
         <span className="hub-club__crest">{club.crest}</span>
         <span className="hub-club__id">
           <span className="hub-club__name">{club.name}</span>
-          <span className="hub-club__coach">{club.coach}</span>
+          <span className="hub-club__coach">{club.coach || 'Unassigned'}</span>
         </span>
-      </div>
-      <div className="hub-club__stats">
+        {club.applied && <span className="hub-club__badge">Applied</span>}
+      </span>
+      <span className="hub-club__stats">
         <span className="hub-club__stat">
           <span className="hub-club__stat-label">Squad</span>
           <span className="hub-club__stat-value">{club.squad}</span>
         </span>
         <span className="hub-club__stat">
           <span className="hub-club__stat-label">League</span>
-          <span className={`hub-club__stat-value ${club.hot ? 'is-hot' : ''}`}>{club.rank}</span>
+          <span className="hub-club__stat-value">{club.rank}</span>
         </span>
-      </div>
-      <button
-        type="button"
-        className={`hub-club__cta ${isSelected ? 'is-selected' : ''} ${club.full ? 'is-full' : ''}`}
-        onClick={() => onSelect(index)}
-      >
-        {ctaLabel}
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-          <path d="M5 12h13M13 6l6 6-6 6" />
-        </svg>
-      </button>
-    </div>
+      </span>
+      <span className={`hub-club__note is-${state}`}>{note}</span>
+    </button>
   )
 }
 
-// The club-application hub modal and its success confirmation. `onConfirm`
-// posts a real application (POST /clubs/:id/applications) via the dashboard
-// hook.
+// The club-application hub. `onConfirm` posts a real application
+// (POST /clubs/:id/applications); `onWithdraw` cancels the pending one. A
+// player holds at most one open application at a time.
 export function ClubApplicationHub({
   open,
   clubs,
@@ -57,11 +68,14 @@ export function ClubApplicationHub({
   chosen,
   onSelectClub,
   onConfirm,
+  onWithdraw,
   onClose,
   sentOpen,
   onCloseSent,
   onBackToHub,
   player,
+  pendingApplication,
+  error,
 }) {
   useEffect(() => {
     if (!open && !sentOpen) return undefined
@@ -74,7 +88,7 @@ export function ClubApplicationHub({
     return () => window.removeEventListener('keydown', onKey)
   }, [open, sentOpen, onClose, onCloseSent])
 
-  const chosenIsFull = Boolean(chosen?.full)
+  const openCount = clubs.filter((c) => c.open).length
 
   return (
     <>
@@ -88,10 +102,11 @@ export function ClubApplicationHub({
                     <span className="hub__verified-dot" />
                     Baseline Verified
                   </span>
-                  <h2 className="hub__title">Select &amp; Apply to an Official Club</h2>
+                  <h2 className="hub__title">Apply to an Official Club</h2>
                   <p className="hub__lead">
-                    You have verified your baseline training session! Select one of the 8 active
-                    platform clubs to submit your player profile to its Head Coach.
+                    {pendingApplication
+                      ? `Your profile is with ${pendingApplication.clubName}. You can hold one application at a time — withdraw it to apply somewhere else.`
+                      : `${openCount} of ${clubs.length} clubs can take an application right now. Pick one to send your verified profile to its head coach.`}
                   </p>
                 </div>
                 <button type="button" className="hub__close" aria-label="Close" onClick={onClose}>
@@ -102,12 +117,11 @@ export function ClubApplicationHub({
               </div>
 
               <div className="hub__clubs">
-                {clubs.map((club, index) => (
+                {clubs.map((club) => (
                   <ClubCard
-                    key={club.name}
+                    key={club.id}
                     club={club}
-                    index={index}
-                    selected={selectedClub}
+                    selected={selectedClub === club.id}
                     onSelect={onSelectClub}
                   />
                 ))}
@@ -115,14 +129,41 @@ export function ClubApplicationHub({
             </div>
 
             <div className="hub__drawer">
-              <span className="hub__drawer-eyebrow">Submit Profile to Coach</span>
+              <span className="hub__drawer-eyebrow">
+                {pendingApplication ? 'Application In Progress' : 'Send Your Profile'}
+              </span>
 
-              {selectedClub === null ? (
+              {pendingApplication ? (
+                <div className="hub__review">
+                  <div className="hub__chosen">
+                    <span className="hub__chosen-crest">
+                      {clubs.find((c) => c.id === pendingApplication.clubId)?.crest || '—'}
+                    </span>
+                    <span className="hub__chosen-id">
+                      <span className="hub__chosen-name">{pendingApplication.clubName}</span>
+                      <span className="hub__chosen-meta">Awaiting the head coach&apos;s decision</span>
+                    </span>
+                  </div>
+                  <p className="hub__note">
+                    The coach can see your verified attributes, physicals and approved session. If
+                    they accept, you join their squad; if they decline, you&apos;re free to apply
+                    elsewhere.
+                  </p>
+                  {error && <p className="hub__error">{error}</p>}
+                  <button
+                    type="button"
+                    className="hub__withdraw"
+                    onClick={() => onWithdraw(pendingApplication.id)}
+                  >
+                    Withdraw Application
+                  </button>
+                </div>
+              ) : !chosen ? (
                 <div className="hub__empty">
                   <span className="hub__empty-title">No club selected</span>
                   <span className="hub__empty-note">
-                    Pick a club on the left to review your application before it reaches the Head
-                    Coach.
+                    Pick a club on the left to review your application before it reaches the head
+                    coach.
                   </span>
                 </div>
               ) : (
@@ -162,16 +203,15 @@ export function ClubApplicationHub({
                     </span>
                   </div>
 
+                  {error && <p className="hub__error">{error}</p>}
+
                   <button type="button" className="hub__confirm" onClick={onConfirm}>
                     <PaperPlaneIcon />
-                    {chosenIsFull
-                      ? 'Confirm & Send Waitlist Request'
-                      : 'Confirm & Send Profile to Coach'}
+                    Send Profile to {chosen.coach}
                   </button>
                   <span className="hub__note">
-                    {chosenIsFull
-                      ? `${chosen.name} has a full 15-player squad. Your profile joins the waitlist and reaches ${chosen.coach} the moment a place opens.`
-                      : 'One active application at a time. The Head Coach sees your verified attributes, physicals and your approved session clip.'}
+                    One open application at a time. You can withdraw it from here or your dashboard
+                    at any point before the coach decides.
                   </span>
                 </div>
               )}
@@ -180,19 +220,17 @@ export function ClubApplicationHub({
         </div>
       )}
 
-      {sentOpen && (
+      {sentOpen && chosen && (
         <div className="sent" role="dialog" aria-modal="true" onClick={onCloseSent}>
           <div className="sent__panel" onClick={(event) => event.stopPropagation()}>
             <span className="sent__icon">
               <PaperPlaneIcon size={24} />
             </span>
-            <span className="sent__title">
-              {chosenIsFull ? `Waitlisted at ${chosen.name}` : `Profile sent to ${chosen.name}`}
-            </span>
+            <span className="sent__title">Profile sent to {chosen.name}</span>
             <p className="sent__body">
-              {chosenIsFull
-                ? `${chosen.coach} will receive your verified profile as ${player.positionLabel} as soon as a squad place frees up. You stay on the waitlist until then.`
-                : `${chosen.coach} now has your verified profile as ${player.positionLabel}. You will be notified when the club responds — your application stays active until then.`}
+              {chosen.coach} now has your verified profile as {player.positionLabel}. Your
+              application stays open until they accept or decline it — you can withdraw it from your
+              dashboard.
             </p>
             <div className="sent__actions">
               <button type="button" className="sent__btn sent__btn--primary" onClick={onCloseSent}>
