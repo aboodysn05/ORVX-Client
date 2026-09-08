@@ -76,9 +76,12 @@ export function discardSession(sessionId) {
   return client.delete(`/sessions/${sessionId}`)
 }
 
-export function submitSession(sessionId, { videoUrl, notes, reviewerName, reviewerCoachId }) {
+// The server assigns the reviewer from the player's club status — a club
+// player's own head coach, otherwise the Platform Evaluator — so nothing about
+// routing is sent from the client.
+export function submitSession(sessionId, { videoUrl, notes }) {
   return client
-    .post(`/sessions/${sessionId}/submit`, { videoUrl, notes, reviewerName, reviewerCoachId })
+    .post(`/sessions/${sessionId}/submit`, { videoUrl, notes })
     .then((res) => toUiSession(res.data.session))
 }
 

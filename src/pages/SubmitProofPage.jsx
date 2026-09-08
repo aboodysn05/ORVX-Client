@@ -76,11 +76,9 @@ export function SubmitProofPage() {
           />
 
           <ReviewerRouting
-            baselineDone={sp.baselineDone}
-            lockLabel={sp.lockLabel}
-            coaches={sp.coaches}
-            coach={sp.coach}
-            onSelectCoach={sp.onSelectCoach}
+            reviewer={sp.reviewer}
+            reviewerRole={sp.reviewerRole}
+            routingNote={sp.routingNote}
             tipOpen={sp.tipOpen}
             tipOn={sp.tipOn}
             tipOff={sp.tipOff}
