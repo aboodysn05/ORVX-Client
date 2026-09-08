@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react'
 import { PageShell } from '../components/layout/PageShell'
 import { listClubs } from '../api/clubs'
-import { listCompetitions, getStandings, getFixtures, getBracket } from '../api/competitions'
+import {
+  listCompetitions,
+  getStandings,
+  getFixtures,
+  getBracket,
+  getTopScorers,
+} from '../api/competitions'
 import '../styles/leagues.css'
 
 const TABS = [
   { key: 'LEAGUE', label: 'League Table' },
-  { key: 'KNOCKOUT', label: 'Knockout Bracket' },
+  { key: 'SCORERS', label: 'Top Scorers' },
+  { key: 'KNOCKOUT', label: 'Cup Bracket' },
   { key: 'FIXTURES', label: 'Fixtures & Results' },
 ]
 
@@ -35,6 +42,43 @@ function FormDots({ form }) {
   )
 }
 
+// A competition's scoring chart, built from the goals recorded on its results.
+function ScorerTable({ title, rows }) {
+  return (
+    <div className="lg-scorers pg-card">
+      <h2 className="lg-scorers__title">{title}</h2>
+      {rows.length === 0 ? (
+        <p className="lg-scorers__empty">No goals recorded yet.</p>
+      ) : (
+        <div className="lg-tablewrap">
+          <table className="lg-table">
+            <thead>
+              <tr>
+                <th className="lg-table__pos">#</th>
+                <th className="lg-table__club">Player</th>
+                <th className="lg-table__club">Club</th>
+                <th className="lg-table__hide">Matches</th>
+                <th>Goals</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={`${r.playerId}-${r.clubId}`}>
+                  <td className="lg-table__pos">{r.rank}</td>
+                  <td className="lg-table__club">{r.name}</td>
+                  <td className="lg-table__club">{r.club}</td>
+                  <td className="lg-table__hide">{r.matches}</td>
+                  <td className="lg-table__pts">{r.goals}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function LeaguesPage() {
   const [tab, setTab] = useState('LEAGUE')
   const [loading, setLoading] = useState(true)
@@ -43,6 +87,8 @@ export function LeaguesPage() {
   const [standings, setStandings] = useState([])
   const [fixtures, setFixtures] = useState([])
   const [bracketRounds, setBracketRounds] = useState([])
+  const [leagueScorers, setLeagueScorers] = useState([])
+  const [cupScorers, setCupScorers] = useState([])
 
   useEffect(() => {
     let cancelled = false
@@ -52,10 +98,12 @@ export function LeaguesPage() {
       const league = competitions.find((c) => c.type === 'league')
       const knockout = competitions.find((c) => c.type === 'knockout')
 
-      const [standingsData, fixturesData, bracketData] = await Promise.all([
+      const [standingsData, fixturesData, bracketData, leagueGoals, cupGoals] = await Promise.all([
         league ? getStandings(league.id) : [],
         league ? getFixtures(league.id) : [],
         knockout ? getBracket(knockout.id) : [],
+        league ? getTopScorers(league.id) : [],
+        knockout ? getTopScorers(knockout.id) : [],
       ])
 
       if (cancelled) return
@@ -64,6 +112,8 @@ export function LeaguesPage() {
       setStandings(standingsData)
       setFixtures(fixturesData)
       setBracketRounds(bracketData)
+      setLeagueScorers(leagueGoals)
+      setCupScorers(cupGoals)
       setLoading(false)
     }
 
@@ -161,12 +211,19 @@ export function LeaguesPage() {
               </tbody>
             </table>
           </div>
-          {standings.length === 0 && (
-            <p className="pg-lead">No results recorded yet — the table fills in as matches are played.</p>
-          )}
+          <p className="lg-legend">
+            Every club is in the table from the opening whistle — rows fill in as results land.
+          </p>
           <p className="lg-legend">
             <span className="lg-legend__key" /> Top 4 qualify for the knockout cup.
           </p>
+        </section>
+      )}
+
+      {!loading && tab === 'SCORERS' && (
+        <section className="lg-block">
+          <ScorerTable title="League Golden Boot" rows={leagueScorers} />
+          <ScorerTable title="Cup Top Scorers" rows={cupScorers} />
         </section>
       )}
 

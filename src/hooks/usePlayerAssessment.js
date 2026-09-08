@@ -99,6 +99,19 @@ const DEFAULT_GK = { diving: 70, handling: 68, kicking: 64, reflexes: 73, speed:
 
 const TOTAL_STEPS = STEPS.length
 
+// Fills a slider set from the player's saved card when that set is the one
+// they're registered for; otherwise the defaults stand in.
+function seedValues(defaults, existing, applies) {
+  if (!existing || !applies) return defaults
+  const stored = existing.attributes || {}
+  return Object.fromEntries(
+    Object.keys(defaults).map((key) => [
+      key,
+      Number.isFinite(Number(stored[key])) ? Number(stored[key]) : defaults[key],
+    ]),
+  )
+}
+
 // Bronze / Silver / Gold thresholds on the computed overall.
 export function tierFor(overall) {
   if (overall >= 75) return { name: 'Gold', color: '#F5C144' }
@@ -111,14 +124,21 @@ function averageOverall(questions, values) {
   return Math.round(keys.reduce((sum, key) => sum + values[key], 0) / keys.length)
 }
 
-export function usePlayerAssessment() {
+// `existing` is the player's current card (GET /players/me) when they come back
+// to edit it; on first registration it is null and the defaults apply.
+export function usePlayerAssessment(existing) {
+  const seeded = Boolean(existing)
   const [step, setStep] = useState(1)
-  const [position, setPosition] = useState('Attacker')
-  const [foot, setFoot] = useState('Right')
-  const [height, setHeight] = useState(178)
-  const [weight, setWeight] = useState(72)
-  const [outfieldVals, setOutfieldVals] = useState(DEFAULT_OUTFIELD)
-  const [gkVals, setGkVals] = useState(DEFAULT_GK)
+  const [position, setPosition] = useState(existing?.position || 'Attacker')
+  const [foot, setFoot] = useState(existing?.dominantFoot || 'Right')
+  const [height, setHeight] = useState(existing?.heightCm ?? 178)
+  const [weight, setWeight] = useState(existing?.weightKg ?? 72)
+  const [outfieldVals, setOutfieldVals] = useState(() =>
+    seedValues(DEFAULT_OUTFIELD, existing, 'Goalkeeper' !== existing?.position),
+  )
+  const [gkVals, setGkVals] = useState(() =>
+    seedValues(DEFAULT_GK, existing, existing?.position === 'Goalkeeper'),
+  )
 
   const isGoalkeeper = position === 'Goalkeeper'
   const questions = isGoalkeeper ? GK_QUESTIONS : OUTFIELD_QUESTIONS
@@ -165,6 +185,7 @@ export function usePlayerAssessment() {
 
   return {
     // progress
+    isEdit: seeded,
     step,
     totalSteps: TOTAL_STEPS,
     steps,

@@ -158,6 +158,9 @@ export function PlayerDashboardPage() {
         chosen={dash.chosen}
         onSelectClub={dash.selectClub}
         onConfirm={dash.confirmSend}
+        onWithdraw={dash.withdrawApplication}
+        pendingApplication={dash.pendingApplications[0] || null}
+        error={dash.hubError}
         onClose={dash.closeHub}
         sentOpen={dash.sentOpen}
         onCloseSent={dash.closeSent}

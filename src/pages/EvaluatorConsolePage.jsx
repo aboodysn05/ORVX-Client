@@ -19,12 +19,49 @@ function initialsOf(name) {
   return ((parts[0]?.[0] || '') + (parts[1]?.[0] || parts[0]?.[1] || '')).toUpperCase()
 }
 
-function contextLine(item) {
-  const drill = item.drills?.[0]
-  const rewards = Object.entries(item.projectedRewards || {})
-    .map(([code, v]) => `+${v} ${code.slice(0, 3).toUpperCase()}`)
-    .join(' · ')
-  return [drill?.name, rewards].filter(Boolean).join(' · ') || 'Baseline session'
+const CODE_ABBR = {
+  pace: 'PAC', shooting: 'SHO', passing: 'PAS', dribbling: 'DRI', defending: 'DEF', physical: 'PHY',
+  diving: 'DIV', handling: 'HAN', kicking: 'KIC', reflexes: 'REF', speed: 'SPD', positioning: 'POS',
+}
+const shortCode = (key) => CODE_ABBR[key] || key.slice(0, 3).toUpperCase()
+
+function creditLine(credited) {
+  const parts = Object.entries(credited || {}).map(([code, v]) => `+${v} ${shortCode(code)}`)
+  return parts.length ? ` · ${parts.join(' ')} credited` : ''
+}
+
+function formatWhen(iso) {
+  if (!iso) return '—'
+  const d = new Date(iso)
+  return `${d.toLocaleDateString(undefined, { day: '2-digit', month: 'short' })} · ${d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: false })}`
+}
+
+// The submitted clip. Real file storage doesn't exist yet, so a URL that isn't
+// a playable video is shown as a link rather than a dead <video> element.
+function ClipPlayer({ url }) {
+  const playable = typeof url === 'string' && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(url)
+  if (!url) {
+    return (
+      <div className="evc-clip evc-clip--empty">
+        <span className="evc-clip__title">No clip attached</span>
+        <span className="evc-clip__note">This submission arrived without a video proof.</span>
+      </div>
+    )
+  }
+  if (!playable) {
+    return (
+      <div className="evc-clip evc-clip--empty">
+        <span className="evc-clip__title">Clip stored as a link</span>
+        <span className="evc-clip__note">
+          File storage isn't wired up yet, so the proof is a URL:
+        </span>
+        <a className="evc-clip__url" href={url} target="_blank" rel="noreferrer noopener">
+          {url}
+        </a>
+      </div>
+    )
+  }
+  return <video className="evc-clip__video" src={url} controls preload="metadata" playsInline />
 }
 
 function daysAgo(iso) {
@@ -41,6 +78,7 @@ export function EvaluatorConsolePage() {
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState('')
   const [stats, setStats] = useState(null) // lifetime review totals from GET /review/stats
+  const [feedback, setFeedback] = useState('')
   const [busy, setBusy] = useState(false)
 
   function refreshStats() {
@@ -88,6 +126,7 @@ export function EvaluatorConsolePage() {
 
   function selectPlayer(id) {
     setSelectedId(id)
+    setFeedback('')
     if (!verified[id]) {
       const item = queue.find((r) => r.id === id)
       if (item) {
@@ -120,10 +159,12 @@ export function EvaluatorConsolePage() {
     try {
       const res = await reviewSubmission(sel.id, {
         verdict,
+        feedback: feedback.trim() || undefined,
         verifiedAttributes: verdict === 'approved' && Object.keys(overrides).length ? overrides : undefined,
       })
       const name = sel.player.name
       setQueue((rows) => rows.filter((r) => r.id !== sel.id))
+      setFeedback('')
       refreshStats()
       setSelectedId((cur) => {
         const rest = queue.filter((r) => r.id !== sel.id)
@@ -131,7 +172,7 @@ export function EvaluatorConsolePage() {
       })
       fire(
         verdict === 'approved'
-          ? `${name} approved at OVR ${res.player?.overall ?? verifiedOvr} · released to scouting`
+          ? `${name} approved at OVR ${res.player?.overall ?? verifiedOvr}${creditLine(res.credited)} · released to scouting`
           : `${name}'s baseline rejected · asked to resubmit`,
       )
     } catch (err) {
@@ -248,7 +289,91 @@ export function EvaluatorConsolePage() {
                 </span>
               </div>
 
-              <span className="evc-context">Baseline session · {contextLine(sel)} · clip in Review Queue</span>
+              <div className="evc-submeta">
+                <span className="evc-submeta__cell">
+                  <span className="evc-submeta__k">Submitted</span>
+                  <span className="evc-submeta__v">{formatWhen(sel.submittedAt)}</span>
+                </span>
+                <span className="evc-submeta__cell">
+                  <span className="evc-submeta__k">Session length</span>
+                  <span className="evc-submeta__v">{sel.totalTime ? `${sel.totalTime} min` : '—'}</span>
+                </span>
+                <span className="evc-submeta__cell">
+                  <span className="evc-submeta__k">Drills</span>
+                  <span className="evc-submeta__v">{sel.drills.length}</span>
+                </span>
+                <span className="evc-submeta__cell">
+                  <span className="evc-submeta__k">Waiting</span>
+                  <span className="evc-submeta__v">{daysAgo(sel.submittedAt)}d</span>
+                </span>
+              </div>
+
+              <div className="evc-block">
+                <span className="evc-block__label">Training Proof</span>
+                <ClipPlayer url={sel.videoUrl} />
+              </div>
+
+              <div className="evc-block">
+                <span className="evc-block__label">
+                  Drills Completed
+                  <span className="evc-block__count evc-block__count--muted">
+                    what the player logged
+                  </span>
+                </span>
+                <div className="evc-drills">
+                  {sel.drills.map((d, i) => (
+                    <div key={`${d.name}-${i}`} className="evc-drill">
+                      <span className="evc-drill__name">{d.name}</span>
+                      <span className="evc-drill__vol">
+                        {d.sets} × {d.reps} {d.unitKind === 'secs' ? 'secs' : 'reps'}
+                      </span>
+                      <span className="evc-drill__boosts">
+                        {Object.entries(d.boosts || {}).map(([code, v]) => (
+                          <span key={code} className="evc-boost">
+                            +{v} {shortCode(code)}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  ))}
+                  {sel.drills.length === 0 && (
+                    <p className="evc-drill__empty">No drills recorded on this submission.</p>
+                  )}
+                </div>
+                <div className="evc-additions">
+                  <span className="evc-additions__k">Attribute additions on approval</span>
+                  <span className="evc-additions__v">
+                    {Object.entries(sel.projectedRewards || {}).length === 0
+                      ? 'None'
+                      : Object.entries(sel.projectedRewards).map(([code, v]) => (
+                          <span key={code} className="evc-boost evc-boost--lg">
+                            +{v} {shortCode(code)}
+                          </span>
+                        ))}
+                  </span>
+                </div>
+              </div>
+
+              <div className="evc-block">
+                <span className="evc-block__label">Player Notes</span>
+                <p className="evc-notes">{sel.notes || 'The player left no notes.'}</p>
+              </div>
+
+              <div className="evc-block">
+                <span className="evc-block__label">
+                  Feedback
+                  <span className="evc-block__count evc-block__count--muted">
+                    sent with your verdict · optional
+                  </span>
+                </span>
+                <textarea
+                  className="evc-feedback"
+                  rows={2}
+                  placeholder="What the player should fix or keep doing…"
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                />
+              </div>
 
               <div className="evc-block">
                 <span className="evc-block__label">

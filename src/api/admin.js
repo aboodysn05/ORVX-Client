@@ -39,14 +39,10 @@ export function setDrillRetired(id, retired) {
 }
 
 // --- competition engine ---
-export function createCompetition(payload) {
-  return client.post('/admin/competitions', payload).then((res) => res.data.competition)
-}
+// The platform runs a fixed league + cup; competitions can't be created or
+// deleted, only reshaped (name/season, fixtures, results, rounds).
 export function updateCompetition(id, patch) {
   return client.patch(`/admin/competitions/${id}`, patch).then((res) => res.data.competition)
-}
-export function deleteCompetition(id) {
-  return client.delete(`/admin/competitions/${id}`).then((res) => res.data)
 }
 export function generateLeagueFixtures(id, payload) {
   return client.post(`/admin/competitions/${id}/fixtures/generate`, payload).then((res) => res.data)

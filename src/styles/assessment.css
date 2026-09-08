@@ -791,3 +791,21 @@ body {
     padding: 24px 20px 22px;
   }
 }
+
+/* Re-entry: editing an existing card rather than first-run onboarding. */
+.asm__loading {
+  padding: 4rem 1.5rem;
+  text-align: center;
+  color: #94a3b8;
+}
+.asm__editnote {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: #94a3b8;
+  border-left: 2px solid rgba(79, 70, 229, 0.55);
+  padding-left: 0.85rem;
+}
+.asm__editnote a {
+  color: #a5b0ff;
+}
