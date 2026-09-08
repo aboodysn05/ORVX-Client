@@ -1764,3 +1764,61 @@ body {
     padding: 22px;
   }
 }
+
+/* --- pending club applications strip (C1) ------------------------------- */
+.dash-apps {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(79, 70, 229, 0.28);
+  padding: 18px 20px;
+}
+.dash-apps__title {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7c89a2;
+  margin-bottom: 12px;
+}
+.dash-apps__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dash-apps__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.dash-apps__club {
+  font-size: 14px;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.dash-apps__status {
+  font-size: 12px;
+  color: #f59e0b;
+  flex: 1;
+}
+.dash-apps__withdraw {
+  padding: 7px 14px;
+  background: transparent;
+  border: 1px solid rgba(255, 46, 99, 0.45);
+  color: #ff6b8a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.dash-apps__withdraw:hover {
+  border-color: rgba(255, 46, 99, 0.8);
+}

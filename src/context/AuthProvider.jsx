@@ -35,6 +35,16 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  const value = { user, login, register, logout }
+  // Merge server-confirmed account fields (name / email) back into the session
+  // without re-issuing the token — id and role are unchanged.
+  function updateUser(patch) {
+    setUser((cur) => {
+      const next = { ...cur, ...patch }
+      localStorage.setItem(USER_KEY, JSON.stringify(next))
+      return next
+    })
+  }
+
+  const value = { user, login, register, logout, updateUser }
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
