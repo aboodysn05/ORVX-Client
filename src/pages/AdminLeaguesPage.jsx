@@ -2,7 +2,14 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AdminShell } from '../components/layout/AdminShell'
 import { listClubs } from '../api/clubs'
 import { listCompetitions, getStandings, getFixtures, getBracket } from '../api/competitions'
-import { recordMatch, updateMatch, deleteMatch } from '../api/admin'
+import {
+  recordMatch,
+  updateMatch,
+  deleteMatch,
+  createCompetition,
+  updateCompetition,
+  deleteCompetition,
+} from '../api/admin'
 import '../styles/admin-leagues.css'
 
 // Admin Competition Engine — record a match on the day it's played and enter
@@ -109,6 +116,10 @@ export function AdminLeaguesPage() {
   const [flashId, setFlashId] = useState(null)
   const formRef = useRef(null)
 
+  // Competition management: null | 'new' | 'edit'
+  const [compPanel, setCompPanel] = useState(null)
+  const [compDraft, setCompDraft] = useState({ name: '', type: 'league', season: '' })
+
   const comp = competitions.find((c) => c.id === competitionId) || null
   const isKnockout = comp?.type === 'knockout'
 
@@ -199,8 +210,79 @@ export function AdminLeaguesPage() {
   function switchCompetition(id) {
     setCompetitionId(id)
     setEditingId(null)
+    setCompPanel(null)
     const next = competitions.find((c) => c.id === id)
     setForm(makeForm(next?.type || 'league'))
+  }
+
+  // Re-fetch the competition list after a create/edit/delete. `selectId` (if
+  // given and still present) becomes the active tab; otherwise the current tab
+  // is kept, falling back to the first competition.
+  function refreshCompetitions(selectId) {
+    return listCompetitions().then((comps) => {
+      setCompetitions(comps)
+      setCompetitionId((cur) => {
+        if (selectId != null && comps.some((c) => c.id === selectId)) return selectId
+        if (comps.some((c) => c.id === cur)) return cur
+        return comps[0]?.id ?? null
+      })
+      return comps
+    })
+  }
+
+  function openNewCompetition() {
+    setCompDraft({ name: '', type: 'league', season: '' })
+    setCompPanel('new')
+  }
+
+  function openEditCompetition() {
+    if (!comp) return
+    setCompDraft({ name: comp.name, type: comp.type, season: comp.season })
+    setCompPanel('edit')
+  }
+
+  async function saveCompetition() {
+    if (busy) return
+    const name = compDraft.name.trim()
+    const season = compDraft.season.trim()
+    if (!name || !season) return fire('Name and season are both required')
+    setBusy(true)
+    try {
+      if (compPanel === 'new') {
+        const created = await createCompetition({ name, type: compDraft.type, season })
+        await refreshCompetitions(created.id)
+        fire('Competition created')
+      } else if (comp) {
+        await updateCompetition(comp.id, { name, season })
+        await refreshCompetitions(comp.id)
+        fire('Competition updated')
+      }
+      setCompPanel(null)
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not save the competition')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function removeCompetition() {
+    if (!comp || busy) return
+    const n = matches.length
+    const ok = window.confirm(
+      `Delete "${comp.name}"? This permanently removes the competition and its ${n} match${n === 1 ? '' : 'es'}. This cannot be undone.`,
+    )
+    if (!ok) return
+    setBusy(true)
+    try {
+      const res = await deleteCompetition(comp.id)
+      await refreshCompetitions()
+      setCompPanel(null)
+      fire(`"${comp.name}" deleted · ${res.deletedMatches} match${res.deletedMatches === 1 ? '' : 'es'} removed`)
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not delete the competition')
+    } finally {
+      setBusy(false)
+    }
   }
 
   const patch = (p) => setForm((f) => ({ ...f, ...p }))
@@ -379,7 +461,97 @@ export function AdminLeaguesPage() {
               <span className="alg-comptab__season">Season {c.season}</span>
             </button>
           ))}
+          <button
+            type="button"
+            className="alg-comptab alg-comptab--add"
+            onClick={openNewCompetition}
+            disabled={busy}
+          >
+            <span className="alg-comptab__type">Add</span>
+            <span className="alg-comptab__name">+ New Competition</span>
+            <span className="alg-comptab__season">League or tournament</span>
+          </button>
         </div>
+
+        <div className="alg-comptools">
+          {comp && compPanel !== 'edit' && (
+            <>
+              <button type="button" className="adm-btn adm-btn--ghost" onClick={openEditCompetition} disabled={busy}>
+                Rename / Season
+              </button>
+              <button
+                type="button"
+                className="adm-btn adm-btn--ghost alg-comptools__danger"
+                onClick={removeCompetition}
+                disabled={busy}
+              >
+                Delete Competition
+              </button>
+            </>
+          )}
+        </div>
+
+        {compPanel && (
+          <div className="alg-record alg-comppanel">
+            <div className="alg-record__bar">
+              <h2 className="alg-colhead">
+                {compPanel === 'new' ? 'New Competition' : `Edit · ${comp?.name}`}
+              </h2>
+            </div>
+            <div className="alg-record__grid">
+              <label className="adm-field">
+                <span className="adm-field__label">Name</span>
+                <input
+                  className="adm-select"
+                  type="text"
+                  value={compDraft.name}
+                  placeholder="e.g. Spring Development League"
+                  onChange={(e) => setCompDraft((d) => ({ ...d, name: e.target.value }))}
+                />
+              </label>
+              <label className="adm-field">
+                <span className="adm-field__label">Season</span>
+                <input
+                  className="adm-select"
+                  type="text"
+                  value={compDraft.season}
+                  placeholder="e.g. 2026/27"
+                  onChange={(e) => setCompDraft((d) => ({ ...d, season: e.target.value }))}
+                />
+              </label>
+              <label className="adm-field">
+                <span className="adm-field__label">Type</span>
+                <select
+                  className="adm-select"
+                  value={compDraft.type}
+                  disabled={compPanel === 'edit'}
+                  onChange={(e) => setCompDraft((d) => ({ ...d, type: e.target.value }))}
+                >
+                  <option value="league">League (round-robin table)</option>
+                  <option value="knockout">Tournament (two-legged bracket)</option>
+                </select>
+              </label>
+            </div>
+            {compPanel === 'edit' && (
+              <p className="alg-standings__note">
+                A competition's type is fixed after creation — it would invalidate every recorded result.
+              </p>
+            )}
+            <div className="alg-record__actions">
+              <button type="button" className="adm-btn adm-btn--green" onClick={saveCompetition} disabled={busy}>
+                {compPanel === 'new' ? 'Create Competition' : 'Save Changes'}
+              </button>
+              <button
+                type="button"
+                className="adm-btn adm-btn--ghost"
+                onClick={() => setCompPanel(null)}
+                disabled={busy}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="adm-counters alg-counters">
           <div className="adm-counter adm-counter--indigo">

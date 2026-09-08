@@ -42,6 +42,12 @@ export function setDrillRetired(id, retired) {
 export function createCompetition(payload) {
   return client.post('/admin/competitions', payload).then((res) => res.data.competition)
 }
+export function updateCompetition(id, patch) {
+  return client.patch(`/admin/competitions/${id}`, patch).then((res) => res.data.competition)
+}
+export function deleteCompetition(id) {
+  return client.delete(`/admin/competitions/${id}`).then((res) => res.data)
+}
 export function recordMatch(competitionId, payload) {
   return client.post(`/admin/competitions/${competitionId}/matches`, payload).then((res) => res.data.match)
 }
