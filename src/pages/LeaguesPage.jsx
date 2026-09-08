@@ -83,6 +83,7 @@ export function LeaguesPage() {
   const [tab, setTab] = useState('LEAGUE')
   const [loading, setLoading] = useState(true)
   const [clubCount, setClubCount] = useState(0)
+  const [leagueName, setLeagueName] = useState('')
   const [season, setSeason] = useState('')
   const [standings, setStandings] = useState([])
   const [fixtures, setFixtures] = useState([])
@@ -108,6 +109,7 @@ export function LeaguesPage() {
 
       if (cancelled) return
       setClubCount(clubs.length)
+      setLeagueName(league?.name || '')
       setSeason(league?.season || '')
       setStandings(standingsData)
       setFixtures(fixturesData)
@@ -137,7 +139,7 @@ export function LeaguesPage() {
     <PageShell>
       <section className="lg-head">
         <span className="pg-eyebrow">Competitions Hub</span>
-        <h1 className="pg-title">Premier Development League</h1>
+        <h1 className="pg-title">{leagueName || 'Competitions Hub'}</h1>
         <p className="pg-lead">
           Admin-run round-robin season plus a two-legged knockout cup. Standings and aggregate
           scores update automatically as coaches confirm results.
