@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { usePlayerAssessment } from '../hooks/usePlayerAssessment'
 import { getMyProfile, submitAssessment } from '../api/players'
@@ -18,29 +18,28 @@ import '../styles/assessment.css'
 export function PlayerAssessmentPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  // A player who already has a card comes back here to edit it, so the wizard
-  // starts on their saved values rather than the defaults. `ready` holds the
-  // form until that lookup settles so the sliders never seed twice.
-  const [existing, setExisting] = useState(null)
-  const [ready, setReady] = useState(false)
+  // The self-assessment is filled once, at registration. A player who already
+  // has a card is sent to their dashboard — only a club head coach changes a
+  // registered position after that.
+  const [hasCard, setHasCard] = useState(null)
 
   useEffect(() => {
     let cancelled = false
     getMyProfile()
-      .then((p) => !cancelled && setExisting(p))
-      .catch(() => {})
-      .finally(() => !cancelled && setReady(true))
+      .then(() => !cancelled && setHasCard(true))
+      .catch(() => !cancelled && setHasCard(false))
     return () => {
       cancelled = true
     }
   }, [])
 
-  if (!ready) return <div className="asm"><p className="asm__loading">Loading your card…</p></div>
-  return <AssessmentWizard navigate={navigate} user={user} existing={existing} />
+  if (hasCard === null) return <div className="asm"><p className="asm__loading">Loading…</p></div>
+  if (hasCard) return <Navigate to="/dashboard" replace />
+  return <AssessmentWizard navigate={navigate} user={user} />
 }
 
-function AssessmentWizard({ navigate, user, existing }) {
-  const assessment = usePlayerAssessment(existing)
+function AssessmentWizard({ navigate, user }) {
+  const assessment = usePlayerAssessment()
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const {
@@ -68,7 +67,6 @@ function AssessmentWizard({ navigate, user, existing }) {
     footCode,
     badges,
     buildPayload,
-    isEdit,
   } = assessment
 
   async function handleLockIn() {
@@ -101,9 +99,7 @@ function AssessmentWizard({ navigate, user, existing }) {
           </svg>
           <span className="asm__wordmark">OVRX</span>
         </Link>
-        <span className="asm__header-tag">
-          Player Evaluation · {isEdit ? 'Update Your Card' : 'Onboarding'}
-        </span>
+        <span className="asm__header-tag">Player Evaluation · Onboarding</span>
       </header>
 
       <div className="asm__stepper-wrap">
@@ -141,14 +137,6 @@ function AssessmentWizard({ navigate, user, existing }) {
             />
           )}
 
-          {isEdit && (
-            <p className="asm__editnote">
-              Editing your registered card. Changing your position swaps which six attributes
-              count — your other set is kept, not lost.{' '}
-              <Link to="/dashboard">Cancel and go back</Link>
-            </p>
-          )}
-
           <div className="asm__actions">
             <button
               type="button"
@@ -178,7 +166,7 @@ function AssessmentWizard({ navigate, user, existing }) {
                 onClick={handleLockIn}
                 disabled={submitting}
               >
-                {submitting ? 'Saving…' : isEdit ? 'Save My Updated Card' : 'Lock In My OVR & Join Platform'}
+                {submitting ? 'Saving…' : 'Lock In My OVR & Join Platform'}
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M4 12h15M13 6l6 6-6 6" />
                 </svg>

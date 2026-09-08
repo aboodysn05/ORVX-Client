@@ -1823,22 +1823,6 @@ body {
   border-color: rgba(255, 46, 99, 0.8);
 }
 
-/* Identity-card actions: start a session, or go back and edit the card. */
-.dash-identity__ctas {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  align-items: center;
-}
-.dash-identity__cta--ghost {
-  background: transparent;
-  border: 1px solid rgba(148, 163, 184, 0.35);
-  color: #aab2c4;
-}
-.dash-identity__cta--ghost:hover {
-  border-color: rgba(79, 70, 229, 0.6);
-  color: #fff;
-}
 
 /* --- club hub: real availability states -------------------------------- */
 .hub-club {

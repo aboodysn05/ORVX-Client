@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useAuth } from './useAuth'
 import { getActiveSession, submitSession } from '../api/sessions'
 import { getMyProfile } from '../api/players'
-import { listCoaches } from '../api/coaches'
 
 // There's no real video upload/storage backend yet (see
 // backend/src/services/sessions.service.js's submitSession — it stores
@@ -12,8 +11,8 @@ import { listCoaches } from '../api/coaches'
 // end-to-end. Swap this for a real upload once file storage exists.
 const PLACEHOLDER_VIDEO_URL = 'https://example.com/placeholder-clip.mp4'
 
-// One approved baseline session unlocks the Club Head Coach picker. Matches the
-// dashboard's eligibility gate (usePlayerDashboard TOTAL_SESSIONS).
+// One approved baseline session releases the player to the scouting pool.
+// Matches the dashboard's eligibility gate (usePlayerDashboard TOTAL_SESSIONS).
 const BASELINE_TARGET = 1
 
 // Accepted upload types and the hard length cap from the drill rules.
@@ -89,19 +88,11 @@ export function useSubmitProof() {
     }
   }, [])
 
-  const [coaches, setCoaches] = useState([]) // [{ coachId, name, clubName }]
-  const [coachId, setCoachId] = useState(null)
   const [profile, setProfile] = useState(null)
   const [notes, setNotes] = useState('')
 
   useEffect(() => {
     getMyProfile().then(setProfile).catch(() => setProfile(null))
-    listCoaches()
-      .then((rows) => {
-        setCoaches(rows)
-        setCoachId((cur) => cur ?? rows[0]?.coachId ?? null)
-      })
-      .catch(() => setCoaches([]))
   }, [])
   const [tipOpen, setTipOpen] = useState(false)
   const [successOpen, setSuccessOpen] = useState(false)
@@ -130,8 +121,10 @@ export function useSubmitProof() {
 
   const approved = Math.min(BASELINE_TARGET, profile?.approvedSubmissions ?? 0)
   const baselineDone = Boolean(profile?.baselineApproved)
-  const selectedCoach = coaches.find((c) => c.coachId === coachId) || null
-  const reviewerName = baselineDone ? selectedCoach?.name || 'Club Coach' : 'Platform Evaluator'
+  // Routing mirrors the server: a club player is reviewed by their own head
+  // coach, everyone else by the Platform Evaluator. The player has no say.
+  const club = profile?.club || null
+  const reviewerName = club ? `${club.name} head coach` : 'Platform Evaluator'
   const hasClip = Boolean(clip)
   const clipDurationLabel = clip && Number.isFinite(clip.duration) ? clock(clip.duration) : ''
 
@@ -183,15 +176,12 @@ export function useSubmitProof() {
     onPickFile,
     clearClip,
 
-    // reviewer routing
-    lockLabel: baselineDone ? 'Reviewer unlocked' : 'Auto-locked',
-    coaches: coaches.map((c) => `${c.name} · ${c.clubName}`),
-    coach: selectedCoach ? `${selectedCoach.name} · ${selectedCoach.clubName}` : '',
-    onSelectCoach: (event) => {
-      const label = event.target.value
-      const match = coaches.find((c) => `${c.name} · ${c.clubName}` === label)
-      if (match) setCoachId(match.coachId)
+    // reviewer routing — assigned, never chosen
+    reviewer: {
+      name: club ? club.name : 'Platform Evaluator',
+      badge: club ? 'HC' : 'PE',
     },
+    reviewerRole: club ? 'Your club head coach' : 'Official Platform Evaluator',
     tipOpen,
     tipOn: () => setTipOpen(true),
     tipOff: () => setTipOpen(false),
@@ -213,14 +203,9 @@ export function useSubmitProof() {
       setSubmitting(true)
       try {
         // Real file upload doesn't exist yet — see PLACEHOLDER_VIDEO_URL above.
-        await submitSession(session.id, {
-          videoUrl: PLACEHOLDER_VIDEO_URL,
-          notes,
-          reviewerName,
-          // Once the baseline is verified the player routes to a real club
-          // coach; before that the backend sends it to the Platform Evaluator.
-          reviewerCoachId: baselineDone ? coachId : undefined,
-        })
+        // The server decides the reviewer from the player's club — nothing
+        // about routing is sent from here.
+        await submitSession(session.id, { videoUrl: PLACEHOLDER_VIDEO_URL, notes })
         setSuccessOpen(true)
       } catch (err) {
         setSubmitError(err.response?.data?.message || 'Unable to submit this session. Please try again.')
@@ -230,9 +215,9 @@ export function useSubmitProof() {
     },
     submitNote: !hasClip
       ? 'Attach a training clip to submit.'
-      : baselineDone
-        ? 'Reviewed by your chosen club coach.'
-        : 'Routed automatically to the Platform Evaluator while your baseline is pending.',
+      : club
+        ? `Goes to your head coach at ${club.name}.`
+        : 'Goes to the Platform Evaluator — you have no club yet.',
 
     // side column
     summary: [
@@ -250,23 +235,23 @@ export function useSubmitProof() {
         v: notes ? `${notes.slice(0, 26)}${notes.length > 26 ? '…' : ''}` : 'None added',
         color: notes ? '#fff' : '#5A6784',
       },
-      { k: 'Reviewer', v: reviewerName, color: baselineDone ? '#22E07E' : '#F59E0B' },
+      { k: 'Reviewer', v: reviewerName, color: club ? '#22E07E' : '#F59E0B' },
       {
         k: 'Projected XP',
         v: (session.rewards || []).join(' · ') || '+4 XP',
         color: '#F59E0B',
       },
     ],
-    routingNote: baselineDone
-      ? 'Your baseline session is approved, so the reviewer field is open. Club coaches see your verified attributes alongside each clip.'
-      : 'One approved baseline session unlocks the reviewer field — then you can route clips to any of the 8 Club Head Coaches.',
+    routingNote: club
+      ? 'Signed players are reviewed by their own club\'s head coach. Nobody else can action your submissions.'
+      : 'Players without a club are reviewed by the Platform Evaluator. Once a club signs you, their head coach takes over automatically.',
 
     // success modal
     successOpen,
     closeSuccess: () => setSuccessOpen(false),
-    successTitle: baselineDone ? 'Session sent to your club coach' : 'Session sent to the Platform Evaluator',
-    successBody: baselineDone
-      ? `${reviewerName} has your clip in their review queue. Approved sessions add verified XP to your attributes.`
-      : 'Your clip is in the Platform Evaluator queue. Expect a verdict within 24 hours — approval adds verified XP and completes your baseline so you can pick a club coach.',
+    successTitle: club ? 'Session sent to your club coach' : 'Session sent to the Platform Evaluator',
+    successBody: club
+      ? `Your head coach at ${club.name} has the clip in their review queue. An approval adds the drills' attribute XP to your card.`
+      : 'Your clip is in the Platform Evaluator queue. An approval adds the drills\' attribute XP and, if this is your baseline, releases you to the scouting pool.',
   }
 }
