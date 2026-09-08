@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { PageShell } from '../components/layout/PageShell'
 import { attrsFor } from '../utils/attributes'
 import { tierFor } from '../hooks/usePlayerAssessment'
-import { getReviewQueue, reviewSubmission } from '../api/review'
+import { getReviewQueue, getReviewStats, reviewSubmission } from '../api/review'
 import '../styles/evaluator-console.css'
 
 // Platform Evaluator workspace ("Coach #9"). Reads the live baseline review
@@ -40,8 +40,14 @@ export function EvaluatorConsolePage() {
   const [verified, setVerified] = useState({}) // submissionId -> { key: value }
   const [query, setQuery] = useState('')
   const [toast, setToast] = useState('')
-  const [tally, setTally] = useState({ approved: 0, rejected: 0 })
+  const [stats, setStats] = useState(null) // lifetime review totals from GET /review/stats
   const [busy, setBusy] = useState(false)
+
+  function refreshStats() {
+    getReviewStats()
+      .then(setStats)
+      .catch(() => {})
+  }
 
   function fire(msg) {
     setToast(msg)
@@ -59,6 +65,7 @@ export function EvaluatorConsolePage() {
       })
       .catch((err) => setError(err.response?.data?.message || 'Could not load the review queue.'))
       .finally(() => setLoading(false))
+    refreshStats()
   }
 
   useEffect(load, [])
@@ -117,7 +124,7 @@ export function EvaluatorConsolePage() {
       })
       const name = sel.player.name
       setQueue((rows) => rows.filter((r) => r.id !== sel.id))
-      setTally((t) => ({ ...t, [verdict]: t[verdict] + 1 }))
+      refreshStats()
       setSelectedId((cur) => {
         const rest = queue.filter((r) => r.id !== sel.id)
         return cur === sel.id ? rest[0]?.id ?? null : cur
@@ -157,18 +164,18 @@ export function EvaluatorConsolePage() {
           </div>
           <div className="evc-stat evc-stat--green">
             <span className="evc-stat__k">Approved</span>
-            <span className="evc-stat__v">{tally.approved}</span>
-            <span className="evc-stat__note">This session</span>
+            <span className="evc-stat__v">{stats?.approved ?? '—'}</span>
+            <span className="evc-stat__note">All time</span>
           </div>
           <div className="evc-stat evc-stat--pink">
             <span className="evc-stat__k">Rejected</span>
-            <span className="evc-stat__v">{tally.rejected}</span>
-            <span className="evc-stat__note">This session</span>
+            <span className="evc-stat__v">{stats?.rejected ?? '—'}</span>
+            <span className="evc-stat__note">All time</span>
           </div>
           <div className="evc-stat">
             <span className="evc-stat__k">Released</span>
-            <span className="evc-stat__v">{tally.approved}</span>
-            <span className="evc-stat__note">Now scoutable by clubs</span>
+            <span className="evc-stat__v">{stats?.released ?? '—'}</span>
+            <span className="evc-stat__note">Players you cleared</span>
           </div>
         </div>
       </section>

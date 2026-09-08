@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { PageShell } from '../components/layout/PageShell'
-import { getReviewQueue, reviewSubmission } from '../api/review'
+import { getReviewQueue, getReviewStats, reviewSubmission } from '../api/review'
 import '../styles/coach-review.css'
 
 // Coach Drill Proof Review Queue — live from GET /review/queue. For a club
@@ -60,8 +60,14 @@ export function CoachReviewQueuePage() {
   const [playing, setPlaying] = useState(false)
   const [playSec, setPlaySec] = useState(74)
   const [toast, setToast] = useState(null)
-  const [tally, setTally] = useState({ approved: 0, rejected: 0, xp: 0 })
+  const [stats, setStats] = useState(null) // lifetime review totals from GET /review/stats
   const [busy, setBusy] = useState(false)
+
+  function refreshStats() {
+    getReviewStats()
+      .then(setStats)
+      .catch(() => {})
+  }
 
   function load() {
     setLoading(true)
@@ -74,6 +80,7 @@ export function CoachReviewQueuePage() {
       })
       .catch((err) => setLoadError(err.response?.data?.message || 'Could not load the review queue.'))
       .finally(() => setLoading(false))
+    refreshStats()
   }
 
   useEffect(load, [])
@@ -96,9 +103,9 @@ export function CoachReviewQueuePage() {
   const selectedId = selected === null ? open[0]?.id ?? null : selected
   const active = open.find((x) => x.id === selectedId) || null
 
-  const approvedCount = tally.approved
-  const rejectedCount = tally.rejected
-  const creditedXp = tally.xp
+  const approvedCount = stats?.approved ?? null
+  const rejectedCount = stats?.rejected ?? null
+  const creditedXp = stats?.xpCredited ?? 0
 
   function selectSub(id) {
     setSelected(id)
@@ -114,11 +121,7 @@ export function CoachReviewQueuePage() {
     try {
       await reviewSubmission(cur.id, { verdict, feedback: feedback || undefined })
       setQueue((rows) => rows.filter((x) => x.id !== cur.id))
-      setTally((t) => ({
-        approved: t.approved + (verdict === 'approved' ? 1 : 0),
-        rejected: t.rejected + (verdict === 'rejected' ? 1 : 0),
-        xp: t.xp + (verdict === 'approved' ? parseInt(cur.xp.replace(/[^0-9]/g, ''), 10) || 0 : 0),
-      }))
+      refreshStats()
       const rest = open.filter((x) => x.id !== cur.id)
       setSelected(rest[0]?.id ?? null)
       setFeedback('')
@@ -171,9 +174,9 @@ export function CoachReviewQueuePage() {
             </span>
           </div>
           <div className="crq-stat crq-stat--green">
-            <span className="crq-stat__k">Approved This Session</span>
-            <span className="crq-stat__v">{approvedCount}</span>
-            <span className="crq-stat__note">Credited to player attributes</span>
+            <span className="crq-stat__k">Approved</span>
+            <span className="crq-stat__v">{approvedCount ?? '—'}</span>
+            <span className="crq-stat__note">All time · credited to attributes</span>
           </div>
           <div className="crq-stat crq-stat--indigo">
             <span className="crq-stat__k">XP Credited</span>
@@ -181,8 +184,8 @@ export function CoachReviewQueuePage() {
             <span className="crq-stat__note">Across players you reviewed</span>
           </div>
           <div className="crq-stat">
-            <span className="crq-stat__k">Rejected This Session</span>
-            <span className="crq-stat__v">{rejectedCount}</span>
+            <span className="crq-stat__k">Rejected</span>
+            <span className="crq-stat__v">{rejectedCount ?? '—'}</span>
             <span className="crq-stat__note">Broken takes or unclear framing</span>
           </div>
         </div>
