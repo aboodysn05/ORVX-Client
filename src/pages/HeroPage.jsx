@@ -360,7 +360,7 @@ export function HeroPage() {
 
         <div className="table-card">
           <div className="table-card__head">
-            <strong>{leagueName || 'Premier Development League'} · Top 4</strong>
+            <strong>{leagueName ? `${leagueName} · Top 4` : 'League Table'}</strong>
             <span>Live standings</span>
           </div>
           <table className="standings">
