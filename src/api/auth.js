@@ -25,3 +25,9 @@ export function getCurrentUser() {
   if (USE_MOCK_AUTH) return mockAuth.getCurrentUser()
   return client.get('/auth/me').then((res) => res.data.user)
 }
+
+// Account settings. Name is a free edit; changing email or password needs
+// `currentPassword`. Resolves to the updated user.
+export function updateAccount(payload) {
+  return client.patch('/auth/me', payload).then((res) => res.data.user)
+}

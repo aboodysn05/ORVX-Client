@@ -19,6 +19,7 @@ export function DashboardOverview({
   approved,
   totalSessions,
   applicationsNote,
+  pendingApplications = 0,
 }) {
   const tiles = [
     { label: 'Drills Completed', value: drillsDone, note: 'Logged all-time' },
@@ -32,7 +33,7 @@ export function DashboardOverview({
       ),
       note: 'Approved & counted',
     },
-    { label: 'Club Applications', value: 0, note: applicationsNote },
+    { label: 'Club Applications', value: pendingApplications, note: applicationsNote },
   ]
 
   return (

@@ -5,7 +5,7 @@ import { tierFor } from '../hooks/usePlayerAssessment'
 import { getReviewQueue, getReviewStats, reviewSubmission } from '../api/review'
 import '../styles/evaluator-console.css'
 
-// Platform Evaluator workspace ("Coach #9"). Reads the live baseline review
+// Platform Evaluator workspace. Reads the live baseline review
 // queue from GET /review/queue: every new player's single baseline submission,
 // pending a verdict. The evaluator adjusts the self-rated card where needed,
 // then Approves (releases the player to the club scouting pool, crediting the
@@ -146,7 +146,7 @@ export function EvaluatorConsolePage() {
       <section className="evc-section">
         <div className="evc-head">
           <div className="evc-head__copy">
-            <span className="evc-kicker">Platform Evaluator · Coach #9 · No Club</span>
+            <span className="evc-kicker">Platform Evaluator · No Club</span>
             <h1 className="evc-title">Baseline Evaluation Console</h1>
             <p className="evc-lead">
               Every new player runs one baseline training session that no club can see yet. Check the

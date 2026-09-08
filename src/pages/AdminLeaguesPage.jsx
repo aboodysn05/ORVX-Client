@@ -9,6 +9,9 @@ import {
   createCompetition,
   updateCompetition,
   deleteCompetition,
+  generateLeagueFixtures,
+  generateKnockoutBracket,
+  advanceKnockout,
 } from '../api/admin'
 import '../styles/admin-leagues.css'
 
@@ -285,6 +288,56 @@ export function AdminLeaguesPage() {
     }
   }
 
+  const [doubleRound, setDoubleRound] = useState(false)
+
+  async function genLeagueFixtures() {
+    if (!comp || busy) return
+    const clubIds = clubs.map((c) => c.id)
+    if (clubIds.length < 2) return fire('Need at least two active clubs')
+    setBusy(true)
+    try {
+      const res = await generateLeagueFixtures(comp.id, { clubIds, doubleRound })
+      await reloadCompetition(comp.id)
+      fire(`${res.created} fixtures generated across ${res.matchdays} matchdays`)
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not generate fixtures')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function seedBracket() {
+    if (!comp || busy) return
+    const clubIds = clubs.map((c) => c.id)
+    if (![2, 4, 8, 16].includes(clubIds.length)) {
+      return fire('A bracket needs exactly 2, 4, 8 or 16 active clubs')
+    }
+    setBusy(true)
+    try {
+      const res = await generateKnockoutBracket(comp.id, { clubIds })
+      await reloadCompetition(comp.id)
+      fire(`${res.round} seeded · ${res.ties} ties`)
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not seed the bracket')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function advanceBracket() {
+    if (!comp || busy) return
+    setBusy(true)
+    try {
+      const res = await advanceKnockout(comp.id)
+      await reloadCompetition(comp.id)
+      fire(`${res.round} created · ${res.ties} tie${res.ties === 1 ? '' : 's'}`)
+    } catch (err) {
+      fire(err.response?.data?.message || 'Could not advance the round')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   const patch = (p) => setForm((f) => ({ ...f, ...p }))
   const bump = (side, delta) =>
     setForm((f) => {
@@ -487,6 +540,32 @@ export function AdminLeaguesPage() {
               >
                 Delete Competition
               </button>
+
+              {!isKnockout && compMatches.length === 0 && scheduledFixtures.length === 0 && (
+                <>
+                  <button type="button" className="adm-btn adm-btn--green" onClick={genLeagueFixtures} disabled={busy}>
+                    Generate Round-Robin
+                  </button>
+                  <label className="alg-comptools__check">
+                    <input
+                      type="checkbox"
+                      checked={doubleRound}
+                      onChange={(e) => setDoubleRound(e.target.checked)}
+                    />
+                    Home &amp; away (double round)
+                  </label>
+                </>
+              )}
+              {isKnockout && compMatches.length === 0 && scheduledFixtures.length === 0 && (
+                <button type="button" className="adm-btn adm-btn--green" onClick={seedBracket} disabled={busy}>
+                  Seed Bracket ({clubs.length} clubs)
+                </button>
+              )}
+              {isKnockout && (compMatches.length > 0 || scheduledFixtures.length > 0) && (
+                <button type="button" className="adm-btn adm-btn--green" onClick={advanceBracket} disabled={busy}>
+                  Advance to Next Round
+                </button>
+              )}
             </>
           )}
         </div>

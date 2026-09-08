@@ -21,6 +21,7 @@ import { AdminRequestsPage } from './pages/AdminRequestsPage'
 import { AdminClubsPage } from './pages/AdminClubsPage'
 import { AdminDrillsPage } from './pages/AdminDrillsPage'
 import { AdminLeaguesPage } from './pages/AdminLeaguesPage'
+import { AccountSettingsPage } from './pages/AccountSettingsPage'
 
 // All route definitions live here.
 function App() {
@@ -149,6 +150,14 @@ function App() {
         element={
           <RequireAuth>
             <AdminLeaguesPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <RequireAuth>
+            <AccountSettingsPage />
           </RequireAuth>
         }
       />

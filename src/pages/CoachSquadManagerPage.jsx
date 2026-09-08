@@ -8,10 +8,10 @@ import {
   getScoutingPool,
   listClubApplications,
   signPlayer,
-  updateRosterPosition,
   releasePlayer,
   decideClubApplication,
 } from '../api/clubs'
+import { setPlayerRegisteredPosition } from '../api/players'
 import '../styles/coach-squad.css'
 
 // Coach Squad Manager — live from GET /clubs/:id/roster, /applications and
@@ -122,11 +122,20 @@ export function CoachSquadManagerPage() {
     }
   }
 
-  const changePosition = (playerId, name, next) =>
+  const changePosition = (playerId, name, current, next) => {
+    if (next === current) return
+    const gkSwap = next === 'Goalkeeper' || current === 'Goalkeeper'
     run(
-      () => updateRosterPosition(club.id, playerId, next),
-      { kind: 'position', title: 'Position updated', body: `${name} is now registered as ${next}.` },
+      () => setPlayerRegisteredPosition(playerId, next),
+      {
+        kind: 'position',
+        title: 'Position updated',
+        body: gkSwap
+          ? `${name} is now a ${next}. Their attribute set was reset to the goalkeeper baseline.`
+          : `${name} is now registered as ${next}.`,
+      },
     )
+  }
 
   const release = (playerId, name) =>
     run(
@@ -231,7 +240,7 @@ export function CoachSquadManagerPage() {
 
           <div className="csm-roster">
             {!loading && roster.players.map((p) => {
-              const pos = p.squadPosition || p.position
+              const pos = p.position
               return (
                 <div key={p.playerId} className="csm-card">
                   <div className="csm-card__top">
@@ -262,12 +271,12 @@ export function CoachSquadManagerPage() {
                   </div>
 
                   <label className="csm-card__update">
-                    <span className="csm-card__update-label">Update Position</span>
+                    <span className="csm-card__update-label">Registered Position</span>
                     <select
                       className="csm-select"
                       value={pos}
                       disabled={busy}
-                      onChange={(e) => changePosition(p.playerId, p.name, e.target.value)}
+                      onChange={(e) => changePosition(p.playerId, p.name, pos, e.target.value)}
                     >
                       {POSITIONS.map((o) => (
                         <option key={o} value={o}>{o}</option>

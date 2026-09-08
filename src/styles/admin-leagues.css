@@ -814,3 +814,15 @@
 .alg-comppanel {
   margin-top: 16px;
 }
+
+.alg-comptools__check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  color: #94a3b8;
+  cursor: pointer;
+}
+.alg-comptools__check input {
+  accent-color: #ff2e63;
+}

@@ -48,6 +48,15 @@ export function updateCompetition(id, patch) {
 export function deleteCompetition(id) {
   return client.delete(`/admin/competitions/${id}`).then((res) => res.data)
 }
+export function generateLeagueFixtures(id, payload) {
+  return client.post(`/admin/competitions/${id}/fixtures/generate`, payload).then((res) => res.data)
+}
+export function generateKnockoutBracket(id, payload) {
+  return client.post(`/admin/competitions/${id}/bracket/generate`, payload).then((res) => res.data)
+}
+export function advanceKnockout(id, payload = {}) {
+  return client.post(`/admin/competitions/${id}/bracket/advance`, payload).then((res) => res.data)
+}
 export function recordMatch(competitionId, payload) {
   return client.post(`/admin/competitions/${competitionId}/matches`, payload).then((res) => res.data.match)
 }

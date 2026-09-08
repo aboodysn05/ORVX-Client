@@ -8,14 +8,14 @@ export function CoachColumn({ submissions }) {
       <div className="dash-coach">
         <span className="dash-coach__eyebrow">Assigned Review Coach</span>
         <div className="dash-coach__id">
-          <span className="dash-coach__avatar">#9</span>
+          <span className="dash-coach__avatar">PE</span>
           <div className="dash-coach__who">
-            <span className="dash-coach__name">Coach #9</span>
+            <span className="dash-coach__name">Platform Evaluator</span>
             <span className="dash-coach__role">Official Platform Evaluator</span>
           </div>
         </div>
         <p className="dash-coach__blurb">
-          Your baseline training session is reviewed by the OVRX Platform Coach to establish your
+          Your baseline training session is reviewed by the OVRX Platform Evaluator to establish your
           verified performance baseline.
         </p>
         <div className="dash-coach__tags">

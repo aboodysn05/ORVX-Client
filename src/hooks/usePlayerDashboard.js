@@ -11,7 +11,7 @@ import {
 } from '../utils/attributes'
 import { listSessions } from '../api/sessions'
 import { listClubs, applyToClub } from '../api/clubs'
-import { getMyClubApplications } from '../api/players'
+import { getMyClubApplications, withdrawMyClubApplication } from '../api/players'
 import { timeAgo } from '../utils/trainingSession'
 
 const REVIEW_STATE = {
@@ -137,8 +137,8 @@ export function usePlayerDashboard(profile, email) {
     const state = done ? 'done' : next ? 'next' : 'locked'
     const [a, b] = xpPairs[i]
     let detail
-    if (done) detail = `+${a} / ${b} XP verified by Platform Coach`
-    else if (next) detail = `Awaiting Coach #9 · unlocks +${a} / ${b} XP`
+    if (done) detail = `+${a} / ${b} XP verified by Platform Evaluator`
+    else if (next) detail = `Awaiting the Platform Evaluator · unlocks +${a} / ${b} XP`
     else detail = `Opens after session ${i} is approved`
     return {
       title: `Session ${n}`,
@@ -182,6 +182,14 @@ export function usePlayerDashboard(profile, email) {
     setHubOpen(false)
   }
 
+  async function withdrawApplication(appId) {
+    await withdrawMyClubApplication(appId)
+    const apps = await getMyClubApplications().catch(() => myApplications)
+    setMyApplications(apps)
+  }
+
+  const pendingApplications = myApplications.filter((a) => a.status === 'pending')
+
   return {
     // identity
     position,
@@ -208,6 +216,8 @@ export function usePlayerDashboard(profile, email) {
     setApproved: () => {}, // baseline progress is server-driven now
     lifecycleState: profile?.lifecycleState,
     myApplications,
+    pendingApplications,
+    withdrawApplication,
 
     // stat tiles
     drillsDone: drillsLogged,

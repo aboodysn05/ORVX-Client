@@ -96,8 +96,32 @@ export function PlayerDashboardPage() {
           approved={dash.approved}
           totalSessions={dash.totalSessions}
           applicationsNote={dash.applicationsNote}
+          pendingApplications={dash.pendingApplications.length}
         />
       </section>
+
+      {dash.pendingApplications.length > 0 && (
+        <section className="dash__row">
+          <div className="dash-apps">
+            <span className="dash-apps__title">Pending Club Applications</span>
+            <ul className="dash-apps__list">
+              {dash.pendingApplications.map((app) => (
+                <li key={app.id} className="dash-apps__item">
+                  <span className="dash-apps__club">{app.clubName}</span>
+                  <span className="dash-apps__status">Awaiting the head coach's decision</span>
+                  <button
+                    type="button"
+                    className="dash-apps__withdraw"
+                    onClick={() => dash.withdrawApplication(app.id)}
+                  >
+                    Withdraw
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )}
 
       <section className="dash__row">
         <EligibilityPanel

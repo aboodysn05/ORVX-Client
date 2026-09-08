@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { PageShell } from '../components/layout/PageShell'
 import { ArrowIcon } from '../components/ui/ArrowIcon'
 import { listDrillsCatalog } from '../api/drills'
@@ -15,12 +16,6 @@ const CATS = [
 ]
 
 const LEVELS = ['All Levels', 'Beginner', 'Intermediate', 'Elite']
-
-const COACHES = [
-  'Coach Marcus · Northgate FC',
-  'Coach Elena · Northgate FC',
-  'Coach Idris · Riverside United',
-]
 
 function PlayIcon() {
   return (
@@ -59,8 +54,8 @@ export function DrillsPage() {
       (level === 'All Levels' || d.level === level) &&
       (!q ||
         d.title.toLowerCase().includes(q) ||
-        d.coach.toLowerCase().includes(q) ||
-        d.focus.toLowerCase().includes(q)),
+        (d.coach || '').toLowerCase().includes(q) ||
+        (d.focus || '').toLowerCase().includes(q)),
   )
   const active = drills.find((d) => d.id === openId) || null
 
@@ -136,15 +131,17 @@ export function DrillsPage() {
             </div>
             <div className="drill__body">
               <h3 className="drill__title">{d.title}</h3>
-              <span className="drill__coach">By {d.coach}</span>
+              {d.coach && <span className="drill__coach">By {d.coach}</span>}
               <span className="drill__tags">
                 {d.level} • {d.focus}
               </span>
             </div>
-            <div className="drill__meta">
-              <span>{d.completes} Completes</span>
-              <span className="drill__rating">★ {d.rating}</span>
-            </div>
+            {d.completes > 0 && (
+              <div className="drill__meta">
+                <span>{d.completes} Completes</span>
+                {Number(d.rating) > 0 && <span className="drill__rating">★ {d.rating}</span>}
+              </div>
+            )}
             <div className="drill__foot">
               <button type="button" className="pg-btn" onClick={() => setOpenId(d.id)}>
                 View Drill &amp; Submit Proof
@@ -167,7 +164,8 @@ export function DrillsPage() {
                 <span className="pg-eyebrow">Drill Detail · Submission</span>
                 <h2 className="modal__title">{active.title}</h2>
                 <span className="modal__sub">
-                  By {active.coach} · {active.level} • {active.focus} · {active.duration}
+                  {active.coach ? `${active.coach} · ` : ''}
+                  {active.level} • {active.focus} · {active.duration}
                 </span>
               </div>
               <button
@@ -216,35 +214,19 @@ export function DrillsPage() {
               <div className="modal__right">
                 <span className="modal__reward">Reward · {active.rewardFull}</span>
 
-                <label className="modal__field">
-                  <span className="modal__label">Video Proof</span>
-                  <div className="modal__drop">
-                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#4F46E5" strokeWidth="2">
-                      <path d="M12 16V4M8 8l4-4 4 4" />
-                      <path d="M4 16v3h16v-3" />
-                    </svg>
-                    <strong>Drag &amp; drop video clip or paste link</strong>
-                    <span>MP4 or MOV up to 200 MB · single continuous take, no cuts.</span>
-                    <input type="text" placeholder="https://…" />
-                  </div>
-                </label>
+                <p className="modal__note">
+                  Add this drill to a training session, record a single continuous take of every set,
+                  then submit the clip for review. Approved submissions credit the drill's attribute
+                  XP.
+                </p>
 
-                <label className="modal__field">
-                  <span className="modal__label">Send to Coach</span>
-                  <select>
-                    {COACHES.map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <button type="button" className="pg-btn" onClick={() => setOpenId(null)}>
-                  Submit to Coach for Approval ({active.rewardFull})
+                <Link to="/train" className="pg-btn">
+                  Build a Training Session
                   <ArrowIcon size={16} />
-                </button>
+                </Link>
                 <span className="modal__note">
-                  Approvals usually land within 24 hours. Returned submissions include a coach note on
-                  what to fix.
+                  A reviewer usually returns a verdict within 24 hours; returned submissions come with
+                  a note on what to fix.
                 </span>
               </div>
             </div>

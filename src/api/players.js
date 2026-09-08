@@ -27,3 +27,16 @@ export function getFeaturedPlayer() {
 export function getMyClubApplications() {
   return client.get('/players/me/applications').then((res) => res.data.applications)
 }
+
+// Withdraw one still-pending application, freeing the one-pending-at-a-time slot.
+export function withdrawMyClubApplication(appId) {
+  return client.delete(`/players/me/applications/${appId}`).then((res) => res.data.application)
+}
+
+// A club head coach (or admin) changes a rostered player's registered position.
+// Switching to/from Goalkeeper swaps the attribute set (reset to a baseline).
+export function setPlayerRegisteredPosition(playerId, position) {
+  return client
+    .patch(`/players/${playerId}/registered-position`, { position })
+    .then((res) => res.data.player)
+}
