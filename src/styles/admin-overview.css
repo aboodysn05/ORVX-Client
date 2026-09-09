@@ -80,7 +80,7 @@
 
 .aov-banner__meta {
   display: grid;
-  grid-template-columns: repeat(2, minmax(140px, 1fr));
+  grid-template-columns: repeat(2, minmax(min(140px, 100%), 1fr));
   gap: 1px;
   margin-left: auto;
   background: rgba(79, 70, 229, 0.22);
@@ -146,7 +146,7 @@
 /* --- actionable snapshot --- */
 .aov-snap {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
   gap: 16px;
 }
 
@@ -229,7 +229,7 @@
 /* --- season impact strip --- */
 .aov-season {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 1px;
   background: rgba(79, 70, 229, 0.2);
   border: 1px solid rgba(79, 70, 229, 0.2);

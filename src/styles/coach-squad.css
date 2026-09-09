@@ -6,7 +6,7 @@
   position: relative;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 40px 0;
+  padding: 40px var(--ovrx-gutter) 0;
 }
 
 .csm-panel {
@@ -270,7 +270,7 @@
 
 .csm-roster {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
   gap: 18px;
 }
 
@@ -676,4 +676,86 @@
   border: 1px solid rgba(148, 163, 184, 0.3);
   cursor: pointer;
   color: #8b97af;
+}
+
+/* --- responsive ---------------------------------------------------------- */
+
+/* Below the table's natural 720px width, stack each row into a labelled card
+   instead of leaving a six-column grid to scroll sideways. Mirrors the
+   pattern used by the admin tables (admin-requests / admin-clubs /
+   admin-drills); the labels come from ::before rather than data-label
+   because the squad rows carry semantic class names already. */
+@media (max-width: 860px) {
+  .csm-table {
+    overflow-x: visible;
+  }
+
+  .csm-table__head {
+    display: none;
+  }
+
+  .csm-table__row {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    min-width: 0;
+    padding: 20px;
+  }
+
+  .csm-table__row > .csm-table__ovr,
+  .csm-table__row > .csm-table__proof,
+  .csm-table__row > .csm-table__date,
+  .csm-table__row > .csm-table__actions {
+    position: relative;
+    padding-top: 18px;
+  }
+
+  .csm-table__row > .csm-table__ovr::before,
+  .csm-table__row > .csm-table__proof::before,
+  .csm-table__row > .csm-table__date::before,
+  .csm-table__row > .csm-table__actions::before {
+    position: absolute;
+    top: 0;
+    left: 0;
+    font-size: 8.5px;
+    font-weight: 900;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #4c5871;
+  }
+
+  .csm-table__row > .csm-table__ovr::before {
+    content: 'Baseline OVR';
+  }
+
+  .csm-table__row > .csm-table__proof::before {
+    content: 'Source';
+  }
+
+  .csm-table__row > .csm-table__date::before {
+    content: 'Applied';
+  }
+
+  .csm-table__row > .csm-table__actions::before {
+    content: 'Actions';
+  }
+
+  /* The position pill would otherwise stretch the full card width. */
+  .csm-table__row > .csm-pos {
+    justify-self: start;
+    width: fit-content;
+  }
+}
+
+/* Accept / decline stack rather than squeeze on small phones. */
+@media (max-width: 480px) {
+  .csm-table__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .csm-panel {
+    padding-top: 28px;
+  }
 }

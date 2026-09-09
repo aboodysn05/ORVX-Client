@@ -1,0 +1,311 @@
+/* ============================================================================
+   ORVX — responsive foundation
+   ----------------------------------------------------------------------------
+   Cross-cutting rules that make every screen usable from a 320px phone up to
+   an ultra-wide desktop (NFR1). Page-specific layout still lives in each
+   page's own stylesheet; this file only holds what is genuinely shared.
+
+   Imported LAST in main.jsx so these rules win ties against page styles that
+   were written desktop-first.
+
+   Breakpoints used here, and the reason each one exists:
+
+     --  <=  480px   small phones — drop the nav account chip's name/role
+     --  <=  720px   phones — nav link rails
+     --  <=  860px   large phones / small tablets — form field sizing,
+                     safe-area insets
+     --  pointer: coarse   touch targets, independent of width
+
+   The per-page stylesheets carry their own breakpoints (520 / 640 / 900 /
+   960 / 1024 / 1080) chosen against the content they lay out; those are
+   left as they are rather than forced onto a single ladder.
+   ========================================================================= */
+
+:root {
+  /* Fluid page gutter. Replaces the hardcoded 40px side padding that used to
+     eat 80px of a 375px viewport. Scales 16px -> 40px with the viewport. */
+  --ovrx-gutter: clamp(16px, 5vw, 40px);
+
+  /* Fluid vertical rhythm for page sections. */
+  --ovrx-section-y: clamp(32px, 6vw, 72px);
+
+  /* Minimum comfortable touch target (WCAG 2.5.8 / Apple HIG). */
+  --ovrx-tap: 44px;
+}
+
+/* --------------------------------------------------------------------------
+   1. Global box model + overflow safety
+   ------------------------------------------------------------------------ */
+
+/* box-sizing was previously scoped to .page only, so the dashboard, admin,
+   coach and workout shells were sizing padding outside their widths. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Stop iOS/Safari inflating text when the device is rotated to landscape. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  /* Belt-and-braces guard: nothing may introduce a horizontal scrollbar on
+     the document itself. Real horizontal scrolling is opt-in per component
+     via .ovrx-scroll-x below.
+
+     `clip` rather than `hidden` on purpose: `hidden` turns <body> into a
+     scroll container, which breaks `position: sticky` on the four nav bars.
+     `clip` suppresses the overflow without that side effect. */
+  overflow-x: clip;
+}
+
+/* Media never outgrows its column. */
+img,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+img,
+video {
+  height: auto;
+}
+
+/* Long unbroken strings (emails, URLs, club names, IDs) are the single most
+   common cause of mobile overflow. Break them instead of blowing out layout. */
+p,
+h1,
+h2,
+h3,
+h4,
+li,
+dd,
+dt,
+figcaption,
+blockquote,
+label,
+td,
+th {
+  overflow-wrap: break-word;
+}
+
+/* Flex and grid children default to min-width:auto, which refuses to shrink
+   below their content and pushes the whole row wide. Reset it on the layout
+   primitives the app actually uses. */
+.page__main > *,
+.hero > *,
+.nav > *,
+.dash-nav > *,
+.cnav > *,
+.anav > * {
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------------------
+   2. Horizontal-scroll utility for wide data tables
+   ------------------------------------------------------------------------ */
+
+/* Wide league / squad / admin tables stay legible by scrolling sideways
+   inside their own container rather than breaking the page. */
+.ovrx-scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  /* Room for the scrollbar so the last row isn't clipped under it. */
+  padding-bottom: 2px;
+}
+
+/* Thin, on-brand scrollbars for the scrollers (WebKit + Firefox). */
+.ovrx-scroll-x,
+.aov-term__scroll,
+.lg-tablewrap {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79, 70, 229, 0.55) transparent;
+}
+
+.ovrx-scroll-x::-webkit-scrollbar,
+.aov-term__scroll::-webkit-scrollbar,
+.lg-tablewrap::-webkit-scrollbar {
+  height: 6px;
+}
+
+.ovrx-scroll-x::-webkit-scrollbar-thumb,
+.aov-term__scroll::-webkit-scrollbar-thumb,
+.lg-tablewrap::-webkit-scrollbar-thumb {
+  background: rgba(79, 70, 229, 0.55);
+  border-radius: 3px;
+}
+
+/* --------------------------------------------------------------------------
+   3. Forms — stop iOS zooming the page on focus
+   ------------------------------------------------------------------------ */
+
+/* Mobile Safari zooms into any field whose font-size is under 16px, which
+   leaves the user zoomed-in and scrolled sideways with no way back. The app's
+   fields are 13-15px, so raise them on small screens only — desktop keeps the
+   original typographic scale.
+
+   !important is deliberate: every field in the app is styled through a class
+   (.asm-input, .auth__input, ...) which outranks a bare element selector no
+   matter how late this sheet loads. This is a floor that must not lose. */
+@media (max-width: 860px) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
+/* Fields and buttons should never overflow their container. */
+input,
+select,
+textarea,
+button {
+  max-width: 100%;
+}
+
+textarea {
+  /* Horizontal resizing breaks narrow layouts. */
+  resize: vertical;
+}
+
+/* --------------------------------------------------------------------------
+   4. Touch targets
+   ------------------------------------------------------------------------ */
+
+/* On touch devices, make the small icon buttons (settings cog, sign-out,
+   pagination chevrons) reach the 44px minimum without changing their look
+   on mouse-driven desktops. */
+@media (pointer: coarse) {
+  .dash-nav__signout,
+  .cnav__signout,
+  .anav__signout,
+  .nav__logout,
+  .nav__cta {
+    min-width: var(--ovrx-tap);
+    min-height: var(--ovrx-tap);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. Navigation
+   ------------------------------------------------------------------------ */
+
+/* The four nav bars (public / player / coach / admin) are structurally
+   identical -- brand, link row, account cluster -- and each already wraps its
+   link row onto its own line on narrow screens. Below that, the uppercase
+   wide-tracking links start wrapping onto two and three ragged lines. Turn
+   the link row into a single horizontally scrollable rail instead: one tidy
+   line on any width, and every link stays reachable.
+
+   Kept here rather than duplicated four times because the rule is identical
+   for all four variants. */
+@media (max-width: 720px) {
+  .nav__links,
+  .dash-nav__links,
+  .cnav__links,
+  .anav__links {
+    order: 3;
+    width: 100%;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    gap: 18px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    /* Bleed to the screen edges so the rail reads as scrollable. */
+    margin-inline: calc(var(--ovrx-gutter) * -1);
+    padding-inline: var(--ovrx-gutter);
+    scroll-padding-inline: var(--ovrx-gutter);
+  }
+
+  .nav__links::-webkit-scrollbar,
+  .dash-nav__links::-webkit-scrollbar,
+  .cnav__links::-webkit-scrollbar,
+  .anav__links::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Links must not shrink or they compress into unreadable slivers. */
+  .nav__link,
+  .dash-nav__link,
+  .cnav__link,
+  .anav__link {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* The strapline under the wordmark is the first thing to go -- it costs a
+     line of height and carries no navigational value on a phone. */
+  .nav__brand-tag,
+  .dash-nav__brand-tag,
+  .cnav__brand-tag {
+    display: none;
+  }
+}
+
+/* On small phones the account chip's name/role stack is what pushes the
+   sign-out controls off-screen. Drop to the avatar alone. */
+@media (max-width: 480px) {
+  .nav__chip-text,
+  .dash-nav__chip-text,
+  .cnav__chip-text,
+  .anav__chip-text {
+    display: none;
+  }
+
+  .nav__chip,
+  .dash-nav__chip,
+  .cnav__chip,
+  .anav__chip {
+    padding: 6px;
+    gap: 8px;
+  }
+
+  .nav,
+  .dash-nav,
+  .cnav,
+  .anav {
+    gap: 12px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. Notched / rounded displays
+   ------------------------------------------------------------------------ */
+
+/* Keep content clear of the home indicator and camera cutouts in landscape. */
+@supports (padding: max(0px)) {
+  @media (max-width: 860px) {
+    .page,
+    .dash,
+    .admin,
+    .cgw,
+    .wk,
+    .train {
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. Motion
+   ------------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

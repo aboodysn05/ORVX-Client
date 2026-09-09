@@ -11,7 +11,10 @@ body {
 .cg {
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
+  /* clip (not hidden) so the decorative glows don't cause a horizontal
+     scrollbar without turning this shell into a scroll container, which
+     would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
+  overflow: clip;
   background: #090d16;
   font-family: Archivo, sans-serif;
   color: #e8ecf5;
@@ -151,7 +154,7 @@ body {
   position: relative;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 46px 40px 0;
+  padding: 46px var(--ovrx-gutter) 0;
 }
 
 .cg__intro-copy {
@@ -208,7 +211,7 @@ body {
   gap: 26px;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 34px 40px 0;
+  padding: 34px var(--ovrx-gutter) 0;
   align-items: flex-start;
 }
 
@@ -254,7 +257,7 @@ body {
 
 .cg__grid-fields {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -397,7 +400,7 @@ body {
 
 .cg__panel-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(230px, 100%), 1fr));
   gap: 20px;
 }
 
@@ -665,7 +668,7 @@ body {
 
 .cg__pending-summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 1px;
   background: rgba(9, 13, 22, 0.68);
 }
@@ -860,7 +863,7 @@ body {
 
 .cg__footer {
   position: relative;
-  padding: 44px 40px 34px;
+  padding: 44px var(--ovrx-gutter) 34px;
   border-top: 1px solid rgba(79, 70, 229, 0.2);
   background: rgba(9, 13, 22, 0.7);
 }

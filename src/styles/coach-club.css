@@ -6,7 +6,7 @@
   position: relative;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 40px 0;
+  padding: 40px var(--ovrx-gutter) 0;
 }
 
 .ccp-body {
@@ -176,7 +176,7 @@
 
 .ccp-stats {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(170px, 100%), 1fr));
   gap: 1px;
   margin-top: 1px;
 }

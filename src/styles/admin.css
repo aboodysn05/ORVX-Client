@@ -13,7 +13,10 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow-x: hidden;
+  /* clip (not hidden) so the decorative glows don't cause a horizontal
+     scrollbar without turning this shell into a scroll container, which
+     would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
+  overflow-x: clip;
   background: #090d16;
   font-family: Archivo, sans-serif;
   color: #e8ecf5;
@@ -137,7 +140,7 @@ body {
   flex-wrap: wrap;
   align-items: center;
   gap: 14px;
-  padding: 22px 40px 30px;
+  padding: 22px var(--ovrx-gutter) 30px;
   border-top: 1px solid rgba(79, 70, 229, 0.2);
 }
 
@@ -160,7 +163,7 @@ body {
   position: relative;
   max-width: 1520px;
   margin: 0 auto;
-  padding: 46px 40px 0;
+  padding: 46px var(--ovrx-gutter) 0;
 }
 
 .adm-section + .adm-section {

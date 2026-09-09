@@ -23,7 +23,10 @@ body {
   min-height: 100vh;
   width: 100%;
   padding: 56px 24px;
-  overflow: hidden;
+  /* clip (not hidden) so the decorative glows don't cause a horizontal
+     scrollbar without turning this shell into a scroll container, which
+     would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
+  overflow: clip;
   background: #090d16;
   font-family: Archivo, sans-serif;
   color: #e8ecf5;

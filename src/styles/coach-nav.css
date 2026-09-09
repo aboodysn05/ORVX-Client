@@ -10,7 +10,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 20px;
-  padding: 18px 40px;
+  padding: 18px var(--ovrx-gutter);
   border-bottom: 1px solid rgba(79, 70, 229, 0.2);
   background: rgba(9, 13, 22, 0.72);
   backdrop-filter: blur(14px);
