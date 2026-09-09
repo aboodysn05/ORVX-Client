@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { useAuth } from './useAuth'
 import { getActiveSession, submitSession } from '../api/sessions'
 import { getMyProfile } from '../api/players'
 
@@ -66,9 +65,6 @@ function drillLineOf(session) {
 // isn't one, the page redirects. On submit the session is archived into the
 // dashboard's finished list.
 export function useSubmitProof() {
-  const { user } = useAuth()
-  const email = user?.email
-
   // Captured once on mount so submitting (which moves the session out of
   // "in flight" on the backend) doesn't bounce the page out from under the
   // success modal.

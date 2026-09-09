@@ -55,7 +55,7 @@ function barColour(value) {
   return { fill: '#FF2E63', glow: 'rgba(255,46,99,0.5)' }
 }
 
-export function usePlayerDashboard(profile, email) {
+export function usePlayerDashboard(profile) {
   const [hubOpen, setHubOpen] = useState(false)
   const [selectedClub, setSelectedClub] = useState(null)
   const [sentOpen, setSentOpen] = useState(false)
