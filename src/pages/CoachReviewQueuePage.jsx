@@ -243,9 +243,14 @@ export function CoachReviewQueuePage() {
 
           {open.length === 0 && (
             <div className="crq-queue-empty">
-              <span className="crq-queue-empty__title">Queue clear</span>
+              <span className="crq-queue-empty__title">
+                {loading ? 'Loading queue…' : loadError ? 'Could not load the queue' : 'Queue clear'}
+              </span>
               <span className="crq-queue-empty__note">
-                Every submission has been reviewed. New proofs appear here the moment players submit.
+                {loading
+                  ? 'Fetching the submissions routed to you.'
+                  : loadError ||
+                    'Every submission has been reviewed. New proofs appear here the moment players submit.'}
               </span>
             </div>
           )}

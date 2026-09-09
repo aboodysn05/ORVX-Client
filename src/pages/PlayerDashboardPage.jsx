@@ -39,7 +39,7 @@ export function PlayerDashboardPage() {
     }
   }, [])
 
-  const dash = usePlayerDashboard(profile, user?.email)
+  const dash = usePlayerDashboard(profile)
 
   if (status === 'loading') {
     return <div className="dash">Loading your dashboard…</div>
