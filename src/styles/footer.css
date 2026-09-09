@@ -4,7 +4,7 @@
      bottom when the content column is shorter than the viewport. */
   flex-shrink: 0;
   margin-top: auto;
-  padding: 44px 40px 34px;
+  padding: 44px var(--ovrx-gutter) 34px;
   border-top: 1px solid rgba(79, 70, 229, 0.2);
   background: rgba(9, 13, 22, 0.7);
   font-family: Archivo, sans-serif;
@@ -75,5 +75,8 @@
 
 .site-footer__legal-links {
   display: flex;
+  /* Wrap like the other footer rows -- three links at 22px gaps do not fit
+     across a 320px phone. */
+  flex-wrap: wrap;
   gap: 22px;
 }

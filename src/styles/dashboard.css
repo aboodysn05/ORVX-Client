@@ -128,7 +128,7 @@ body {
   max-width: 1440px;
   width: 100%;
   margin: 0 auto;
-  padding: 26px 40px 0;
+  padding: 26px var(--ovrx-gutter) 0;
   align-items: stretch;
 }
 
@@ -437,7 +437,7 @@ body {
 
 .dash-tiles {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
   gap: 18px;
 }
 
@@ -582,7 +582,7 @@ body {
 
 .dash-gate__milestones {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
   gap: 1px;
   background: rgba(148, 163, 184, 0.16);
 }
@@ -993,7 +993,7 @@ body {
   max-width: 1440px;
   width: 100%;
   margin: 0 auto;
-  padding: 30px 40px 70px;
+  padding: 30px var(--ovrx-gutter) 70px;
 }
 
 .dash-attrs__head {
@@ -1047,7 +1047,7 @@ body {
 
 .dash-attrs__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   gap: 26px;
   padding: 26px;
   background: rgba(15, 23, 42, 0.8);
@@ -1275,7 +1275,7 @@ body {
 
 .hub__clubs {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
   gap: 16px;
 }
 

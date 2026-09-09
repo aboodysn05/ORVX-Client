@@ -5,7 +5,7 @@
   align-items: flex-start;
   gap: 24px;
   max-width: 1080px;
-  padding: 84px 40px 72px;
+  padding: 84px var(--ovrx-gutter) 72px;
 }
 
 .about-badge {
@@ -44,7 +44,7 @@
 
 .about-block {
   position: relative;
-  padding: 0 40px 88px;
+  padding: 0 var(--ovrx-gutter) 88px;
 }
 
 .about-block__head {
@@ -68,7 +68,7 @@
 
 .about-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr));
   gap: 18px;
   margin-top: 30px;
 }
@@ -124,7 +124,7 @@
 
 .about-steps {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(290px, 100%), 1fr));
   gap: 0 36px;
   margin-top: 8px;
 }
@@ -165,7 +165,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  padding: 64px 40px;
+  padding: 64px var(--ovrx-gutter);
   background: #ff2e63;
   box-shadow: 0 0 80px rgba(255, 46, 99, 0.35);
 }

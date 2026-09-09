@@ -12,7 +12,10 @@ body {
 .asm {
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
+  /* clip (not hidden) so the decorative glows don't cause a horizontal
+     scrollbar without turning this shell into a scroll container, which
+     would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
+  overflow: clip;
   background: #090d16;
   font-family: Archivo, sans-serif;
   color: #e8ecf5;
@@ -136,7 +139,7 @@ body {
 
 .asm-stepper {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(190px, 100%), 1fr));
   border-top: 2px solid rgba(79, 70, 229, 0.3);
 }
 
@@ -193,7 +196,7 @@ body {
 .asm__main {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
   gap: 26px;
   align-items: start;
   padding: 34px 32px 64px;

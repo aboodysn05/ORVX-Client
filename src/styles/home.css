@@ -13,7 +13,10 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  overflow: hidden;
+  /* clip (not hidden) so the decorative glows don't cause a horizontal
+     scrollbar without turning this shell into a scroll container, which
+     would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
+  overflow: clip;
   background: #090d16;
   font-family: Archivo, sans-serif;
   color: #e8ecf5;
@@ -168,10 +171,10 @@ body {
 
 .hero {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr));
   gap: 56px;
   align-items: center;
-  padding: 72px 40px 64px;
+  padding: 72px var(--ovrx-gutter) 64px;
   border-top: none !important;
 }
 
@@ -461,7 +464,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 30px 40px;
+  padding: 30px var(--ovrx-gutter);
   border-right: 1px solid rgba(79, 70, 229, 0.2);
 }
 
@@ -491,7 +494,7 @@ body {
 .tracks,
 .how,
 .comp {
-  padding: 88px 40px;
+  padding: 88px var(--ovrx-gutter);
 }
 
 .section-head {
@@ -503,7 +506,7 @@ body {
 
 .platform__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(258px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(258px, 100%), 1fr));
   gap: 18px;
   margin-top: 44px;
 }
@@ -546,7 +549,7 @@ body {
 
 .tracks {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
   gap: 56px;
   align-items: center;
 }
@@ -742,7 +745,7 @@ body {
 
 .how__grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
   margin-top: 44px;
   border-top: 2px solid rgba(79, 70, 229, 0.35);
 }
@@ -787,7 +790,7 @@ body {
 
 .comp {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(400px, 100%), 1fr));
   gap: 56px;
   align-items: start;
 }
@@ -911,9 +914,9 @@ body {
 
 .audience {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   gap: 18px;
-  padding: 0 40px 88px;
+  padding: 0 var(--ovrx-gutter) 88px;
   border-top: none !important;
 }
 
@@ -1004,7 +1007,7 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 32px;
-  padding: 64px 40px;
+  padding: 64px var(--ovrx-gutter);
   background: #ff2e63;
   box-shadow: 0 0 80px rgba(255, 46, 99, 0.35);
   border-top: none !important;

@@ -96,7 +96,7 @@ body {
   position: relative;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 42px 40px 0;
+  padding: 42px var(--ovrx-gutter) 0;
 }
 
 .sp-head__top {
@@ -184,7 +184,7 @@ body {
   gap: 26px;
   max-width: 1320px;
   margin: 0 auto;
-  padding: 30px 40px 70px;
+  padding: 30px var(--ovrx-gutter) 70px;
   align-items: flex-start;
 }
 

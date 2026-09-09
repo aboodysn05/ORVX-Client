@@ -1,6 +1,6 @@
 .drills-head {
   position: relative;
-  padding: 60px 40px 0;
+  padding: 60px var(--ovrx-gutter) 0;
 }
 
 .drills-cats {
@@ -97,9 +97,9 @@
 .drills-grid {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
   gap: 18px;
-  padding: 26px 40px 80px;
+  padding: 26px var(--ovrx-gutter) 80px;
 }
 
 .drill {
@@ -312,7 +312,7 @@
 
 .modal__body {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
 }
 
 .modal__left {
