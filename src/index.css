@@ -1,1 +1,20 @@
+/* Tailwind CSS v4 — the project's UI framework, wired in through
+   @tailwindcss/vite (see vite.config.js). This import pulls in Tailwind's
+   Preflight base layer and its utility engine for the whole application.
+
+   The @theme block registers the OVRX brand palette and typeface with
+   Tailwind itself, so the framework generates real utilities from them
+   (text-orvx-pink, bg-orvx-ink, border-orvx-indigo, font-orvx, ...) rather
+   than the colours being repeated as raw hex values in component markup. */
 @import 'tailwindcss';
+
+@theme {
+  --color-orvx-ink: #090d16;
+  --color-orvx-slate: #0f172a;
+  --color-orvx-pink: #ff2e63;
+  --color-orvx-indigo: #4f46e5;
+  --color-orvx-text: #c7d0e0;
+  --color-orvx-muted: #5a6784;
+
+  --font-orvx: Archivo, sans-serif;
+}
