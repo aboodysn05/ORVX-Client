@@ -19,7 +19,7 @@
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #b7b4f5;
+  color: var(--color-orvx-blue-3);
   box-shadow: 0 0 22px rgba(79, 70, 229, 0.28);
 }
 
@@ -31,15 +31,15 @@
   letter-spacing: -0.01em;
   text-transform: uppercase;
   text-wrap: balance;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .about-hero__accent {
-  background: linear-gradient(96deg, #ff2e63 0%, #ff7aa0 55%, #4f46e5 100%);
+  background: linear-gradient(96deg, var(--color-orvx-pink) 0%, var(--color-orvx-red-2) 55%, var(--color-orvx-indigo) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .about-block {
@@ -63,7 +63,7 @@
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .about-grid {
@@ -102,7 +102,7 @@
   font-weight: 800;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .pillar__title {
@@ -111,14 +111,14 @@
   font-weight: 900;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .pillar__body {
   margin: 0;
   font-size: 14px;
   line-height: 1.62;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
   text-wrap: pretty;
 }
 
@@ -148,13 +148,13 @@
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: #b7b4f5;
+  color: var(--color-orvx-blue-3);
 }
 
 .about-step__n.is-accent {
   background: rgba(255, 46, 99, 0.12);
   border-color: rgba(255, 46, 99, 0.55);
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
   box-shadow: 0 0 20px rgba(255, 46, 99, 0.25);
 }
 
@@ -166,7 +166,7 @@
   justify-content: space-between;
   gap: 32px;
   padding: 64px var(--ovrx-gutter);
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   box-shadow: 0 0 80px rgba(255, 46, 99, 0.35);
 }
 
@@ -179,7 +179,7 @@
   letter-spacing: -0.01em;
   text-transform: uppercase;
   text-wrap: balance;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .about-cta__actions {
@@ -197,17 +197,17 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   transition: background 0.15s, border-color 0.15s;
 }
 
 .about-cta__btn--dark {
-  background: #090d16;
+  background: var(--color-orvx-ink);
 }
 
 .about-cta__btn--dark:hover {
-  background: #131a2a;
-  color: #fff;
+  background: var(--color-orvx-blue-7);
+  color: var(--color-white);
 }
 
 .about-cta__btn--outline {
@@ -217,8 +217,8 @@
 
 .about-cta__btn--outline:hover {
   background: rgba(255, 255, 255, 0.14);
-  border-color: #fff;
-  color: #fff;
+  border-color: var(--color-white);
+  color: var(--color-white);
 }
 
 @media (max-width: 720px) {

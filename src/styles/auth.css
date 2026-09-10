@@ -6,7 +6,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #090d16;
+  background: var(--color-orvx-ink);
 }
 
 .auth *,
@@ -27,9 +27,9 @@ body {
      scrollbar without turning this shell into a scroll container, which
      would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
   overflow: clip;
-  background: #090d16;
-  font-family: Archivo, sans-serif;
-  color: #e8ecf5;
+  background: var(--color-orvx-ink);
+  font-family: var(--font-orvx);
+  color: var(--color-orvx-text-bright);
 }
 
 .auth ::selection {
@@ -37,22 +37,22 @@ body {
 }
 
 .auth a {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
   text-decoration: none;
 }
 
 .auth a:hover {
-  color: #ff5c85;
+  color: var(--color-orvx-red-7);
 }
 
 .auth input::placeholder {
-  color: #55617a;
+  color: var(--color-orvx-blue-8);
 }
 
 .auth input:focus-visible,
 .auth button:focus-visible,
 .auth select:focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--color-orvx-indigo);
   outline-offset: 2px;
 }
 
@@ -71,8 +71,8 @@ body {
   background-image:
     repeating-linear-gradient(0deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 72px),
     repeating-linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 72px);
-  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 0%, transparent 78%);
-  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 0%, transparent 78%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, var(--color-black) 0%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, var(--color-black) 0%, transparent 78%);
 }
 
 .auth__ring {
@@ -144,7 +144,7 @@ body {
   line-height: 1;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-shadow: 0 0 26px rgba(255, 46, 99, 0.55);
 }
 
@@ -153,7 +153,7 @@ body {
   font-weight: 600;
   letter-spacing: 0.38em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 /* --- Card ------------------------------------------------------------- */
@@ -185,18 +185,18 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
   transition: background 0.15s, color 0.15s;
 }
 
 .auth__tab.is-active {
-  background: #4f46e5;
-  color: #fff;
+  background: var(--color-orvx-indigo);
+  color: var(--color-white);
   box-shadow: 0 0 22px rgba(79, 70, 229, 0.45);
 }
 
@@ -224,7 +224,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .auth__input-wrap {
@@ -244,8 +244,8 @@ body {
   padding: 13px 14px 13px 42px;
   background: rgba(9, 13, 22, 0.75);
   border: 1px solid rgba(148, 163, 184, 0.16);
-  color: #e8ecf5;
-  font-family: Archivo, sans-serif;
+  color: var(--color-orvx-text-bright);
+  font-family: var(--font-orvx);
   font-size: 14px;
   outline: none;
   transition: border-color 0.15s, box-shadow 0.15s;
@@ -256,7 +256,7 @@ body {
 }
 
 .auth__input:focus {
-  border-color: #4f46e5;
+  border-color: var(--color-orvx-indigo);
   box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.18);
 }
 
@@ -271,11 +271,11 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .auth__pw-toggle:hover {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* --- Remember / forgot row ------------------------------------------------------------- */
@@ -295,9 +295,9 @@ body {
   background: transparent;
   border: none;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 13px;
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
 }
 
 .auth__checkbox {
@@ -311,14 +311,14 @@ body {
 }
 
 .auth__checkbox.is-checked {
-  background: #4f46e5;
-  border-color: #4f46e5;
+  background: var(--color-orvx-indigo);
+  border-color: var(--color-orvx-indigo);
 }
 
 .auth__forgot {
   font-size: 13px;
   font-weight: 600;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* --- Error ------------------------------------------------------------- */
@@ -333,7 +333,7 @@ body {
   font-size: 12.5px;
   font-weight: 700;
   line-height: 1.5;
-  color: #ff7a9b;
+  color: var(--color-orvx-red-3);
 }
 
 .auth__error-icon {
@@ -349,21 +349,21 @@ body {
   width: 100%;
   margin-top: 4px;
   padding: 16px 18px;
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   border: none;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 14px;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   box-shadow: 0 0 28px rgba(255, 46, 99, 0.4);
   transition: background 0.15s, box-shadow 0.15s;
 }
 
 .auth__submit:hover {
-  background: #ff4776;
+  background: var(--color-orvx-pink-light);
   box-shadow: 0 0 38px rgba(255, 46, 99, 0.55);
 }
 
@@ -388,7 +388,7 @@ body {
   padding: 14px;
   text-align: left;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   background: rgba(9, 13, 22, 0.6);
   border: 1px solid rgba(148, 163, 184, 0.16);
   transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
@@ -418,14 +418,14 @@ body {
 }
 
 .auth__radio.is-active {
-  border-color: #ff2e63;
+  border-color: var(--color-orvx-pink);
 }
 
 .auth__radio-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   box-shadow: 0 0 10px rgba(255, 46, 99, 0.9);
 }
 
@@ -434,13 +434,13 @@ body {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .auth__role-desc {
   font-size: 11.5px;
   line-height: 1.45;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
   text-wrap: pretty;
 }
 
@@ -451,12 +451,12 @@ body {
   text-align: center;
   font-size: 11.5px;
   line-height: 1.7;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
   text-wrap: pretty;
 }
 
 .auth__terms a {
-  color: #8b96ad;
+  color: var(--color-orvx-blue-15);
   text-decoration: underline;
   text-underline-offset: 2px;
 }

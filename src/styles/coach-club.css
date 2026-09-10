@@ -56,7 +56,7 @@
   font-size: 26px;
   font-weight: 900;
   letter-spacing: 0.04em;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
   text-shadow: 0 0 24px rgba(255, 46, 99, 0.5);
 }
 
@@ -75,7 +75,7 @@
   font-weight: 900;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .ccp-kicker::before {
@@ -83,7 +83,7 @@
   display: block;
   width: 22px;
   height: 1px;
-  background: #f59e0b;
+  background: var(--color-orvx-amber);
 }
 
 .ccp-title {
@@ -93,7 +93,7 @@
   letter-spacing: -0.01em;
   line-height: 1;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .ccp-badges {
@@ -113,19 +113,19 @@
 .ccp-badge--indigo {
   background: rgba(79, 70, 229, 0.16);
   border: 1px solid rgba(79, 70, 229, 0.5);
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .ccp-badge--green {
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.5);
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .ccp-badge--amber {
   background: rgba(245, 158, 11, 0.12);
   border: 1px solid rgba(245, 158, 11, 0.5);
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .ccp-header__pos {
@@ -144,7 +144,7 @@
   font-weight: 900;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .ccp-pos-value {
@@ -155,7 +155,7 @@
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: -0.02em;
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
   text-shadow: 0 0 28px rgba(245, 158, 11, 0.5);
 }
 
@@ -169,7 +169,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 /* --- stats --- */
@@ -195,29 +195,29 @@
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .ccp-stat__v {
   font-size: 27px;
   font-weight: 900;
   line-height: 1;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .ccp-stat__v.is-amber {
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .ccp-stat__v.is-green {
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .ccp-stat__note {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 /* --- body columns --- */
@@ -262,7 +262,7 @@
   font-weight: 900;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #e8ecf5;
+  color: var(--color-orvx-text-bright);
 }
 
 .ccp-card__hint {
@@ -270,7 +270,7 @@
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .ccp-card__link {
@@ -278,7 +278,7 @@
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* --- season form --- */
@@ -320,22 +320,22 @@
 }
 
 .ccp-form__cell.is-w .ccp-form__result {
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .ccp-form__cell.is-d .ccp-form__result {
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .ccp-form__cell.is-l .ccp-form__result {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .ccp-form__score {
   font-size: 10.5px;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .ccp-form__opp {
@@ -343,7 +343,7 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .ccp-nextfix {
@@ -353,7 +353,7 @@
   gap: 16px;
   padding: 18px 20px;
   background: rgba(9, 13, 22, 0.68);
-  border-left: 2px solid #4f46e5;
+  border-left: 2px solid var(--color-orvx-indigo);
 }
 
 .ccp-nextfix__label {
@@ -361,7 +361,7 @@
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .ccp-nextfix__opp {
@@ -369,7 +369,7 @@
   font-weight: 900;
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .ccp-nextfix__meta {
@@ -377,7 +377,7 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8b97af;
+  color: var(--color-orvx-text-faint);
 }
 
 .ccp-nextfix__link {
@@ -386,7 +386,7 @@
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* --- squad composition --- */
@@ -412,15 +412,15 @@
 }
 
 .ccp-comp__label.is-pink {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .ccp-comp__label.is-indigo {
-  color: #4f46e5;
+  color: var(--color-orvx-indigo);
 }
 
 .ccp-comp__label.is-amber {
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .ccp-comp__nums {
@@ -434,14 +434,14 @@
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .ccp-comp__count {
   font-size: 19px;
   font-weight: 900;
   line-height: 1;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .ccp-comp__bar {
@@ -459,17 +459,17 @@
 }
 
 .ccp-comp__fill.is-pink {
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   box-shadow: 0 0 14px rgba(255, 46, 99, 0.5);
 }
 
 .ccp-comp__fill.is-indigo {
-  background: #4f46e5;
+  background: var(--color-orvx-indigo);
   box-shadow: 0 0 14px rgba(79, 70, 229, 0.55);
 }
 
 .ccp-comp__fill.is-amber {
-  background: #f59e0b;
+  background: var(--color-orvx-amber);
   box-shadow: 0 0 14px rgba(245, 158, 11, 0.5);
 }
 
@@ -489,14 +489,14 @@
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .ccp-detail__v {
   font-size: 13px;
   font-weight: 800;
   text-align: right;
-  color: #fff;
+  color: var(--color-white);
 }
 
 /* --- club management actions --- */
@@ -528,14 +528,14 @@
   font-weight: 900;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .ccp-action__note {
   font-size: 11.5px;
   font-weight: 700;
   line-height: 1.45;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
   text-wrap: pretty;
 }
 

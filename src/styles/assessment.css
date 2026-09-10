@@ -6,7 +6,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #090d16;
+  background: var(--color-orvx-ink);
 }
 
 .asm {
@@ -16,9 +16,9 @@ body {
      scrollbar without turning this shell into a scroll container, which
      would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
   overflow: clip;
-  background: #090d16;
-  font-family: Archivo, sans-serif;
-  color: #e8ecf5;
+  background: var(--color-orvx-ink);
+  font-family: var(--font-orvx);
+  color: var(--color-orvx-text-bright);
 }
 
 .asm *,
@@ -32,12 +32,12 @@ body {
 }
 
 .asm a {
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   text-decoration: none;
 }
 
 .asm :focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--color-orvx-indigo);
   outline-offset: 2px;
 }
 
@@ -65,8 +65,8 @@ body {
   background-image:
     repeating-linear-gradient(0deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px),
     repeating-linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px);
-  mask-image: radial-gradient(ellipse 78% 62% at 50% 22%, #000 0%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse 78% 62% at 50% 22%, #000 0%, transparent 80%);
+  mask-image: radial-gradient(ellipse 78% 62% at 50% 22%, var(--color-black) 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 78% 62% at 50% 22%, var(--color-black) 0%, transparent 80%);
 }
 
 .asm__glow-a {
@@ -117,7 +117,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-shadow: 0 0 16px rgba(255, 46, 99, 0.5);
 }
 
@@ -126,7 +126,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
   text-align: right;
 }
 
@@ -153,7 +153,7 @@ body {
 }
 
 .asm-stepper__item.is-active {
-  border-top-color: #ff2e63;
+  border-top-color: var(--color-orvx-pink);
 }
 
 .asm-stepper__item.is-done {
@@ -164,15 +164,15 @@ body {
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.2em;
-  color: #42506b;
+  color: var(--color-orvx-blue-14);
 }
 
 .asm-stepper__item.is-active .asm-stepper__num {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .asm-stepper__item.is-done .asm-stepper__num {
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
 }
 
 .asm-stepper__label {
@@ -180,15 +180,15 @@ body {
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
 }
 
 .asm-stepper__item.is-active .asm-stepper__label {
-  color: #fff;
+  color: var(--color-white);
 }
 
 .asm-stepper__item.is-done .asm-stepper__label {
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
 }
 
 /* --- main layout --- */
@@ -216,7 +216,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .asm__title {
@@ -226,7 +226,7 @@ body {
   line-height: 1.06;
   letter-spacing: -0.005em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-wrap: balance;
 }
 
@@ -234,7 +234,7 @@ body {
   margin: 12px 0 0;
   font-size: 14px;
   line-height: 1.6;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
   text-wrap: pretty;
 }
 
@@ -262,7 +262,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .asm-field-row {
@@ -286,25 +286,25 @@ body {
   background: rgba(9, 13, 22, 0.65);
   border: 1px solid rgba(148, 163, 184, 0.18);
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 12px;
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
   transition: background 0.15s, border-color 0.15s, color 0.15s, box-shadow 0.15s;
 }
 
 .asm-chip:hover {
   border-color: rgba(148, 163, 184, 0.4);
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .asm-chip.is-active {
   background: rgba(255, 46, 99, 0.12);
   border-color: rgba(255, 46, 99, 0.6);
   box-shadow: 0 0 22px rgba(255, 46, 99, 0.22);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .asm-input {
@@ -312,8 +312,8 @@ body {
   padding: 13px 15px;
   background: rgba(9, 13, 22, 0.65);
   border: 1px solid rgba(148, 163, 184, 0.18);
-  color: #fff;
-  font-family: Archivo, sans-serif;
+  color: var(--color-white);
+  font-family: var(--font-orvx);
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.04em;
@@ -321,7 +321,7 @@ body {
 }
 
 .asm-input:focus {
-  border-color: #4f46e5;
+  border-color: var(--color-orvx-indigo);
 }
 
 /* --- slider --- */
@@ -343,7 +343,7 @@ body {
   font-size: 14px;
   line-height: 1.5;
   font-weight: 600;
-  color: #e8ecf5;
+  color: var(--color-orvx-text-bright);
   text-wrap: pretty;
 }
 
@@ -354,7 +354,7 @@ body {
   border: 1px solid rgba(255, 46, 99, 0.45);
   font-size: 15px;
   font-weight: 900;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
   font-variant-numeric: tabular-nums;
 }
 
@@ -378,7 +378,7 @@ body {
   left: 0;
   width: calc(var(--val, 0) * 1%);
   height: 5px;
-  background: linear-gradient(90deg, #4f46e5, #ff2e63);
+  background: linear-gradient(90deg, var(--color-orvx-indigo), var(--color-orvx-pink));
   box-shadow: 0 0 14px rgba(255, 46, 99, 0.55);
   pointer-events: none;
 }
@@ -389,7 +389,7 @@ body {
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--color-white);
   box-shadow: 0 0 14px rgba(255, 46, 99, 0.95);
   pointer-events: none;
 }
@@ -411,7 +411,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 /* --- step 4 review --- */
@@ -440,7 +440,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .asm-review__hint {
@@ -448,7 +448,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .asm-review__row {
@@ -465,7 +465,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .asm-review__value {
@@ -473,18 +473,18 @@ body {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .asm-review__value--accent {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .asm-review__disclaimer {
   margin: 20px 0 0;
   font-size: 13px;
   line-height: 1.65;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
   text-wrap: pretty;
 }
 
@@ -507,7 +507,7 @@ body {
   padding: 15px 20px;
   border: none;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -520,12 +520,12 @@ body {
   padding: 15px 18px;
   background: transparent;
   border: 1px solid rgba(148, 163, 184, 0.22);
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
 }
 
 .asm__btn--back:hover:not(:disabled) {
   border-color: rgba(148, 163, 184, 0.45);
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .asm__btn--back:disabled {
@@ -536,23 +536,23 @@ body {
 .asm__btn--next {
   background: rgba(9, 13, 22, 0.6);
   border: 1px solid rgba(79, 70, 229, 0.55);
-  color: #c9c6fa;
+  color: var(--color-orvx-blue-5);
 }
 
 .asm__btn--next:hover {
   background: rgba(79, 70, 229, 0.18);
-  border-color: #4f46e5;
+  border-color: var(--color-orvx-indigo);
   box-shadow: 0 0 28px rgba(79, 70, 229, 0.35);
 }
 
 .asm__btn--lock {
-  background: #ff2e63;
-  color: #fff;
+  background: var(--color-orvx-pink);
+  color: var(--color-white);
   box-shadow: 0 0 30px rgba(255, 46, 99, 0.45);
 }
 
 .asm__btn--lock:hover {
-  background: #ff4776;
+  background: var(--color-orvx-pink-light);
   box-shadow: 0 0 42px rgba(255, 46, 99, 0.6);
 }
 
@@ -580,9 +580,9 @@ body {
   background: rgba(15, 23, 42, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid color-mix(in srgb, var(--tier, #c9d4e5) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier, var(--color-orvx-blue-4)) 40%, transparent);
   box-shadow:
-    0 0 60px color-mix(in srgb, var(--tier, #c9d4e5) 15%, transparent),
+    0 0 60px color-mix(in srgb, var(--tier, var(--color-orvx-blue-4)) 15%, transparent),
     0 30px 70px rgba(2, 4, 10, 0.75);
 }
 
@@ -606,8 +606,8 @@ body {
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.02em;
-  color: var(--tier, #c9d4e5);
-  text-shadow: 0 0 26px color-mix(in srgb, var(--tier, #c9d4e5) 50%, transparent);
+  color: var(--tier, var(--color-orvx-blue-4));
+  text-shadow: 0 0 26px color-mix(in srgb, var(--tier, var(--color-orvx-blue-4)) 50%, transparent);
   font-variant-numeric: tabular-nums;
 }
 
@@ -616,7 +616,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .asm-card__meta {
@@ -628,13 +628,13 @@ body {
 
 .asm-card__tier {
   padding: 6px 11px;
-  border: 1px solid color-mix(in srgb, var(--tier, #c9d4e5) 60%, transparent);
-  background: color-mix(in srgb, var(--tier, #c9d4e5) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tier, var(--color-orvx-blue-4)) 60%, transparent);
+  background: color-mix(in srgb, var(--tier, var(--color-orvx-blue-4)) 12%, transparent);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--tier, #c9d4e5);
+  color: var(--tier, var(--color-orvx-blue-4));
 }
 
 .asm-card__pos {
@@ -642,7 +642,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .asm-card__id {
@@ -658,7 +658,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .asm-card__physique {
@@ -666,7 +666,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .asm-card__status {
@@ -674,7 +674,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .asm-card__grid {
@@ -704,13 +704,13 @@ body {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .asm-card__stat-value {
   font-size: 17px;
   font-weight: 900;
-  color: #fff;
+  color: var(--color-white);
   font-variant-numeric: tabular-nums;
 }
 
@@ -728,7 +728,7 @@ body {
   top: 0;
   bottom: 0;
   width: calc(var(--val, 0) * 1%);
-  background: linear-gradient(90deg, #4f46e5, #ff2e63);
+  background: linear-gradient(90deg, var(--color-orvx-indigo), var(--color-orvx-pink));
   box-shadow: 0 0 10px rgba(255, 46, 99, 0.4);
 }
 
@@ -749,14 +749,14 @@ body {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .asm-card__live-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   box-shadow: 0 0 9px rgba(255, 46, 99, 0.9);
   animation: asm-pulse 1.8s ease-in-out infinite;
 }
@@ -766,7 +766,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -799,5 +799,5 @@ body {
 .asm__loading {
   padding: 4rem 1.5rem;
   text-align: center;
-  color: #94a3b8;
+  color: var(--color-orvx-steel);
 }

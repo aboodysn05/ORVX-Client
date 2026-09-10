@@ -5,7 +5,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #090d16;
+  background: var(--color-orvx-ink);
 }
 
 .home {
@@ -17,9 +17,9 @@ body {
      scrollbar without turning this shell into a scroll container, which
      would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
   overflow: clip;
-  background: #090d16;
-  font-family: Archivo, sans-serif;
-  color: #e8ecf5;
+  background: var(--color-orvx-ink);
+  font-family: var(--font-orvx);
+  color: var(--color-orvx-text-bright);
 }
 
 /* Grows to fill leftover height so the footer rests at the bottom of the
@@ -40,12 +40,12 @@ body {
 }
 
 .home a {
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   text-decoration: none;
 }
 
 .home a:hover {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* --- Background decoration --------------------------------------------- */
@@ -63,8 +63,8 @@ body {
   background-image:
     repeating-linear-gradient(0deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px),
     repeating-linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px);
-  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 0%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, #000 0%, transparent 80%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, var(--color-black) 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 30%, var(--color-black) 0%, transparent 80%);
 }
 
 .home__glow-a {
@@ -104,7 +104,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .section-title {
@@ -114,7 +114,7 @@ body {
   line-height: 1.02;
   letter-spacing: -0.01em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-wrap: balance;
 }
 
@@ -122,7 +122,7 @@ body {
   margin: 0;
   font-size: 15.5px;
   line-height: 1.65;
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
   text-wrap: pretty;
 }
 
@@ -131,7 +131,7 @@ body {
   align-items: center;
   gap: 14px;
   padding: 17px 22px;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 13.5px;
   font-weight: 800;
   letter-spacing: 0.12em;
@@ -141,14 +141,14 @@ body {
 }
 
 .btn--primary {
-  background: #ff2e63;
-  color: #fff;
+  background: var(--color-orvx-pink);
+  color: var(--color-white);
   box-shadow: 0 0 32px rgba(255, 46, 99, 0.45);
 }
 
 .btn--primary:hover {
-  background: #ff4776;
-  color: #fff;
+  background: var(--color-orvx-pink-light);
+  color: var(--color-white);
   box-shadow: 0 0 44px rgba(255, 46, 99, 0.6);
 }
 
@@ -157,13 +157,13 @@ body {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(79, 70, 229, 0.55);
-  color: #c9c6fa;
+  color: var(--color-orvx-blue-5);
 }
 
 .btn--ghost:hover {
   background: rgba(79, 70, 229, 0.18);
-  border-color: #4f46e5;
-  color: #c9c6fa;
+  border-color: var(--color-orvx-indigo);
+  color: var(--color-orvx-blue-5);
   box-shadow: 0 0 30px rgba(79, 70, 229, 0.4);
 }
 
@@ -196,7 +196,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #b7b4f5;
+  color: var(--color-orvx-blue-3);
   box-shadow: 0 0 22px rgba(79, 70, 229, 0.28);
 }
 
@@ -208,15 +208,15 @@ body {
   letter-spacing: -0.01em;
   text-transform: uppercase;
   text-wrap: balance;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .hero__title-accent {
-  background: linear-gradient(96deg, #ff2e63 0%, #ff7aa0 52%, #4f46e5 100%);
+  background: linear-gradient(96deg, var(--color-orvx-pink) 0%, var(--color-orvx-red-2) 52%, var(--color-orvx-indigo) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* Daily quote — reuses .hero__title so it keeps the same weight, tracking,
@@ -240,7 +240,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 @keyframes hero-quote-in {
@@ -265,7 +265,7 @@ body {
   max-width: 520px;
   font-size: 16px;
   line-height: 1.65;
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
   text-wrap: pretty;
 }
 
@@ -323,14 +323,14 @@ body {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   box-shadow: 0 0 10px rgba(255, 46, 99, 0.9);
 }
 
@@ -339,17 +339,17 @@ body {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .hero__frame-meta--indigo {
-  color: #4f46e5;
+  color: var(--color-orvx-indigo);
 }
 
 .hero__shot {
   position: relative;
   aspect-ratio: 16 / 10;
-  background: #060911;
+  background: var(--color-orvx-blue-6);
 }
 
 .hero__shot-img {
@@ -419,7 +419,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .hero__pill-sub {
@@ -427,11 +427,11 @@ body {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 .hero__pill-sub--muted {
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
 }
 
 .hero__pill-live-label {
@@ -442,7 +442,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .dot--sm {
@@ -477,7 +477,7 @@ body {
   font-weight: 900;
   line-height: 1;
   letter-spacing: -0.01em;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .stats__label {
@@ -485,7 +485,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 /* --- Platform (feature cards) --------------------------------------------- */
@@ -534,14 +534,14 @@ body {
   font-weight: 800;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .feature__body {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.6;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
   text-wrap: pretty;
 }
 
@@ -575,7 +575,7 @@ body {
   gap: 12px;
   font-size: 14px;
   line-height: 1.55;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .tracks__list svg {
@@ -615,10 +615,10 @@ body {
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: linear-gradient(140deg, #4f46e5 0%, #ff2e63 100%);
+  background: linear-gradient(140deg, var(--color-orvx-indigo) 0%, var(--color-orvx-pink) 100%);
   font-size: 15px;
   font-weight: 900;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .card__name {
@@ -632,7 +632,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .card__name span {
@@ -640,7 +640,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .card__ovr {
@@ -659,14 +659,14 @@ body {
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #ff89a8;
+  color: var(--color-orvx-red-8);
 }
 
 .card__ovr-value {
   font-size: 26px;
   font-weight: 900;
   line-height: 1;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .card__attrs {
@@ -694,13 +694,13 @@ body {
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #9faac0;
+  color: var(--color-orvx-text-dim);
 }
 
 .attr__value {
   font-size: 13px;
   font-weight: 900;
-  color: #fff;
+  color: var(--color-white);
   font-variant-numeric: tabular-nums;
 }
 
@@ -715,7 +715,7 @@ body {
   position: absolute;
   inset: 0 auto 0 0;
   height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #ff2e63);
+  background: linear-gradient(90deg, var(--color-orvx-indigo), var(--color-orvx-pink));
   box-shadow: 0 0 12px rgba(255, 46, 99, 0.4);
 }
 
@@ -734,11 +734,11 @@ body {
 }
 
 .card__foot span:first-child {
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .card__foot span:last-child {
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 /* --- How it works --------------------------------------------- */
@@ -766,7 +766,7 @@ body {
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.2em;
-  color: #4f46e5;
+  color: var(--color-orvx-indigo);
 }
 
 .step__title {
@@ -775,14 +775,14 @@ body {
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .step__body {
   margin: 0;
   font-size: 13.5px;
   line-height: 1.6;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
   text-wrap: pretty;
 }
 
@@ -816,7 +816,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #b7b4f5;
+  color: var(--color-orvx-blue-3);
 }
 
 .table-card {
@@ -841,7 +841,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .table-card__head span {
@@ -849,7 +849,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .standings {
@@ -865,7 +865,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
   border-bottom: 1px solid rgba(79, 70, 229, 0.2);
 }
 
@@ -884,7 +884,7 @@ body {
   padding: 14px 10px;
   text-align: right;
   font-size: 13px;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   border-bottom: 1px solid rgba(79, 70, 229, 0.14);
 }
 
@@ -897,17 +897,17 @@ body {
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #e8ecf5;
+  color: var(--color-orvx-text-bright);
 }
 
 .standings td:last-child {
   font-weight: 900;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .standings tr.is-lead td:first-child {
   font-weight: 800;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* --- Audience cards --------------------------------------------- */
@@ -936,11 +936,11 @@ body {
   font-weight: 800;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .audience__kicker--indigo {
-  color: #b7b4f5;
+  color: var(--color-orvx-blue-3);
 }
 
 .audience__card h3 {
@@ -949,14 +949,14 @@ body {
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .audience__card p {
   margin: 0;
   font-size: 14px;
   line-height: 1.62;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
   text-wrap: pretty;
 }
 
@@ -975,27 +975,27 @@ body {
 }
 
 .audience__link--primary {
-  background: #ff2e63;
-  color: #fff;
+  background: var(--color-orvx-pink);
+  color: var(--color-white);
   box-shadow: 0 0 26px rgba(255, 46, 99, 0.4);
 }
 
 .audience__link--primary:hover {
-  background: #ff4776;
-  color: #fff;
+  background: var(--color-orvx-pink-light);
+  color: var(--color-white);
   box-shadow: 0 0 36px rgba(255, 46, 99, 0.55);
 }
 
 .audience__link--ghost {
   background: rgba(9, 13, 22, 0.6);
   border: 1px solid rgba(79, 70, 229, 0.55);
-  color: #c9c6fa;
+  color: var(--color-orvx-blue-5);
 }
 
 .audience__link--ghost:hover {
   background: rgba(79, 70, 229, 0.18);
-  border-color: #4f46e5;
-  color: #c9c6fa;
+  border-color: var(--color-orvx-indigo);
+  color: var(--color-orvx-blue-5);
   box-shadow: 0 0 28px rgba(79, 70, 229, 0.35);
 }
 
@@ -1008,7 +1008,7 @@ body {
   justify-content: space-between;
   gap: 32px;
   padding: 64px var(--ovrx-gutter);
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   box-shadow: 0 0 80px rgba(255, 46, 99, 0.35);
   border-top: none !important;
 }
@@ -1020,7 +1020,7 @@ body {
   line-height: 0.98;
   letter-spacing: -0.01em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cta__text {
@@ -1036,18 +1036,18 @@ body {
   align-items: center;
   gap: 14px;
   padding: 18px 24px;
-  background: #090d16;
+  background: var(--color-orvx-ink);
   font-size: 13.5px;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   transition: background 0.15s;
 }
 
 .cta__btn:hover {
-  background: #131a2a;
-  color: #fff;
+  background: var(--color-orvx-blue-7);
+  color: var(--color-white);
 }
 
 /* --- Mobile --------------------------------------------- */

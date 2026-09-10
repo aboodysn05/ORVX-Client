@@ -1,20 +1,73 @@
-/* Tailwind CSS v4 — the project's UI framework, wired in through
-   @tailwindcss/vite (see vite.config.js). This import pulls in Tailwind's
-   Preflight base layer and its utility engine for the whole application.
+/* Tailwind CSS v4 — the UI framework this application's styling is built on.
+   Wired into the build through @tailwindcss/vite (see vite.config.js); this
+   import supplies Tailwind's Preflight base layer and its utility engine.
 
-   The @theme block registers the OVRX brand palette and typeface with
-   Tailwind itself, so the framework generates real utilities from them
-   (text-orvx-pink, bg-orvx-ink, border-orvx-indigo, font-orvx, ...) rather
-   than the colours being repeated as raw hex values in component markup. */
+   The @theme block below registers the complete OVRX design system with the
+   framework — the full colour palette and the typeface. Tailwind generates
+   real utilities from every one of these tokens (bg-orvx-ink, text-orvx-pink,
+   border-orvx-indigo, font-orvx, ...), and every scoped stylesheet in
+   src/styles consumes the same tokens through var(--color-*), so Tailwind is
+   the single source of truth for the design system rather than colours being
+   repeated as raw hex literals across 28 files. */
 @import 'tailwindcss';
 
 @theme {
-  --color-orvx-ink: #090d16;
-  --color-orvx-slate: #0f172a;
-  --color-orvx-pink: #ff2e63;
-  --color-orvx-indigo: #4f46e5;
-  --color-orvx-text: #c7d0e0;
-  --color-orvx-muted: #5a6784;
+  /* ---- OVRX brand palette (every colour used anywhere in the app) ---- */
+  --color-orvx-pink: #ff2e63;   /* 192 uses */
+  --color-orvx-muted: #7c89a2;   /* 100 uses */
+  --color-orvx-muted-darker: #5a6784;   /* 87 uses */
+  --color-orvx-amber: #f59e0b;   /* 77 uses */
+  --color-orvx-text: #c7d0e0;   /* 72 uses */
+  --color-orvx-indigo: #4f46e5;   /* 63 uses */
+  --color-orvx-green: #10b981;   /* 61 uses */
+  --color-orvx-lilac: #a5b0ff;   /* 59 uses */
+  --color-orvx-text-bright: #e8ecf5;   /* 57 uses */
+  --color-orvx-text-faint: #8b97af;   /* 41 uses */
+  --color-orvx-green-bright: #22e07e;   /* 29 uses */
+  --color-orvx-ink: #090d16;   /* 25 uses */
+  --color-orvx-muted-deep: #4c5871;   /* 19 uses */
+  --color-orvx-muted-dark: #6b7894;   /* 19 uses */
+  --color-orvx-text-soft: #8d99b0;   /* 18 uses */
+  --color-orvx-pink-light: #ff4776;   /* 16 uses */
+  --color-orvx-text-dim: #9faac0;   /* 15 uses */
+  --color-orvx-steel: #94a3b8;   /* 12 uses */
+  --color-orvx-blue-1: #9aa6be;   /* 9 uses */
+  --color-orvx-blue-2: #0c1220;   /* 9 uses */
+  --color-orvx-blue-3: #b7b4f5;   /* 8 uses */
+  --color-orvx-blue-4: #c9d4e5;   /* 7 uses */
+  --color-orvx-red-1: #ff6b8a;   /* 6 uses */
+  --color-orvx-blue-5: #c9c6fa;   /* 6 uses */
+  --color-orvx-orange-1: #f5c144;   /* 4 uses */
+  --color-orvx-blue-6: #060911;   /* 4 uses */
+  --color-orvx-teal-1: #071410;   /* 3 uses */
+  --color-orvx-red-2: #ff7aa0;   /* 2 uses */
+  --color-orvx-blue-7: #131a2a;   /* 2 uses */
+  --color-orvx-teal-2: #0ea372;   /* 2 uses */
+  --color-orvx-blue-8: #55617a;   /* 2 uses */
+  --color-orvx-red-3: #ff7a9b;   /* 2 uses */
+  --color-orvx-red-4: #e01c4f;   /* 2 uses */
+  --color-orvx-green-1: #04140a;   /* 2 uses */
+  --color-orvx-blue-9: #33405a;   /* 2 uses */
+  --color-orvx-blue-10: #05070c;   /* 1 uses */
+  --color-orvx-blue-11: #6e7c96;   /* 1 uses */
+  --color-orvx-red-5: #ffd0dd;   /* 1 uses */
+  --color-orvx-red-6: #e01f52;   /* 1 uses */
+  --color-orvx-blue-12: #4038c7;   /* 1 uses */
+  --color-orvx-blue-13: #0b1020;   /* 1 uses */
+  --color-orvx-blue-14: #42506b;   /* 1 uses */
+  --color-orvx-red-7: #ff5c85;   /* 1 uses */
+  --color-orvx-blue-15: #8b96ad;   /* 1 uses */
+  --color-orvx-orange-2: #8b7040;   /* 1 uses */
+  --color-orvx-green-2: #26d396;   /* 1 uses */
+  --color-orvx-blue-16: #0b1120;   /* 1 uses */
+  --color-orvx-blue-17: #cbd5e1;   /* 1 uses */
+  --color-orvx-red-8: #ff89a8;   /* 1 uses */
+  --color-orvx-green-3: #22c55e;   /* 1 uses */
+  --color-orvx-blue-18: #0a0f1a;   /* 1 uses */
+  --color-orvx-blue-19: #0d1220;   /* 1 uses */
+  --color-orvx-red-9: #ffc2d3;   /* 1 uses */
 
+  /* ---- typography ---- */
   --font-orvx: Archivo, sans-serif;
+  --font-orvx-mono: 'JetBrains Mono', monospace;
 }

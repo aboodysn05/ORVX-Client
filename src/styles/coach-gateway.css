@@ -5,7 +5,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #090d16;
+  background: var(--color-orvx-ink);
 }
 
 .cg {
@@ -15,9 +15,9 @@ body {
      scrollbar without turning this shell into a scroll container, which
      would break the sticky nav inside it. Matches .dash / .sb / .sp / .aw. */
   overflow: clip;
-  background: #090d16;
-  font-family: Archivo, sans-serif;
-  color: #e8ecf5;
+  background: var(--color-orvx-ink);
+  font-family: var(--font-orvx);
+  color: var(--color-orvx-text-bright);
 }
 
 .cg *,
@@ -31,21 +31,21 @@ body {
 }
 
 .cg a {
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   text-decoration: none;
 }
 
 .cg a:hover {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .cg :focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--color-orvx-indigo);
   outline-offset: 2px;
 }
 
 .cg input::placeholder {
-  color: #4c5871;
+  color: var(--color-orvx-muted-deep);
 }
 
 @keyframes cg-pulse {
@@ -84,8 +84,8 @@ body {
   background-image:
     repeating-linear-gradient(0deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px),
     repeating-linear-gradient(90deg, rgba(79, 70, 229, 0.1) 0 1px, transparent 1px 78px);
-  mask-image: radial-gradient(ellipse 80% 55% at 50% 10%, #000 0%, transparent 80%);
-  -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 10%, #000 0%, transparent 80%);
+  mask-image: radial-gradient(ellipse 80% 55% at 50% 10%, var(--color-black) 0%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 80% 55% at 50% 10%, var(--color-black) 0%, transparent 80%);
 }
 
 .cg__glow-a {
@@ -136,7 +136,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-shadow: 0 0 16px rgba(255, 46, 99, 0.5);
 }
 
@@ -145,7 +145,7 @@ body {
   font-weight: 800;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 /* --- intro --- */
@@ -172,7 +172,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .cg__kicker::before {
@@ -180,7 +180,7 @@ body {
   display: block;
   width: 26px;
   height: 1px;
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
 }
 
 .cg__title {
@@ -190,7 +190,7 @@ body {
   letter-spacing: -0.01em;
   line-height: 1.02;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-wrap: balance;
 }
 
@@ -198,7 +198,7 @@ body {
   margin: 0;
   font-size: 15.5px;
   line-height: 1.65;
-  color: #9aa6be;
+  color: var(--color-orvx-blue-1);
   text-wrap: pretty;
 }
 
@@ -244,7 +244,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .cg__step-title {
@@ -252,7 +252,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.01em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cg__grid-fields {
@@ -272,17 +272,17 @@ body {
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .cg__input {
   padding: 15px 16px;
   background: rgba(9, 13, 22, 0.85);
   border: 1px solid rgba(79, 70, 229, 0.35);
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 14px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cg__input--license {
@@ -303,7 +303,7 @@ body {
   background: rgba(9, 13, 22, 0.85);
   border: 1px dashed rgba(79, 70, 229, 0.4);
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   text-align: left;
 }
 
@@ -318,16 +318,16 @@ body {
 }
 
 .cg__upload-icon {
-  color: #4f46e5;
+  color: var(--color-orvx-indigo);
   flex: 0 0 auto;
 }
 
 .cg__upload.is-attached .cg__upload-icon {
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 .cg__upload--logo .cg__upload-icon {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .cg__upload-badge {
@@ -353,14 +353,14 @@ body {
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .cg__upload.is-attached .cg__upload-label {
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 .cg__upload--logo .cg__upload-label {
@@ -370,7 +370,7 @@ body {
 .cg__upload-hint {
   font-size: 11px;
   font-weight: 700;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 /* --- club details panel --- */
@@ -395,7 +395,7 @@ body {
 }
 
 .cg__panel--club .cg__panel-kicker {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .cg__panel-grid {
@@ -424,23 +424,23 @@ body {
   background: rgba(9, 13, 22, 0.7);
   border: 0;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .cg__capacity-btn.is-active {
   background: rgba(255, 46, 99, 0.24);
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cg__panel-hint {
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 /* --- submit row --- */
@@ -459,15 +459,15 @@ body {
   align-items: center;
   gap: 12px;
   padding: 18px 28px;
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   border: 0;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 12.5px;
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   box-shadow: 0 0 32px rgba(255, 46, 99, 0.5);
   transition:
     background 0.15s,
@@ -475,19 +475,19 @@ body {
 }
 
 .cg__submit-btn:hover {
-  background: #ff4776;
+  background: var(--color-orvx-pink-light);
   box-shadow: 0 0 52px rgba(255, 46, 99, 0.75);
 }
 
 .cg__submit-btn:active {
-  background: #e01c4f;
+  background: var(--color-orvx-red-4);
 }
 
 .cg__submit-hint {
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
   text-wrap: pretty;
 }
 
@@ -515,7 +515,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .cg__summary-row {
@@ -532,22 +532,22 @@ body {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .cg__summary-v {
   font-size: 13px;
   font-weight: 800;
   text-align: right;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .cg__summary-v.is-set {
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cg__summary-v.is-file {
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 .cg__slots-card {
@@ -564,27 +564,27 @@ body {
   font-weight: 900;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .cg__slots-value {
   font-size: 34px;
   font-weight: 900;
   line-height: 1;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cg__slots-value-sub {
   font-size: 16px;
   font-weight: 800;
-  color: #8b97af;
+  color: var(--color-orvx-text-faint);
 }
 
 .cg__slots-note {
   font-size: 12px;
   font-weight: 700;
   line-height: 1.55;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
   text-wrap: pretty;
 }
 
@@ -622,7 +622,7 @@ body {
   letter-spacing: 0.01em;
   line-height: 1.1;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-wrap: balance;
 }
 
@@ -642,7 +642,7 @@ body {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: var(--color-orvx-amber);
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.9);
   animation: cg-pulse 2s ease-in-out infinite;
 }
@@ -652,17 +652,17 @@ body {
   font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .cg__pending-banner {
   margin: 0;
   padding: 20px 22px;
   background: rgba(9, 13, 22, 0.62);
-  border-left: 2px solid #f59e0b;
+  border-left: 2px solid var(--color-orvx-amber);
   font-size: 14.5px;
   line-height: 1.7;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   text-wrap: pretty;
 }
 
@@ -687,21 +687,21 @@ body {
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .cg__pending-summary-v {
   font-size: 15px;
   font-weight: 900;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .cg__pending-summary-v.is-set {
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cg__pending-summary-v.is-file {
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 .cg__pipeline {
@@ -720,17 +720,17 @@ body {
 
 .cg__pipeline-step--done {
   background: rgba(34, 224, 126, 0.07);
-  border-top: 2px solid #22e07e;
+  border-top: 2px solid var(--color-orvx-green-bright);
 }
 
 .cg__pipeline-step--active {
   background: rgba(245, 158, 11, 0.07);
-  border-top: 2px solid #f59e0b;
+  border-top: 2px solid var(--color-orvx-amber);
 }
 
 .cg__pipeline-step--upcoming {
   background: rgba(9, 13, 22, 0.6);
-  border-top: 2px solid #6b7894;
+  border-top: 2px solid var(--color-orvx-muted-dark);
 }
 
 .cg__pipeline-step-num {
@@ -738,7 +738,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #8b97af;
+  color: var(--color-orvx-text-faint);
 }
 
 .cg__pipeline-step-label {
@@ -749,15 +749,15 @@ body {
 }
 
 .cg__pipeline-step--done .cg__pipeline-step-label {
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 .cg__pipeline-step--active .cg__pipeline-step-label {
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .cg__pipeline-step--upcoming .cg__pipeline-step-label {
-  color: #6b7894;
+  color: var(--color-orvx-muted-dark);
 }
 
 .cg__pending-actions {
@@ -777,20 +777,20 @@ body {
   background: rgba(9, 13, 22, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.35);
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 11.5px;
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   transition:
     border-color 0.15s,
     color 0.15s;
 }
 
 .cg__home-btn:hover {
-  border-color: #ff2e63;
-  color: #ff2e63;
+  border-color: var(--color-orvx-pink);
+  color: var(--color-orvx-pink);
 }
 
 .cg__pending-track {
@@ -801,7 +801,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .cg__pending-track-dot {
@@ -809,7 +809,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: var(--color-orvx-amber);
   box-shadow: 0 0 10px rgba(245, 158, 11, 0.9);
   animation: cg-pulse 2s ease-in-out infinite;
 }
@@ -844,14 +844,14 @@ body {
   border: 1px solid rgba(79, 70, 229, 0.5);
   font-size: 11px;
   font-weight: 900;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .cg__unlock-text {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.55;
-  color: #9aa6be;
+  color: var(--color-orvx-blue-1);
   text-wrap: pretty;
 }
 
@@ -887,7 +887,7 @@ body {
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .cg__footer-tagline {
@@ -896,7 +896,7 @@ body {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .cg__footer-nav {
@@ -913,7 +913,7 @@ body {
   display: flex;
   align-items: center;
   gap: 7px;
-  color: #4c5871;
+  color: var(--color-orvx-muted-deep);
 }
 
 .cg__footer-bottom {
@@ -926,7 +926,7 @@ body {
   padding-top: 20px;
   border-top: 1px solid rgba(79, 70, 229, 0.16);
   font-size: 11.5px;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .cg__footer-bottom a {

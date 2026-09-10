@@ -9,20 +9,20 @@
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   margin: 0 0 8px;
 }
 
 .acct__lead {
   font-size: 13px;
   line-height: 1.6;
-  color: #94a3b8;
+  color: var(--color-orvx-steel);
   margin: 0 0 28px;
 }
 
 .acct__role {
   text-transform: capitalize;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
   font-weight: 700;
 }
 
@@ -43,18 +43,18 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .acct__req {
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .acct__input {
   padding: 11px 13px;
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(79, 70, 229, 0.3);
-  color: #fff;
+  color: var(--color-white);
   font-size: 14px;
   outline: none;
   transition: border-color 0.15s;
@@ -72,7 +72,7 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .acct__msg {
@@ -81,20 +81,20 @@
 }
 
 .acct__msg--err {
-  color: #ff6b8a;
+  color: var(--color-orvx-red-1);
 }
 
 .acct__msg--ok {
-  color: #22e07e;
+  color: var(--color-orvx-green-bright);
 }
 
 .acct__save {
   margin-top: 6px;
   align-self: flex-start;
   padding: 11px 22px;
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
   border: none;
-  color: #fff;
+  color: var(--color-white);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.1em;

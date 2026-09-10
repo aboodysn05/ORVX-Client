@@ -51,12 +51,12 @@
 
 .alg-comptab__type--league {
   border-color: rgba(16, 185, 129, 0.5);
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .alg-comptab__type--knockout {
   border-color: rgba(79, 70, 229, 0.6);
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .alg-comptab__name {
@@ -64,7 +64,7 @@
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .alg-comptab__season {
@@ -72,7 +72,7 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 /* --- layout --- */
@@ -102,7 +102,7 @@
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 /* --- record-a-match form --- */
@@ -141,15 +141,15 @@
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .alg-today__dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 10px #10b981;
+  background: var(--color-orvx-green);
+  box-shadow: 0 0 10px var(--color-orvx-green);
   animation: adm-pulse 1.9s ease-in-out infinite;
 }
 
@@ -174,19 +174,19 @@
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8b97af;
+  color: var(--color-orvx-text-faint);
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
 .alg-seg__btn.is-on {
   background: rgba(79, 70, 229, 0.18);
   border-color: rgba(79, 70, 229, 0.6);
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 /* scoreboard with steppers */
@@ -213,7 +213,7 @@
   font-weight: 900;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   text-align: center;
 }
 
@@ -223,7 +223,7 @@
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .alg-step {
@@ -238,25 +238,25 @@
   background: rgba(15, 23, 42, 0.9);
   border: none;
   cursor: pointer;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 20px;
   font-weight: 700;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
   transition: background 0.15s, color 0.15s;
 }
 
 .alg-step__btn:hover {
-  background: #4f46e5;
-  color: #fff;
+  background: var(--color-orvx-indigo);
+  color: var(--color-white);
 }
 
 .alg-step__v {
   width: 52px;
   text-align: center;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-white);
 }
 
 /* goalscorers — two columns */
@@ -280,23 +280,23 @@
   font-weight: 900;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .alg-scorerbox__count {
   margin-left: auto;
   padding: 2px 6px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0;
   background: rgba(16, 185, 129, 0.14);
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .alg-scorerbox__count.is-off {
   background: rgba(245, 158, 11, 0.14);
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .alg-tagrow {
@@ -314,17 +314,17 @@
   background: rgba(79, 70, 229, 0.14);
   border: 1px solid rgba(79, 70, 229, 0.45);
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 10.5px;
   font-weight: 800;
   letter-spacing: 0.04em;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .alg-tag__x {
   font-size: 13px;
   font-weight: 900;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .alg-taginput {
@@ -333,11 +333,11 @@
   padding: 9px 11px;
   background: rgba(9, 13, 22, 0.8);
   border: 1px solid rgba(79, 70, 229, 0.3);
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: 0.03em;
-  color: #e8ecf5;
+  color: var(--color-orvx-text-bright);
   outline: none;
 }
 
@@ -356,11 +356,11 @@
 .alg-recorded__n {
   padding: 2px 8px;
   background: rgba(79, 70, 229, 0.18);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .alg-rec {
@@ -374,7 +374,7 @@
 }
 
 .alg-rec.is-today {
-  border-left: 2px solid #10b981;
+  border-left: 2px solid var(--color-orvx-green);
 }
 
 .alg-rec.is-flash {
@@ -389,12 +389,12 @@
 }
 
 .alg-rec__round {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .alg-rec__when {
@@ -402,7 +402,7 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .alg-rec__score {
@@ -417,7 +417,7 @@
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #e8ecf5;
+  color: var(--color-orvx-text-bright);
 }
 
 .alg-rec__team--home {
@@ -428,14 +428,14 @@
   display: inline-flex;
   align-items: baseline;
   gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 22px;
   font-weight: 700;
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .alg-rec__dash {
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .alg-rec__scorers {
@@ -447,7 +447,7 @@
   border-top: 1px solid rgba(148, 163, 184, 0.12);
   font-size: 11px;
   font-weight: 700;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
 }
 
 .alg-rec__side {
@@ -468,23 +468,23 @@
   background: transparent;
   border: 1px solid rgba(148, 163, 184, 0.3);
   cursor: pointer;
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 9.5px;
   font-weight: 900;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8b97af;
+  color: var(--color-orvx-text-faint);
   transition: border-color 0.15s, color 0.15s;
 }
 
 .alg-minibtn:hover {
   border-color: rgba(79, 70, 229, 0.6);
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .alg-minibtn--danger:hover {
   border-color: rgba(255, 46, 99, 0.6);
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 /* --- right rail --- */
@@ -517,10 +517,10 @@
   gap: 6px;
   padding: 10px 4px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 11.5px;
   font-weight: 500;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
 }
 
 .alg-strow--head {
@@ -529,7 +529,7 @@
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .alg-strow:last-child {
@@ -542,16 +542,16 @@
 
 .alg-strow__pos {
   font-weight: 700;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .alg-strow__club {
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -559,7 +559,7 @@
 
 .alg-strow__pts {
   font-weight: 700;
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 .alg-strow__form {
@@ -575,21 +575,21 @@
   height: 16px;
   font-size: 8.5px;
   font-weight: 700;
-  color: #090d16;
+  color: var(--color-orvx-ink);
 }
 
 .alg-formdot--W {
-  background: #10b981;
+  background: var(--color-orvx-green);
 }
 .alg-formdot--D {
-  background: #7c89a2;
+  background: var(--color-orvx-muted);
 }
 .alg-formdot--L {
-  background: #ff2e63;
+  background: var(--color-orvx-pink);
 }
 .alg-formdot--none {
   background: transparent;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 .alg-standings__note {
@@ -597,7 +597,7 @@
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
   text-wrap: pretty;
 }
 
@@ -614,7 +614,7 @@
   font-weight: 900;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .alg-tie {
@@ -643,7 +643,7 @@
   font-weight: 900;
   letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   text-align: right;
 }
 
@@ -652,7 +652,7 @@
 }
 
 .alg-tie__team.is-through {
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 .alg-tie__legs {
@@ -666,18 +666,18 @@
   display: inline-flex;
   align-items: baseline;
   gap: 5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 16px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .alg-tie__legdetail {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 8.5px;
   font-weight: 500;
   letter-spacing: 0.02em;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
   white-space: nowrap;
 }
 
@@ -686,12 +686,12 @@
   font-weight: 900;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
   text-align: center;
 }
 
 .alg-tie.is-decided .alg-tie__through {
-  color: #10b981;
+  color: var(--color-orvx-green);
 }
 
 /* --- rules --- */
@@ -710,7 +710,7 @@
   font-weight: 900;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 
 .alg-rules__grid {
@@ -738,21 +738,21 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #8d99b0;
+  color: var(--color-orvx-text-soft);
 }
 
 .alg-rules__v {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: var(--font-orvx-mono);
   font-size: 11.5px;
   font-weight: 500;
-  color: #e8ecf5;
+  color: var(--color-orvx-text-bright);
 }
 
 .alg-rules__foot {
   font-size: 9.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: #5a6784;
+  color: var(--color-orvx-muted-darker);
 }
 
 /* --- responsive --- */
@@ -791,7 +791,7 @@
   border-color: rgba(16, 185, 129, 0.55);
 }
 .alg-comptab--add .alg-comptab__type {
-  color: #94a3b8;
+  color: var(--color-orvx-steel);
 }
 
 .alg-comptools {
@@ -804,7 +804,7 @@
   display: none;
 }
 .alg-comptools__danger {
-  color: #ff6b8a;
+  color: var(--color-orvx-red-1);
   border-color: rgba(255, 46, 99, 0.4);
 }
 .alg-comptools__danger:hover {
@@ -820,11 +820,11 @@
   align-items: center;
   gap: 7px;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--color-orvx-steel);
   cursor: pointer;
 }
 .alg-comptools__check input {
-  accent-color: #ff2e63;
+  accent-color: var(--color-orvx-pink);
 }
 
 /* --- goalscorer entry: one row per goal, picked from the club's squad ---- */
@@ -838,7 +838,7 @@
 .alg-goalrow__n {
   font-size: 11px;
   font-weight: 800;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
   text-align: center;
 }
 .alg-goalrow__min {
@@ -847,10 +847,10 @@
 .alg-scorernote {
   margin: 8px 0 0;
   font-size: 11.5px;
-  color: #7c89a2;
+  color: var(--color-orvx-muted);
 }
 .alg-scorernote.is-warn {
-  color: #f59e0b;
+  color: var(--color-orvx-amber);
 }
 
 /* --- cup club picker --------------------------------------------------- */
@@ -882,14 +882,14 @@
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.08em;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
   border: 1px solid rgba(79, 70, 229, 0.5);
   padding: 3px 6px;
 }
 .alg-cuppick__name {
   font-size: 12.5px;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-white);
 }
 
 /* --- top goalscorers --------------------------------------------------- */
@@ -909,17 +909,17 @@
   background: rgba(15, 23, 42, 0.92);
   font-size: 12.5px;
 }
-.alg-scorerrow__rank { color: #7c89a2; font-weight: 800; font-variant-numeric: tabular-nums; }
-.alg-scorerrow__name { color: #fff; font-weight: 700; }
+.alg-scorerrow__rank { color: var(--color-orvx-muted); font-weight: 800; font-variant-numeric: tabular-nums; }
+.alg-scorerrow__name { color: var(--color-white); font-weight: 700; }
 .alg-scorerrow__club {
   font-size: 10px;
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 .alg-scorerrow__goals {
   text-align: right;
   font-weight: 900;
-  color: #f5c144;
+  color: var(--color-orvx-orange-1);
   font-variant-numeric: tabular-nums;
 }

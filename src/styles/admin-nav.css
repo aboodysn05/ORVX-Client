@@ -14,7 +14,7 @@
   background: rgba(9, 13, 22, 0.72);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  font-family: Archivo, sans-serif;
+  font-family: var(--font-orvx);
 }
 
 .anav__brand {
@@ -33,7 +33,7 @@
   line-height: 1;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
   text-shadow: 0 0 18px rgba(255, 46, 99, 0.5);
 }
 
@@ -49,7 +49,7 @@
   font-weight: 900;
   letter-spacing: 0.24em;
   text-transform: uppercase;
-  color: #4f46e5;
+  color: var(--color-orvx-indigo);
   text-shadow: 0 0 14px rgba(79, 70, 229, 0.8);
 }
 
@@ -67,17 +67,17 @@
 .anav__link {
   padding: 8px 2px;
   border-bottom: 2px solid transparent;
-  color: #c7d0e0;
+  color: var(--color-orvx-text);
   text-decoration: none;
 }
 
 .anav__link:hover {
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .anav__link.is-active {
-  border-bottom-color: #ff2e63;
-  color: #ff2e63;
+  border-bottom-color: var(--color-orvx-pink);
+  color: var(--color-orvx-pink);
   text-shadow: 0 0 16px rgba(255, 46, 99, 0.65);
 }
 
@@ -110,11 +110,11 @@
   width: 34px;
   height: 34px;
   border-radius: 50%;
-  background: linear-gradient(140deg, #4f46e5 0%, #ff2e63 100%);
+  background: linear-gradient(140deg, var(--color-orvx-indigo) 0%, var(--color-orvx-pink) 100%);
   font-size: 12.5px;
   font-weight: 900;
   letter-spacing: 0.06em;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .anav__chip-text {
@@ -129,7 +129,7 @@
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #fff;
+  color: var(--color-white);
 }
 
 .anav__chip-sub {
@@ -137,7 +137,7 @@
   font-weight: 800;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #a5b0ff;
+  color: var(--color-orvx-lilac);
 }
 
 .anav__signout {
@@ -149,18 +149,18 @@
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid rgba(79, 70, 229, 0.3);
   cursor: pointer;
-  color: #8b97af;
+  color: var(--color-orvx-text-faint);
   transition: border-color 0.15s, color 0.15s;
 }
 
 .anav__signout:hover {
   border-color: rgba(255, 46, 99, 0.6);
-  color: #ff2e63;
+  color: var(--color-orvx-pink);
 }
 
 .anav a:focus-visible,
 .anav button:focus-visible {
-  outline: 2px solid #4f46e5;
+  outline: 2px solid var(--color-orvx-indigo);
   outline-offset: 2px;
 }
 
